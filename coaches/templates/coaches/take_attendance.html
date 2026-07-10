@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Take Attendance{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Take Attendance</h1>
+
+    <a href="{% url 'coach_dashboard' %}" class="btn btn-secondary">
+        ← Back to Dashboard
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        Attendance for {{ today }}
+    </div>
+
+    <div class="card-body">
+        {% if athlete_attendance %}
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle">
+                        <thead>
+                            <tr>
+                                <th>Athlete</th>
+                                <th>Status</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for item in athlete_attendance %}
+                            <tr>
+                                <td>
+                                    <strong>{{ item.athlete.username }}</strong>
+                                </td>
+
+                                <td>
+                                    <select
+                                        name="status_{{ item.athlete.id }}"
+                                        class="form-select"
+                                        required
+                                    >
+                                        <option value="present"
+                                            {% if item.record.status == "present" or not item.record %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            ✅ Present
+                                        </option>
+
+                                        <option value="late"
+                                            {% if item.record.status == "late" %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            ⏰ Late
+                                        </option>
+
+                                        <option value="absent"
+                                            {% if item.record.status == "absent" %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            ❌ Absent
+                                        </option>
+
+                                        <option value="excused"
+                                            {% if item.record.status == "excused" %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            🟢 Excused
+                                        </option>
+                                    </select>
+                                </td>
+
+                                <td>
+                                    <input
+                                        type="text"
+                                        name="notes_{{ item.athlete.id }}"
+                                        class="form-control"
+                                        value="{% if item.record %}{{ item.record.notes }}{% endif %}"
+                                        placeholder="Optional note"
+                                    >
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg">
+                    Save Attendance
+                </button>
+            </form>
+
+        {% else %}
+            <p class="mb-0">No athletes available for attendance.</p>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

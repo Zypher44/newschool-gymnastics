@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Daily Athlete Survey{% endblock %}
+
+{% block content %}
+
+<h1 class="mb-4">🏅 Daily Athlete Wellness Survey</h1>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-danger">
+            <strong>{{ message }}</strong>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="card mb-4">
+    <div class="card-header">
+        📅 Upcoming Team Events
+    </div>
+    <div class="card-body">
+        {% if upcoming_events %}
+            <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Event</th>
+                            <th>Location</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for event in upcoming_events %}
+                        <tr>
+                            <td>{{ event.event_date }}</td>
+                            <td>
+                                {% if event.start_time %}
+                                    {{ event.start_time }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>{{ event.title }}</td>
+                            <td>
+                                {% if event.location %}
+                                    {{ event.location }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="mb-0">No upcoming events.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        Today's Wellness Check-In
+    </div>
+
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="mb-4">
+                <h4>⚡ Energy</h4>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="energy" value="1" required>
+                    <label class="form-check-label">😴 Very Low</label>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="energy" value="2">
+                    <label class="form-check-label">😕 Low</label>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="energy" value="3">
+                    <label class="form-check-label">😐 Average</label>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="energy" value="4">
+                    <label class="form-check-label">🙂 Good</label>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="energy" value="5">
+                    <label class="form-check-label">😄 Excellent</label>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <h4>💪 Soreness</h4>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="soreness" value="1" required>
+                    <label class="form-check-label">😊 None</label>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="soreness" value="2">
+                    <label class="form-check-label">🙂 Mild</label>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="soreness" value="3">
+                    <label class="form-check-label">😐 Moderate</label>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="soreness" value="4">
+                    <label class="form-check-label">😣 High</label>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="soreness" value="5">
+                    <label class="form-check-label">😫 Severe</label>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <h4>🧠 Stress</h4>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="stress" value="1" required>
+                    <label class="form-check-label">😌 Very Low</label>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="stress" value="2">
+                    <label class="form-check-label">🙂 Low</label>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="stress" value="3">
+                    <label class="form-check-label">😐 Moderate</label>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="stress" value="4">
+                    <label class="form-check-label">😟 High</label>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="stress" value="5">
+                    <label class="form-check-label">😫 Very High</label>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">
+                    <strong>😴 Hours of Sleep</strong>
+                </label>
+                <input
+                    type="number"
+                    name="sleep_hours"
+                    min="0"
+                    max="24"
+                    step="0.5"
+                    class="form-control"
+                    placeholder="Example: 8.5"
+                >
+            </div>
+
+            <div class="mb-4">
+                <h4>🍎 Nutrition</h4>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="ate_well">
+                    <label class="form-check-label">
+                        I ate healthy meals today.
+                    </label>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <h4>💧 Hydration</h4>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="hydrated">
+                    <label class="form-check-label">
+                        I stayed well hydrated today.
+                    </label>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">
+                    <strong>📍 Where are you sore?</strong>
+                </label>
+                <input
+                    type="text"
+                    name="soreness_area"
+                    class="form-control"
+                    placeholder="Example: Left ankle, shoulders, lower back..."
+                >
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">
+                    <strong>📝 Anything else your coach should know?</strong>
+                </label>
+                <textarea
+                    name="notes"
+                    rows="5"
+                    class="form-control"
+                    placeholder="Optional..."
+                ></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-success btn-lg">
+                ✅ Submit Today's Survey
+            </button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}{{ athlete_skill.skill.name }} Detail{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>{{ athlete.username }} - {{ athlete_skill.skill.name }}</h1>
+        <p class="text-muted mb-0">
+            {{ athlete_skill.skill.get_event_display }} Skill Development
+        </p>
+    </div>
+
+    <a href="{% url 'athlete_detail' athlete.id %}" class="btn btn-secondary">
+        ← Back to Athlete
+    </a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        Skill Status
+    </div>
+
+    <div class="card-body">
+        <h3>
+            {% if athlete_skill.status == "not_started" %}
+                ⚪ Not Started
+            {% elif athlete_skill.status == "in_progress" %}
+                🟡 In Progress
+            {% elif athlete_skill.status == "consistent" %}
+                🟠 Consistent
+            {% elif athlete_skill.status == "competition_ready" %}
+                🔵 Competition Ready
+            {% elif athlete_skill.status == "mastered" %}
+                🟢 Mastered
+            {% endif %}
+        </h3>
+
+        <p><strong>Started Date:</strong> {{ athlete_skill.started_date|default:"-" }}</p>
+        <p><strong>Achieved Date:</strong> {{ athlete_skill.achieved_date|default:"-" }}</p>
+        <p><strong>Last Updated By:</strong>
+            {% if athlete_skill.coach %}
+                {{ athlete_skill.coach.username }}
+            {% else %}
+                -
+            {% endif %}
+        </p>
+
+        <p><strong>Coach Notes:</strong></p>
+        <p>{{ athlete_skill.notes|default:"No notes yet." }}</p>
+
+        <button
+            type="button"
+            class="btn btn-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#skillUpdateModal"
+        >
+            ✏️ Update Skill
+        </button>
+    </div>
+</div>
+
+<div class="modal fade" id="skillUpdateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'update_athlete_skill' athlete.id athlete_skill.id %}">
+                {% csrf_token %}
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Update {{ athlete_skill.skill.name }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select" required>
+                            <option value="not_started" {% if athlete_skill.status == "not_started" %}selected{% endif %}>Not Started</option>
+                            <option value="in_progress" {% if athlete_skill.status == "in_progress" %}selected{% endif %}>In Progress</option>
+                            <option value="consistent" {% if athlete_skill.status == "consistent" %}selected{% endif %}>Consistent</option>
+                            <option value="competition_ready" {% if athlete_skill.status == "competition_ready" %}selected{% endif %}>Competition Ready</option>
+                            <option value="mastered" {% if athlete_skill.status == "mastered" %}selected{% endif %}>Mastered</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Started Date</label>
+                        <input
+                            type="date"
+                            name="started_date"
+                            class="form-control"
+                            value="{{ athlete_skill.started_date|date:'Y-m-d' }}"
+                        >
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Achieved Date</label>
+                        <input
+                            type="date"
+                            name="achieved_date"
+                            class="form-control"
+                            value="{{ athlete_skill.achieved_date|date:'Y-m-d' }}"
+                        >
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Coach Notes</label>
+                        <textarea name="notes" rows="5" class="form-control">{{ athlete_skill.notes }}</textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Save Skill Progress
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Videos for {{ athlete_skill.skill.name }}</span>
+
+        <a href="{% url 'upload_athlete_video' athlete.id %}" class="btn btn-sm btn-primary">
+            🎥 Upload Video
+        </a>
+    </div>
+
+    <div class="card-body">
+        {% if skill_videos %}
+            <div class="row">
+                {% for video in skill_videos %}
+                    <div class="col-lg-6 mb-4">
+                        <div class="card h-100">
+                            <video controls width="100%" class="rounded-top">
+                                <source src="{{ video.video_file.url }}" type="video/mp4">
+                            </video>
+
+                            <div class="card-body">
+                                <h5>{{ video.title }}</h5>
+
+                                <p>
+                                    <strong>Practice Date:</strong>
+                                    {{ video.practice_date|default:"-" }}
+                                </p>
+
+                                <p>
+                                    <strong>Uploaded By:</strong>
+                                    {% if video.uploaded_by %}
+                                        {{ video.uploaded_by.username }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </p>
+
+                                {% if video.notes %}
+                                    <p>{{ video.notes }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="mb-0">No videos uploaded for this skill yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

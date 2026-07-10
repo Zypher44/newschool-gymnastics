@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Update Skill{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Update Skill Progress</h1>
+
+    <a href="{% url 'athlete_detail' athlete.id %}" class="btn btn-secondary">
+        ← Back to Athlete
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        {{ athlete.username }} - {{ athlete_skill.skill.name }}
+    </div>
+
+    <div class="card-body">
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select" required>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}"
+                            {% if athlete_skill.status == value %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Started Date</label>
+                <input
+                    type="date"
+                    name="started_date"
+                    class="form-control"
+                    value="{{ athlete_skill.started_date|date:'Y-m-d' }}"
+                >
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Achieved Date</label>
+                <input
+                    type="date"
+                    name="achieved_date"
+                    class="form-control"
+                    value="{{ athlete_skill.achieved_date|date:'Y-m-d' }}"
+                >
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Coach Notes</label>
+                <textarea
+                    name="notes"
+                    rows="5"
+                    class="form-control"
+                >{{ athlete_skill.notes }}</textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                Save Skill Progress
+            </button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

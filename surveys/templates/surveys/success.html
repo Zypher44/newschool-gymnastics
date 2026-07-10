@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Survey Submitted{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+
+        <div class="card shadow-sm">
+
+            <div class="card-body text-center p-5">
+
+                <h1 class="display-5 text-success">
+                    ✅ Survey Submitted
+                </h1>
+
+                <p class="lead mt-4">
+                    Thank you! Your daily wellness survey has been successfully submitted.
+                </p>
+
+                <p class="text-muted">
+                    Your coach can now review today's wellness information.
+                </p>
+
+                <hr>
+
+                <a href="{% url 'submit_survey' %}" class="btn btn-primary btn-lg">
+                    Submit Tomorrow's Survey
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Video{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Upload Video</h1>
+
+    <a href="{% url 'athlete_detail' athlete.id %}" class="btn btn-secondary">
+        ← Back to Athlete
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        Upload Video for {{ athlete.username }}
+    </div>
+
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="form-label">Video Title</label>
+                <input
+                    type="text"
+                    name="title"
+                    class="form-control"
+                    required
+                >
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Event</label>
+                <select name="event" class="form-select" required>
+                    {% for value, label in event_choices %}
+                        <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Skill</label>
+                <select name="skill" class="form-select">
+                    <option value="">No specific skill</option>
+                    {% for skill in skills %}
+                        <option value="{{ skill.id }}">
+                            {{ skill.get_event_display }} - {{ skill.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Practice Date</label>
+                <input
+                    type="date"
+                    name="practice_date"
+                    class="form-control"
+                >
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Video File</label>
+                <input
+                    type="file"
+                    name="video_file"
+                    class="form-control"
+                    accept="video/*"
+                    required
+                >
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Coach Notes</label>
+                <textarea
+                    name="notes"
+                    rows="5"
+                    class="form-control"
+                ></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                Upload Video
+            </button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

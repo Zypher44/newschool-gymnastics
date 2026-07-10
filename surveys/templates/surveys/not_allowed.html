@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Daily Survey</title>
+</head>
+<body>
+    <h1>Daily Athlete Survey</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit Survey</button>
+    </form>
+</body>
+</html>
