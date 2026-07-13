@@ -18,9 +18,7 @@
 </div>
 
 <div class="card mb-4">
-    <div class="card-header">
-        Skill Status
-    </div>
+    <div class="card-header">Skill Status</div>
 
     <div class="card-body">
         <h3>
@@ -39,7 +37,9 @@
 
         <p><strong>Started Date:</strong> {{ athlete_skill.started_date|default:"-" }}</p>
         <p><strong>Achieved Date:</strong> {{ athlete_skill.achieved_date|default:"-" }}</p>
-        <p><strong>Last Updated By:</strong>
+
+        <p>
+            <strong>Last Updated By:</strong>
             {% if athlete_skill.coach %}
                 {{ athlete_skill.coach.username }}
             {% else %}
@@ -138,6 +138,7 @@
                 {% for video in skill_videos %}
                     <div class="col-lg-6 mb-4">
                         <div class="card h-100">
+
                             <video controls width="100%" class="rounded-top">
                                 <source src="{{ video.video_file.url }}" type="video/mp4">
                             </video>
@@ -146,8 +147,35 @@
                                 <h5>{{ video.title }}</h5>
 
                                 <p>
+                                    <strong>Attempt:</strong>
+                                    {% if video.attempt_number %}
+                                        #{{ video.attempt_number }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </p>
+
+                                <p>
                                     <strong>Practice Date:</strong>
                                     {{ video.practice_date|default:"-" }}
+                                </p>
+
+                                <p>
+                                    <strong>Technical Focus:</strong>
+                                    {{ video.technical_focus|default:"-" }}
+                                </p>
+
+                                <p>
+                                    <strong>Review Status:</strong>
+                                    {% if video.review_status == "not_reviewed" %}
+                                        ⚪ Not Reviewed
+                                    {% elif video.review_status == "reviewed" %}
+                                        🟢 Reviewed
+                                    {% elif video.review_status == "needs_follow_up" %}
+                                        🟡 Needs Follow-Up
+                                    {% elif video.review_status == "highlight" %}
+                                        ⭐ Highlight
+                                    {% endif %}
                                 </p>
 
                                 <p>
@@ -160,9 +188,20 @@
                                 </p>
 
                                 {% if video.notes %}
-                                    <p>{{ video.notes }}</p>
+                                    <p>
+                                        <strong>Upload Notes:</strong><br>
+                                        {{ video.notes }}
+                                    </p>
+                                {% endif %}
+
+                                {% if video.coach_feedback %}
+                                    <div class="alert alert-info">
+                                        <strong>Coach Feedback:</strong><br>
+                                        {{ video.coach_feedback }}
+                                    </div>
                                 {% endif %}
                             </div>
+
                         </div>
                     </div>
                 {% endfor %}
@@ -170,6 +209,73 @@
         {% else %}
             <p class="mb-0">No videos uploaded for this skill yet.</p>
         {% endif %}
+    </div>
+</div>
+
+<button
+    type="button"
+    class="btn btn-outline-primary btn-sm"
+    data-bs-toggle="modal"
+    data-bs-target="#videoReviewModal{{ video.id }}"
+>
+    ✏️ Edit Review
+</button>
+
+<div class="modal fade" id="videoReviewModal{{ video.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'update_video_review' athlete.id video.id %}">
+                {% csrf_token %}
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Review - {{ video.title }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label class="form-label">Review Status</label>
+                        <select name="review_status" class="form-select">
+                            <option value="not_reviewed" {% if video.review_status == "not_reviewed" %}selected{% endif %}>Not Reviewed</option>
+                            <option value="reviewed" {% if video.review_status == "reviewed" %}selected{% endif %}>Reviewed</option>
+                            <option value="needs_follow_up" {% if video.review_status == "needs_follow_up" %}selected{% endif %}>Needs Follow-Up</option>
+                            <option value="highlight" {% if video.review_status == "highlight" %}selected{% endif %}>Highlight</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Technical Focus</label>
+                        <input
+                            type="text"
+                            name="technical_focus"
+                            class="form-control"
+                            value="{{ video.technical_focus }}"
+                        >
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Upload Notes</label>
+                        <textarea name="notes" rows="3" class="form-control">{{ video.notes }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Coach Feedback</label>
+                        <textarea name="coach_feedback" rows="5" class="form-control">{{ video.coach_feedback }}</textarea>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Save Review
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 

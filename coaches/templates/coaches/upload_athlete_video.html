@@ -23,12 +23,7 @@
 
             <div class="mb-3">
                 <label class="form-label">Video Title</label>
-                <input
-                    type="text"
-                    name="title"
-                    class="form-control"
-                    required
-                >
+                <input type="text" name="title" class="form-control" required>
             </div>
 
             <div class="mb-3">
@@ -53,12 +48,39 @@
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Practice Date</label>
+                <label class="form-label">Attempt Number</label>
                 <input
-                    type="date"
-                    name="practice_date"
+                    type="number"
+                    name="attempt_number"
                     class="form-control"
+                    min="1"
+                    placeholder="Example: 3"
                 >
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Practice Date</label>
+                <input type="date" name="practice_date" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Technical Focus</label>
+                <input
+                    type="text"
+                    name="technical_focus"
+                    class="form-control"
+                    placeholder="Example: Tap timing, shoulder angle, landing control..."
+                >
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Review Status</label>
+                <select name="review_status" class="form-select">
+                    <option value="not_reviewed">Not Reviewed</option>
+                    <option value="reviewed">Reviewed</option>
+                    <option value="needs_follow_up">Needs Follow-Up</option>
+                    <option value="highlight">Highlight</option>
+                </select>
             </div>
 
             <div class="mb-3">
@@ -73,11 +95,17 @@
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Coach Notes</label>
+                <label class="form-label">Upload Notes</label>
+                <textarea name="notes" rows="4" class="form-control"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Coach Feedback</label>
                 <textarea
-                    name="notes"
+                    name="coach_feedback"
                     rows="5"
                     class="form-control"
+                    placeholder="What should the athlete focus on next?"
                 ></textarea>
             </div>
 

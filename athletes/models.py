@@ -174,6 +174,74 @@ class AthleteVideo(models.Model):
         ('other', 'Other'),
     ]
 
+    REVIEW_STATUS_CHOICES = [
+        ('not_reviewed', 'Not Reviewed'),
+        ('reviewed', 'Reviewed'),
+        ('needs_follow_up', 'Needs Follow-Up'),
+        ('highlight', 'Highlight'),
+    ]
+
+    athlete = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='athlete_videos'
+    )
+
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='uploaded_videos'
+    )
+
+    event = models.CharField(
+        max_length=30,
+        choices=EVENT_CHOICES,
+        default='other'
+    )
+
+    skill = models.ForeignKey(
+        Skill,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='videos'
+    )
+
+    title = models.CharField(max_length=150)
+    attempt_number = models.PositiveIntegerField(null=True, blank=True)
+    practice_date = models.DateField(null=True, blank=True)
+
+    video_file = models.FileField(upload_to='athlete_videos/')
+
+    technical_focus = models.CharField(max_length=255, blank=True)
+    notes = models.TextField(blank=True)
+    coach_feedback = models.TextField(blank=True)
+
+    review_status = models.CharField(
+        max_length=30,
+        choices=REVIEW_STATUS_CHOICES,
+        default='not_reviewed'
+    )
+
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-practice_date', '-attempt_number', '-uploaded_at']
+
+    def save(self, *args, **kwargs):
+        if self.athlete.role.lower() != 'athlete':
+            raise ValidationError('Video must be attached to an athlete.')
+
+        if self.uploaded_by and self.uploaded_by.role not in ['coach', 'head_coach', 'athlete']:
+            raise ValidationError('Video must be uploaded by a coach, head coach, or athlete.')
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.athlete.username} - {self.title}"
+
     athlete = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,

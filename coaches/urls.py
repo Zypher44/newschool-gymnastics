@@ -8,8 +8,8 @@ from .views import (
     update_athlete_skill,
     upload_athlete_video,
     athlete_skill_detail,
+    update_video_review,
 )
-
 urlpatterns = [
     path('dashboard/', coach_dashboard, name='coach_dashboard'),
 
@@ -31,6 +31,11 @@ urlpatterns = [
         'athlete/<int:athlete_id>/videos/upload/',
         upload_athlete_video,
         name='upload_athlete_video'
+    ),
+    path(
+        'athlete/<int:athlete_id>/videos/<int:video_id>/review/',
+        update_video_review,
+        name='update_video_review'
     ),
 
     path('events/add/', add_event, name='add_event'),

@@ -538,9 +538,13 @@ def upload_athlete_video(request, athlete_id):
             event=request.POST.get('event'),
             skill=skill,
             title=request.POST.get('title'),
+            attempt_number=request.POST.get('attempt_number') or None,
             practice_date=request.POST.get('practice_date') or None,
             video_file=request.FILES.get('video_file'),
+            technical_focus=request.POST.get('technical_focus', ''),
+            review_status=request.POST.get('review_status', 'not_reviewed'),
             notes=request.POST.get('notes', ''),
+            coach_feedback=request.POST.get('coach_feedback', ''),
         )
 
         return redirect('athlete_detail', athlete_id=athlete.id)
@@ -596,3 +600,58 @@ def athlete_skill_detail(request, athlete_id, athlete_skill_id):
         'skill_videos': skill_videos,
     })
 
+@login_required
+def update_video_review(request, athlete_id, video_id):
+    if request.user.role not in ['coach', 'head_coach']:
+        return render(request, 'coaches/not_allowed.html', {
+            'role': request.user.role,
+            'username': request.user.username,
+        })
+
+    if request.user.role == 'head_coach':
+        assignment = CoachAthleteAssignment.objects.filter(
+            athlete_id=athlete_id
+        ).select_related('athlete').first()
+    else:
+        assignment = CoachAthleteAssignment.objects.filter(
+            coach=request.user,
+            athlete_id=athlete_id
+        ).select_related('athlete').first()
+
+    if not assignment:
+        return render(request, 'coaches/not_allowed.html', {
+            'role': request.user.role,
+            'username': request.user.username,
+        })
+
+    athlete = assignment.athlete
+
+    video = AthleteVideo.objects.filter(
+        id=video_id,
+        athlete=athlete
+    ).select_related('skill').first()
+
+    if not video:
+        return redirect('athlete_detail', athlete_id=athlete.id)
+
+    if request.method == 'POST':
+        video.review_status = request.POST.get('review_status', 'not_reviewed')
+        video.technical_focus = request.POST.get('technical_focus', '')
+        video.notes = request.POST.get('notes', '')
+        video.coach_feedback = request.POST.get('coach_feedback', '')
+        video.save()
+
+    if video.skill:
+        athlete_skill = AthleteSkill.objects.filter(
+            athlete=athlete,
+            skill=video.skill
+        ).first()
+
+        if athlete_skill:
+            return redirect(
+                'athlete_skill_detail',
+                athlete_id=athlete.id,
+                athlete_skill_id=athlete_skill.id
+            )
+
+    return redirect('athlete_detail', athlete_id=athlete.id)
