@@ -74,7 +74,21 @@ def coach_dashboard(request):
             'username': request.user.username,
         })
 
-    today = timezone.now().date()
+    if request.user.role == 'head_coach':
+        pending_video_reviews = AthleteVideo.objects.filter(
+            review_status='not_reviewed'
+        ).select_related(
+            'athlete',
+            'skill'
+        ).order_by('-uploaded_at')[:10]
+    else:
+        pending_video_reviews = AthleteVideo.objects.filter(
+            athlete__assigned_coaches__coach=request.user,
+            review_status='not_reviewed'
+        ).select_related(
+            'athlete',
+            'skill'
+        ).distinct().order_by('-uploaded_at')[:10]
 
     if request.user.role == 'head_coach':
         assignments = CoachAthleteAssignment.objects.select_related('athlete', 'coach')
@@ -215,6 +229,7 @@ def coach_dashboard(request):
         'green_flags': green_flags,
         'team_readiness_score': team_readiness_score,
         'upcoming_events': upcoming_events,
+        'pending_video_reviews': pending_video_reviews,
     })
 
 

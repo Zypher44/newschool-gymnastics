@@ -104,6 +104,80 @@
 </div>
 
 <div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        🎥 Videos Waiting for Review
+    </div>
+
+    <div class="card-body">
+        {% if pending_video_reviews %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Athlete</th>
+                            <th>Event</th>
+                            <th>Skill</th>
+                            <th>Attempt</th>
+                            <th>Uploaded</th>
+                            <th>Review</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for video in pending_video_reviews %}
+                        <tr>
+                            <td>{{ video.athlete.username }}</td>
+                            <td>{{ video.get_event_display }}</td>
+                            <td>
+                                {% if video.skill %}
+                                    {{ video.skill.name }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if video.attempt_number %}
+                                    #{{ video.attempt_number }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>{{ video.uploaded_at|date:"M d, Y" }}</td>
+                            <td>
+                                {% if video.skill %}
+                                    {% for item in video.athlete.athlete_skills.all %}
+                                        {% if item.skill.id == video.skill.id %}
+                                            <a
+                                                href="{% url 'athlete_skill_detail' video.athlete.id item.id %}"
+                                                class="btn btn-sm btn-outline-primary"
+                                            >
+                                                Review
+                                            </a>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    <a
+                                        href="{% url 'athlete_detail' video.athlete.id %}"
+                                        class="btn btn-sm btn-outline-primary"
+                                    >
+                                        Review
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="mb-0">No videos waiting for review.</p>
+        {% endif %}
+    </div>
+</div>
+
+
+
+<div class="card mb-4">
     <div class="card-header">
         Upcoming Events
     </div>
