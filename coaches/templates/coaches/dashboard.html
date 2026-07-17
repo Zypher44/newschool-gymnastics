@@ -1,39 +1,186 @@
 {% extends "base.html" %}
 
 {% block title %}Coach Dashboard{% endblock %}
+{% block page_header %}Coach Command Center{% endblock %}
 
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Coach Dashboard</h1>
+<div class="mb-4">
+    <h1 class="mb-1">Good Morning, Coach {{ user.username }}</h1>
+    <p class="text-muted mb-0">
+        Here is today’s team overview, priorities, and action list.
+    </p>
+</div>
 
-    <a href="{% url 'add_event' %}" class="btn btn-primary">
-        ➕ Create Team Event
-    </a>
-    <a href="{% url 'take_attendance' %}" class="btn btn-success">
-    📋 Take Attendance
-    </a>
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'add_event' %}" class="text-decoration-none">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h3>📅</h3>
+                    <h6 class="text-dark">Create Event</h6>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'take_attendance' %}" class="text-decoration-none">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h3>✅</h3>
+                    <h6 class="text-dark">Take Attendance</h6>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'team_skills_dashboard' %}" class="text-decoration-none">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h3>🏆</h3>
+                    <h6 class="text-dark">Team Skills</h6>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <a href="#videos-review" class="text-decoration-none">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h3>🎥</h3>
+                    <h6 class="text-dark">Review Videos</h6>
+                </div>
+            </div>
+        </a>
+    </div>
 </div>
 
 <div class="card mb-4">
-    <div class="card-header bg-danger text-white">
-        Red Flag Alerts
+    <div class="card-header bg-dark text-white">
+        Today’s Coaching Priorities
     </div>
-    <div class="card-body">
-        {% if alerts %}
-            {% for alert in alerts %}
-                <div class="alert alert-danger">
-                    ⚠
-                    <a href="{% url 'athlete_detail' alert.athlete.id %}" class="alert-link">
-                        {{ alert.athlete.username }}
+
+    <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>⚡ Recent Activity</span>
+
+        <span class="badge bg-secondary">
+            {{ recent_activity|length }}
+        </span>
+    </div>
+
+    <div class="card-body p-0">
+        {% if recent_activity %}
+            <div class="list-group list-group-flush">
+                {% for activity in recent_activity %}
+                    <a
+                        href="{{ activity.url }}"
+                        class="list-group-item list-group-item-action py-3"
+                    >
+                        <div class="d-flex justify-content-between gap-3">
+                            <div class="d-flex gap-3">
+                                <div class="fs-4">
+                                    {{ activity.icon }}
+                                </div>
+
+                                <div>
+                                    <div class="fw-semibold">
+                                        {{ activity.title }}
+                                    </div>
+
+                                    {% if activity.description %}
+                                        <div class="text-muted small mt-1">
+                                            {{ activity.description }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="text-muted small text-nowrap">
+                                {{ activity.timestamp|timesince }} ago
+                            </div>
+                        </div>
                     </a>
-                    needs attention:
-                    {{ alert.issues|join:", " }}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="p-4 text-center text-muted">
+                No recent team activity yet.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+    <div class="card-body">
+        {% if coaching_priorities %}
+            {% for priority in coaching_priorities %}
+                <div class="alert alert-light border d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ priority.icon }} {{ priority.athlete.username }}</strong>
+                        — {{ priority.message }}
+                    </div>
+
+                    <a
+                        href="{% url priority.url_name priority.url_id %}"
+                        class="btn btn-sm btn-outline-primary"
+                    >
+                        View
+                    </a>
                 </div>
             {% endfor %}
         {% else %}
             <div class="alert alert-success mb-0">
-                ✅ No red flag alerts today.
+                ✅ No major coaching priorities today.
+            </div>
+        {% endif %}
+    </div>
+</div>
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>🔔 Notification Center</span>
+
+        <span class="badge bg-danger rounded-pill">
+            {{ notifications|length }}
+        </span>
+    </div>
+
+    <div class="card-body">
+        {% if notifications %}
+            <div class="row">
+                {% for notification in notifications %}
+                    <div class="col-lg-6 mb-3">
+                        <a
+                            href="{{ notification.url }}"
+                            class="text-decoration-none"
+                        >
+                            <div class="alert alert-{{ notification.level }} h-100 mb-0">
+                                <div class="d-flex justify-content-between align-items-start gap-3">
+                                    <div>
+                                        <div class="fw-semibold">
+                                            {{ notification.icon }}
+                                            {{ notification.title }}
+                                        </div>
+
+                                        <div class="small mt-1">
+                                            {{ notification.message }}
+                                        </div>
+                                    </div>
+
+                                    <span class="badge bg-{{ notification.level }}">
+                                        {{ notification.label }}
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-success mb-0">
+                ✅ You’re all caught up. No action is currently required.
             </div>
         {% endif %}
     </div>
@@ -41,69 +188,244 @@
 
 <div class="row mb-4">
     <div class="col-md-3 mb-3">
-        <div class="card text-center">
+        <div class="card text-center h-100">
             <div class="card-body">
-                <h6>Total Athletes</h6>
+                <h3>👥</h3>
+                <h6 class="text-muted">Active Athletes</h6>
                 <h2>{{ total_athletes }}</h2>
             </div>
         </div>
     </div>
 
     <div class="col-md-3 mb-3">
-        <div class="card text-center">
+        <div class="card text-center h-100">
             <div class="card-body">
-                <h6>Submitted Today</h6>
-                <h2>{{ submitted_today }}</h2>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-3 mb-3">
-        <div class="card text-center">
-            <div class="card-body">
-                <h6>Missing Today</h6>
-                <h2>{{ missing_today }}</h2>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-3 mb-3">
-        <div class="card text-center">
-            <div class="card-body">
-                <h6>Submission Rate</h6>
+                <h3>📝</h3>
+                <h6 class="text-muted">Wellness Submitted</h6>
                 <h2>{{ submission_percentage }}%</h2>
+                <small>{{ submitted_today }} of {{ total_athletes }} today</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <h3>🎥</h3>
+                <h6 class="text-muted">Videos Waiting</h6>
+                <h2>{{ videos_waiting_review_count }}</h2>
+                <small>Need coach review</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <h3>🏆</h3>
+                <h6 class="text-muted">Skills Mastered</h6>
+                <h2>{{ skills_mastered }}</h2>
+                <small>{{ skills_competition_ready }} competition ready</small>
             </div>
         </div>
     </div>
 </div>
+<div class="row mb-4">
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                Team Readiness
+            </div>
+
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h2 class="mb-0">{{ team_readiness_score }}%</h2>
+                        <small class="text-muted">
+                            Average readiness today
+                        </small>
+                    </div>
+
+                    <div class="fs-1">
+                        {% if team_readiness_score >= 85 %}
+                            🟢
+                        {% elif team_readiness_score >= 70 %}
+                            🟡
+                        {% elif team_readiness_score >= 50 %}
+                            🟠
+                        {% else %}
+                            🔴
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div
+                    class="progress"
+                    role="progressbar"
+                    aria-valuenow="{{ team_readiness_score }}"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    style="height: 24px;"
+                >
+                    <div
+                        class="
+                            progress-bar
+                            {% if team_readiness_score >= 85 %}
+                                bg-success
+                            {% elif team_readiness_score >= 70 %}
+                                bg-warning
+                            {% elif team_readiness_score >= 50 %}
+                                bg-warning
+                            {% else %}
+                                bg-danger
+                            {% endif %}
+                        "
+                        style="width: {{ team_readiness_score }}%;"
+                    >
+                        {{ team_readiness_score }}%
+                    </div>
+                </div>
+
+                <div class="row text-center mt-4">
+                    <div class="col-3">
+                        <div class="fw-bold text-danger">
+                            {{ red_flags }}
+                        </div>
+                        <small class="text-muted">Red</small>
+                    </div>
+
+                    <div class="col-3">
+                        <div class="fw-bold text-warning">
+                            {{ orange_flags }}
+                        </div>
+                        <small class="text-muted">Orange</small>
+                    </div>
+
+                    <div class="col-3">
+                        <div class="fw-bold text-warning">
+                            {{ yellow_flags }}
+                        </div>
+                        <small class="text-muted">Yellow</small>
+                    </div>
+
+                    <div class="col-3">
+                        <div class="fw-bold text-success">
+                            {{ green_flags }}
+                        </div>
+                        <small class="text-muted">Green</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                Skill Status Distribution
+            </div>
+
+            <div class="card-body" style="height: 340px;">
+                <canvas id="skillProgressChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <div class="card mb-4">
     <div class="card-header">
-        Team Readiness
+        Team Skill Progress Summary
     </div>
-    <div class="card-body">
-        <h2>
-            {% if team_readiness_score >= 85 %}
-                🟢 {{ team_readiness_score }}%
-            {% elif team_readiness_score >= 70 %}
-                🟡 {{ team_readiness_score }}%
-            {% elif team_readiness_score >= 50 %}
-                🟠 {{ team_readiness_score }}%
-            {% else %}
-                🔴 {{ team_readiness_score }}%
-            {% endif %}
-        </h2>
 
-        <div class="mt-3">
-            <span class="badge bg-danger">Red: {{ red_flags }}</span>
-            <span class="badge bg-warning text-dark">Orange: {{ orange_flags }}</span>
-            <span class="badge bg-warning text-dark">Yellow: {{ yellow_flags }}</span>
-            <span class="badge bg-success">Green: {{ green_flags }}</span>
+    <div class="card-body">
+        <div class="row text-center">
+            <div class="col-md-3 mb-3">
+                <h6 class="text-muted">Mastered</h6>
+                <h3>🟢 {{ skills_mastered }}</h3>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <h6 class="text-muted">Competition Ready</h6>
+                <h3>🔵 {{ skills_competition_ready }}</h3>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <h6 class="text-muted">In Progress</h6>
+                <h3>🟡 {{ skills_in_progress }}</h3>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <h6 class="text-muted">Not Started</h6>
+                <h3>⚪ {{ skills_not_started }}</h3>
+            </div>
+        </div>
+
+        <a href="{% url 'team_skills_dashboard' %}" class="btn btn-outline-primary">
+            View Team Skills
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                Team Readiness
+            </div>
+
+            <div class="card-body">
+                <h1>
+                    {% if team_readiness_score >= 85 %}
+                        🟢 {{ team_readiness_score }}%
+                    {% elif team_readiness_score >= 70 %}
+                        🟡 {{ team_readiness_score }}%
+                    {% elif team_readiness_score >= 50 %}
+                        🟠 {{ team_readiness_score }}%
+                    {% else %}
+                        🔴 {{ team_readiness_score }}%
+                    {% endif %}
+                </h1>
+
+                <div class="mt-3">
+                    <span class="badge bg-danger">Red: {{ red_flags }}</span>
+                    <span class="badge bg-warning text-dark">Orange: {{ orange_flags }}</span>
+                    <span class="badge bg-warning text-dark">Yellow: {{ yellow_flags }}</span>
+                    <span class="badge bg-success">Green: {{ green_flags }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-danger text-white">
+                Red Flag Alerts
+            </div>
+
+            <div class="card-body">
+                {% if alerts %}
+                    {% for alert in alerts %}
+                        <div class="alert alert-danger">
+                            ⚠
+                            <a href="{% url 'athlete_detail' alert.athlete.id %}" class="alert-link">
+                                {{ alert.athlete.username }}
+                            </a>
+                            needs attention:
+                            {{ alert.issues|join:", " }}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-success mb-0">
+                        ✅ No red flag alerts today.
+                    </div>
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>
 
-<div class="card mb-4">
+<div class="card mb-4" id="videos-review">
     <div class="card-header bg-primary text-white">
         🎥 Videos Waiting for Review
     </div>
@@ -175,12 +497,11 @@
     </div>
 </div>
 
-
-
 <div class="card mb-4">
     <div class="card-header">
         Upcoming Events
     </div>
+
     <div class="card-body">
         {% if upcoming_events %}
             <div class="table-responsive">
@@ -193,6 +514,7 @@
                             <th>Location</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         {% for event in upcoming_events %}
                         <tr>
@@ -227,6 +549,7 @@
     <div class="card-header">
         Assigned Athletes
     </div>
+
     <div class="card-body">
         {% if athlete_data %}
             <div class="table-responsive">
@@ -242,6 +565,7 @@
                             <th>Sleep</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         {% for item in athlete_data %}
                         <tr>
@@ -292,5 +616,50 @@
         {% endif %}
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+{{ skill_chart_labels|json_script:"skill-chart-labels" }}
+{{ skill_chart_values|json_script:"skill-chart-values" }}
+
+<script>
+    const skillLabels = JSON.parse(
+        document.getElementById('skill-chart-labels').textContent
+    );
+
+    const skillValues = JSON.parse(
+        document.getElementById('skill-chart-values').textContent
+    );
+
+    const skillChartCanvas = document.getElementById('skillProgressChart');
+
+    if (skillChartCanvas) {
+        new Chart(skillChartCanvas, {
+            type: 'doughnut',
+            data: {
+                labels: skillLabels,
+                datasets: [{
+                    data: skillValues,
+                    backgroundColor: [
+                        '#198754',
+                        '#0d6efd',
+                        '#ffc107',
+                        '#dee2e6'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+</script>
 {% endblock %}

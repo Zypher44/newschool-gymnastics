@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Exercise Library{% endblock %}
+{% block page_header %}Exercise Library{% endblock %}
+
+{% block content %}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h1 class="mb-1">Testing Exercise Library</h1>
+
+        <p class="text-muted mb-0">
+            Create and manage reusable testing exercises.
+        </p>
+    </div>
+
+    <div class="d-flex gap-2">
+        <a
+            href="{% url 'testing_session_list' %}"
+            class="btn btn-outline-secondary"
+        >
+            ← Testing Sessions
+        </a>
+
+        <a
+            href="{% url 'create_testing_exercise' %}"
+            class="btn btn-primary"
+        >
+            ➕ Add Exercise
+        </a>
+    </div>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'success' }}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Available Exercises</span>
+
+        <span class="badge bg-secondary">
+            {{ exercises|length }}
+        </span>
+    </div>
+
+    <div class="card-body">
+        {% if exercises %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Order</th>
+                            <th>Exercise</th>
+                            <th>Unit</th>
+                            <th>Scoring Direction</th>
+                            <th>Created By</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for exercise in exercises %}
+                            <tr>
+                                <td>{{ exercise.display_order }}</td>
+
+                                <td>
+                                    <div class="fw-semibold">
+                                        {{ exercise.name }}
+                                    </div>
+
+                                    {% if exercise.description %}
+                                        <div class="small text-muted">
+                                            {{ exercise.description|truncatechars:100 }}
+                                        </div>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {{ exercise.get_unit_display }}
+                                </td>
+
+                                <td>
+                                    {% if exercise.higher_is_better %}
+                                        <span class="badge bg-success">
+                                            Higher is better
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-primary">
+                                            Lower is better
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if exercise.created_by %}
+                                        {{ exercise.created_by.username }}
+                                    {% else %}
+                                        System
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if exercise.active %}
+                                        <span class="badge bg-success">
+                                            Active
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">
+                                            Inactive
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td class="text-end">
+                                    {% if user.role == 'head_coach' or exercise.created_by == user %}
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <a
+                                                href="{% url 'edit_testing_exercise' exercise.id %}"
+                                                class="btn btn-sm btn-outline-primary"
+                                            >
+                                                Edit
+                                            </a>
+
+                                            <form
+                                                method="post"
+                                                action="{% url 'toggle_testing_exercise' exercise.id %}"
+                                            >
+                                                {% csrf_token %}
+
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-sm {% if exercise.active %}btn-outline-danger{% else %}btn-outline-success{% endif %}"
+                                                >
+                                                    {% if exercise.active %}
+                                                        Deactivate
+                                                    {% else %}
+                                                        Activate
+                                                    {% endif %}
+                                                </button>
+                                            </form>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <div class="fs-1 mb-3">🏋️</div>
+
+                <h4>No exercises yet</h4>
+
+                <p class="text-muted">
+                    Add your first testing exercise to begin building sessions.
+                </p>
+
+                <a
+                    href="{% url 'create_testing_exercise' %}"
+                    class="btn btn-primary"
+                >
+                    Add First Exercise
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

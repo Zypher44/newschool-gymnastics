@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Performance Testing{% endblock %}
+{% block page_header %}Performance Testing{% endblock %}
+
+{% block content %}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h1 class="mb-1">Performance Testing</h1>
+
+        <p class="text-muted mb-0">
+            Create testing sessions, enter results, and track athlete progress.
+        </p>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2">
+        <a
+            href="{% url 'testing_exercise_list' %}"
+            class="btn btn-outline-primary"
+        >
+            🏋️ Exercise Library
+        </a>
+
+        <a
+            href="{% url 'create_testing_session' %}"
+            class="btn btn-primary"
+        >
+            ➕ Create Testing Session
+        </a>
+    </div>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'success' }}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Testing Sessions</span>
+
+        <span class="badge bg-secondary">
+            {{ session_data|length }}
+        </span>
+    </div>
+
+    <div class="card-body">
+        {% if session_data %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Session</th>
+                            <th>Athletes</th>
+                            <th>Exercises</th>
+                            <th>Results</th>
+                            <th>Verified</th>
+                            <th>Published</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for item in session_data %}
+                            <tr>
+                                <td>
+                                    {{ item.session.testing_date|date:"M d, Y" }}
+                                </td>
+
+                                <td>
+                                    <div class="fw-semibold">
+                                        {{ item.session.title }}
+                                    </div>
+
+                                    {% if item.session.created_by %}
+                                        <div class="small text-muted">
+                                            Created by
+                                            {{ item.session.created_by.username }}
+                                        </div>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {{ item.athlete_count }}
+                                </td>
+
+                                <td>
+                                    {{ item.exercise_count }}
+                                </td>
+
+                                <td>
+                                    {{ item.result_count }}
+                                </td>
+
+                                <td>
+                                    {% if item.verified_count == item.result_count and item.result_count > 0 %}
+                                        <span class="badge bg-success">
+                                            {{ item.verified_count }} / {{ item.result_count }}
+                                        </span>
+                                    {% elif item.verified_count > 0 %}
+                                        <span class="badge bg-warning text-dark">
+                                            {{ item.verified_count }} / {{ item.result_count }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">
+                                            0 / {{ item.result_count }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if item.session.published_to_parents %}
+                                        <span class="badge bg-success">
+                                            Parents
+                                        </span>
+                                    {% endif %}
+
+                                    {% if item.session.published_to_athletes %}
+                                        <span class="badge bg-primary">
+                                            Athletes
+                                        </span>
+                                    {% endif %}
+
+                                    {% if not item.session.published_to_parents %}
+                                        {% if not item.session.published_to_athletes %}
+                                            <span class="badge bg-secondary">
+                                                Draft
+                                            </span>
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+
+                                <td class="text-end">
+                                    <a
+                                        href="{% url 'testing_session_detail' item.session.id %}"
+                                        class="btn btn-sm btn-outline-primary"
+                                    >
+                                        Open
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <div class="fs-1 mb-3">📊</div>
+
+                <h4>No testing sessions yet</h4>
+
+                <p class="text-muted">
+                    Add exercises to your library, then create your first
+                    testing session.
+                </p>
+
+                <div class="d-flex flex-wrap justify-content-center gap-2">
+                    <a
+                        href="{% url 'testing_exercise_list' %}"
+                        class="btn btn-outline-primary"
+                    >
+                        🏋️ Manage Exercises
+                    </a>
+
+                    <a
+                        href="{% url 'create_testing_session' %}"
+                        class="btn btn-primary"
+                    >
+                        Create First Session
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

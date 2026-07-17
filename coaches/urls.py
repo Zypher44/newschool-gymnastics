@@ -3,12 +3,14 @@ from django.urls import path
 from .views import (
     coach_dashboard,
     athlete_detail,
+    athlete_search,
     add_event,
     take_attendance,
     update_athlete_skill,
     upload_athlete_video,
     athlete_skill_detail,
     update_video_review,
+    team_skills_dashboard,
 )
 urlpatterns = [
     path('dashboard/', coach_dashboard, name='coach_dashboard'),
@@ -38,6 +40,13 @@ urlpatterns = [
         name='update_video_review'
     ),
 
+    path(
+        'athletes/search/',
+        athlete_search,
+        name='athlete_search'
+    ),
+
     path('events/add/', add_event, name='add_event'),
     path('attendance/', take_attendance, name='take_attendance'),
+    path('skills/', team_skills_dashboard, name='team_skills_dashboard'),
 ]

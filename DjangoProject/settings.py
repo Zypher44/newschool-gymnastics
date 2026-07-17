@@ -42,7 +42,9 @@ INSTALLED_APPS = [
     'athletes',
     'coaches',
     'parents_portal',
-    'surveys'
+    'surveys',
+    'performance_testing',
+
 
 
 ]

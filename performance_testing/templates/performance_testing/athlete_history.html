@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}My Testing History{% endblock %}
+{% block page_header %}My Testing Progress{% endblock %}
+
+{% block content %}
+
+<div class="mb-4">
+    <h1 class="mb-1">My Testing Progress</h1>
+
+    <p class="text-muted mb-0">
+        Track your scores, improvements, and testing history.
+    </p>
+</div>
+
+{% if history_rows %}
+
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="fs-2 mb-2">📊</div>
+
+                    <h6 class="text-muted">
+                        Latest Score
+                    </h6>
+
+                    <h2>
+                        {{ latest_result.total_score }}
+                    </h2>
+
+                    <small class="text-muted">
+                        {{ latest_result.session.testing_date|date:"M d, Y" }}
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="fs-2 mb-2">🏆</div>
+
+                    <h6 class="text-muted">
+                        Personal Best
+                    </h6>
+
+                    <h2>
+                        {{ personal_best.total_score }}
+                    </h2>
+
+                    <small class="text-muted">
+                        {{ personal_best.session.title }}
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="fs-2 mb-2">📅</div>
+
+                    <h6 class="text-muted">
+                        Testing Sessions
+                    </h6>
+
+                    <h2>
+                        {{ history_rows|length }}
+                    </h2>
+
+                    <small class="text-muted">
+                        Published results
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            Score Progress
+        </div>
+
+        <div class="card-body" style="height: 340px;">
+            <canvas id="testingProgressChart"></canvas>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            Testing History
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Testing Session</th>
+                            <th>Score</th>
+                            <th>Previous</th>
+                            <th>Change</th>
+                            <th>Ranking</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for item in history_rows %}
+                            <tr>
+                                <td>
+                                    {{ item.result.session.testing_date|date:"M d, Y" }}
+                                </td>
+
+                                <td>
+                                    <div class="fw-semibold">
+                                        {{ item.result.session.title }}
+                                    </div>
+
+                                    {% if item.result.verified_by %}
+                                        <div class="small text-muted">
+                                            Verified by
+                                            {{ item.result.verified_by.username }}
+                                        </div>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    <span class="fw-bold">
+                                        {{ item.result.total_score }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    {% if item.previous_score is not None %}
+                                        {{ item.previous_score }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if item.score_change is not None %}
+                                        {% if item.score_change > 0 %}
+                                            <span class="badge bg-success">
+                                                +{{ item.score_change }}
+                                            </span>
+
+                                        {% elif item.score_change < 0 %}
+                                            <span class="badge bg-danger">
+                                                {{ item.score_change }}
+                                            </span>
+
+                                        {% else %}
+                                            <span class="badge bg-secondary">
+                                                0
+                                            </span>
+                                        {% endif %}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if item.result.session.show_rankings_to_athletes %}
+                                        {% if item.result.rank %}
+                                            <span class="badge bg-primary">
+                                                #{{ item.result.rank }}
+                                            </span>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">
+                                            Hidden
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td class="text-end">
+                                    <a
+                                        href="{% url 'athlete_testing_result_detail' item.result.id %}"
+                                        class="btn btn-sm btn-outline-primary"
+                                    >
+                                        View Results
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+{% else %}
+
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <div class="display-4 mb-3">
+                📊
+            </div>
+
+            <h3>No testing results yet</h3>
+
+            <p class="text-muted mb-0">
+                Your verified testing results will appear here once they
+                are published by your coach.
+            </p>
+        </div>
+    </div>
+
+{% endif %}
+
+{% if history_rows %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    {{ chart_labels|json_script:"testing-chart-labels" }}
+    {{ chart_scores|json_script:"testing-chart-scores" }}
+
+    <script>
+        const testingLabels = JSON.parse(
+            document.getElementById(
+                'testing-chart-labels'
+            ).textContent
+        );
+
+        const testingScores = JSON.parse(
+            document.getElementById(
+                'testing-chart-scores'
+            ).textContent
+        );
+
+        const testingChartCanvas = document.getElementById(
+            'testingProgressChart'
+        );
+
+        if (testingChartCanvas) {
+            new Chart(testingChartCanvas, {
+                type: 'line',
+
+                data: {
+                    labels: testingLabels,
+
+                    datasets: [{
+                        label: 'Total Score',
+                        data: testingScores,
+                        tension: 0.3,
+                        fill: false,
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+{% endif %}
+
+{% endblock %}

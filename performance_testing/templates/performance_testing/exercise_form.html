@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block page_header %}{{ page_title }}{% endblock %}
+
+{% block content %}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h1 class="mb-1">{{ page_title }}</h1>
+
+        <p class="text-muted mb-0">
+            Define how this exercise is measured and scored.
+        </p>
+    </div>
+
+    <a
+        href="{% url 'testing_exercise_list' %}"
+        class="btn btn-outline-secondary"
+    >
+        ← Exercise Library
+    </a>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    Exercise Details
+                </div>
+
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Exercise Name
+                        </label>
+
+                        {{ form.name }}
+
+                        {% for error in form.name.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Description
+                        </label>
+
+                        {{ form.description }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Unit
+                        </label>
+
+                        {{ form.unit }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Testing and Scoring Guidelines
+                        </label>
+
+                        {{ form.guidelines }}
+
+                        <div class="form-text">
+                            Enter one scoring level per line so coaches,
+                            athletes, and parents can easily understand it.
+                        </div>
+                    </div>
+
+                    <div class="mb-0">
+                        <label class="form-label">
+                            Display Order
+                        </label>
+
+                        {{ form.display_order }}
+
+                        <div class="form-text">
+                            Lower numbers appear first in testing grids.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    Exercise Settings
+                </div>
+
+                <div class="card-body">
+                    <div class="form-check mb-4">
+                        {{ form.higher_is_better }}
+
+                        <label
+                            class="form-check-label"
+                            for="{{ form.higher_is_better.id_for_label }}"
+                        >
+                            Higher result is better
+                        </label>
+
+                        <div class="small text-muted">
+                            Turn this off for timed tests where a lower time
+                            is considered better.
+                        </div>
+                    </div>
+
+                    <div class="form-check">
+                        {{ form.active }}
+
+                        <label
+                            class="form-check-label"
+                            for="{{ form.active.id_for_label }}"
+                        >
+                            Exercise is active
+                        </label>
+
+                        <div class="small text-muted">
+                            Inactive exercises cannot be selected for new sessions.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button
+                    type="submit"
+                    class="btn btn-primary btn-lg"
+                >
+                    {{ button_text }}
+                </button>
+
+                <a
+                    href="{% url 'testing_exercise_list' %}"
+                    class="btn btn-outline-secondary"
+                >
+                    Cancel
+                </a>
+            </div>
+        </div>
+    </div>
+</form>
+
+{% endblock %}
