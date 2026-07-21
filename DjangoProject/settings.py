@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'parents_portal',
     'surveys',
     'performance_testing',
+    'communications',
 
 
 
@@ -63,16 +64,22 @@ ROOT_URLCONF = 'DjangoProject.urls'
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
+        'BACKEND': (
+            'django.template.backends.django.DjangoTemplates'
+        ),
 
-        ,
+        'DIRS': [
+            BASE_DIR / 'templates',
+        ],
+
         'APP_DIRS': True,
+
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'communications.context_processors.notification_context',
             ],
         },
     },
@@ -129,9 +136,8 @@ USE_TZ = True
 STATIC_URL = 'static/'
 AUTH_USER_MODEL='accounts.User'
 LOGIN_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/surveys/submit/'
+LOGIN_REDIRECT_URL = '/accounts/redirect/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
-
 import os
 
 MEDIA_URL = '/media/'

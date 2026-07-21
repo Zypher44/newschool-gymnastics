@@ -1,0 +1,944 @@
+{% extends "base.html" %}
+
+{% block title %}Athlete Home{% endblock %}
+{% block page_header %}Athlete Home{% endblock %}
+
+{% block content %}
+
+<style>
+    .athlete-hero {
+        background:
+            linear-gradient(
+                135deg,
+                rgba(13, 110, 253, 0.96),
+                rgba(102, 16, 242, 0.92)
+            );
+        border-radius: 24px;
+        color: white;
+        padding: 32px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .athlete-hero::after {
+        content: "";
+        position: absolute;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+        right: -60px;
+        top: -80px;
+    }
+
+    .athlete-hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .athlete-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 13px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.16);
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .quick-action-card {
+        border: 0;
+        border-radius: 18px;
+        transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+    }
+
+    .quick-action-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    .quick-action-icon {
+        width: 46px;
+        height: 46px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        background: rgba(13, 110, 253, 0.1);
+        font-size: 1.3rem;
+    }
+
+    .dashboard-card {
+        border: 0;
+        border-radius: 20px;
+        box-shadow: 0 8px 28px rgba(33, 37, 41, 0.06);
+    }
+
+    .dashboard-card .card-header {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        background: transparent;
+        padding: 20px 22px;
+        font-weight: 700;
+    }
+
+    .dashboard-card .card-body {
+        padding: 22px;
+    }
+
+    .metric-card {
+        border: 0;
+        border-radius: 20px;
+        box-shadow: 0 8px 28px rgba(33, 37, 41, 0.06);
+        height: 100%;
+    }
+
+    .metric-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .metric-value {
+        font-size: 1.75rem;
+        font-weight: 800;
+        line-height: 1.1;
+    }
+
+    .metric-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+        background: #f1f5ff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+    }
+
+    .progress-ring {
+        --value: 0;
+        width: 94px;
+        height: 94px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background:
+            conic-gradient(
+                #0d6efd calc(var(--value) * 1%),
+                #e9ecef 0
+            );
+        position: relative;
+        margin: auto;
+    }
+
+    .progress-ring::before {
+        content: "";
+        position: absolute;
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: white;
+    }
+
+    .progress-ring-value {
+        position: relative;
+        z-index: 2;
+        font-size: 1.15rem;
+        font-weight: 800;
+    }
+
+    .feedback-card {
+        border-left: 5px solid #0d6efd;
+        background: #f7faff;
+        border-radius: 14px;
+        padding: 16px;
+    }
+
+    .event-date-box {
+        min-width: 58px;
+        text-align: center;
+        border-radius: 14px;
+        background: #f1f5ff;
+        padding: 8px 10px;
+    }
+
+    .event-date-month {
+        color: #0d6efd;
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .event-date-day {
+        font-size: 1.3rem;
+        font-weight: 800;
+        line-height: 1.1;
+    }
+
+    .empty-state {
+        border: 1px dashed #ced4da;
+        border-radius: 16px;
+        padding: 32px 20px;
+        text-align: center;
+        color: #6c757d;
+    }
+
+    .empty-state-icon {
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
+
+    .soft-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #eef4ff;
+        color: #0d6efd;
+        padding: 7px 11px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+
+    .personal-best-banner {
+        border-radius: 16px;
+        padding: 16px;
+        background:
+            linear-gradient(
+                135deg,
+                rgba(255, 193, 7, 0.15),
+                rgba(255, 152, 0, 0.08)
+            );
+    }
+
+    @media (max-width: 767.98px) {
+        .athlete-hero {
+            padding: 24px;
+            border-radius: 18px;
+        }
+
+        .athlete-hero h1 {
+            font-size: 1.7rem;
+        }
+
+        .dashboard-card,
+        .metric-card {
+            border-radius: 16px;
+        }
+    }
+</style>
+
+<div class="athlete-hero mb-4">
+    <div class="athlete-hero-content">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="athlete-hero-badge mb-3">
+                    🤸 Athlete Command Center
+                </div>
+
+                <h1 class="fw-bold mb-2">
+                    Welcome back,
+                    {% if athlete.first_name %}
+                        {{ athlete.first_name }}
+                    {% else %}
+                        {{ athlete.username }}
+                    {% endif %}
+                    👋
+                </h1>
+
+                <p class="mb-0 opacity-75">
+                    Stay focused, track your progress and get ready
+                    for your next great practice.
+                </p>
+            </div>
+
+            <div class="col-lg-4 mt-4 mt-lg-0 text-lg-end">
+                {% if today_survey %}
+                    <div class="athlete-hero-badge">
+                        ✅ Wellness survey complete
+                    </div>
+                {% else %}
+                    <a
+                        href="{% url 'submit_survey' %}"
+                        class="btn btn-light fw-semibold"
+                    >
+                        📝 Complete Today’s Survey
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-12 col-md-4">
+        <a
+            href="{% url 'submit_survey' %}"
+            class="text-decoration-none text-dark"
+        >
+            <div class="card quick-action-card h-100">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="quick-action-icon">
+                        📝
+                    </div>
+
+                    <div>
+                        <div class="fw-bold">
+                            Daily Wellness
+                        </div>
+
+                        <small class="text-muted">
+                            Update how you feel today
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-12 col-md-4">
+        <a
+            href="{% url 'athlete_testing_history' %}"
+            class="text-decoration-none text-dark"
+        >
+            <div class="card quick-action-card h-100">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="quick-action-icon">
+                        📊
+                    </div>
+
+                    <div>
+                        <div class="fw-bold">
+                            Testing Progress
+                        </div>
+
+                        <small class="text-muted">
+                            Review scores and personal bests
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-12 col-md-4">
+        <div class="card quick-action-card h-100">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="quick-action-icon">
+                    🔥
+                </div>
+
+                <div>
+                    <div class="fw-bold">
+                        {{ survey_streak|default:0 }} Day Streak
+                    </div>
+
+                    <small class="text-muted">
+                        Consecutive wellness surveys
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card metric-card">
+            <div class="card-body text-center">
+                <div class="metric-label">
+                    Today’s Readiness
+                </div>
+
+                {% if readiness_score is not None %}
+                    <div
+                        class="progress-ring mt-3"
+                        style="--value: {{ readiness_score }};"
+                    >
+                        <span class="progress-ring-value">
+                            {{ readiness_score }}%
+                        </span>
+                    </div>
+
+                    <div class="mt-3">
+                        {% if readiness_score >= 85 %}
+                            <span class="badge bg-success">
+                                Ready to Train
+                            </span>
+                        {% elif readiness_score >= 70 %}
+                            <span class="badge bg-warning text-dark">
+                                Moderate Readiness
+                            </span>
+                        {% elif readiness_score >= 50 %}
+                            <span class="badge bg-warning text-dark">
+                                Take Extra Care
+                            </span>
+                        {% else %}
+                            <span class="badge bg-danger">
+                                Recovery Focus
+                            </span>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="py-3">
+                        <div class="metric-icon mx-auto mb-3">
+                            ⚡
+                        </div>
+
+                        <div class="fw-bold">
+                            Survey Needed
+                        </div>
+
+                        <small class="text-muted">
+                            Complete your survey to see readiness
+                        </small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card metric-card">
+            <div class="card-body text-center">
+                <div class="metric-label">
+                    Attendance
+                </div>
+
+                <div
+                    class="progress-ring mt-3"
+                    style="--value: {{ attendance_rate }};"
+                >
+                    <span class="progress-ring-value">
+                        {{ attendance_rate }}%
+                    </span>
+                </div>
+
+                <div class="mt-3 text-muted small">
+                    {{ attendance_total }} practices recorded
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="metric-label">
+                            Latest Testing Score
+                        </div>
+
+                        {% if latest_testing_result %}
+                            <div class="metric-value">
+                                {{ latest_testing_result.total_score }}
+                            </div>
+                        {% else %}
+                            <div class="fw-bold text-muted">
+                                No results yet
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="metric-icon">
+                        📊
+                    </div>
+                </div>
+
+                {% if testing_score_change is not None %}
+                    <div class="mt-3">
+                        {% if testing_score_change > 0 %}
+                            <span class="soft-badge">
+                                ↗ +{{ testing_score_change }}
+                                improvement
+                            </span>
+                        {% elif testing_score_change < 0 %}
+                            <span class="badge bg-light text-danger">
+                                {{ testing_score_change }}
+                                since last test
+                            </span>
+                        {% else %}
+                            <span class="badge bg-light text-muted">
+                                No change
+                            </span>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="metric-label">
+                            Next Event
+                        </div>
+
+                        {% if next_event %}
+                            <div class="fw-bold fs-5">
+                                {{ next_event.title }}
+                            </div>
+
+                            <div class="text-muted small mt-1">
+                                {{ next_event.event_date|date:"M d, Y" }}
+                            </div>
+                        {% else %}
+                            <div class="fw-bold text-muted">
+                                No upcoming events
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="metric-icon">
+                        📅
+                    </div>
+                </div>
+
+                {% if next_event.location %}
+                    <div class="small text-muted mt-3">
+                        📍 {{ next_event.location }}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if today_survey %}
+    <div class="alert alert-success border-0 rounded-4 mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="fs-4">✅</div>
+
+            <div>
+                <div class="fw-bold">
+                    Today’s wellness survey is complete
+                </div>
+
+                <small>
+                    Your coach can now see how you are feeling.
+                </small>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="alert alert-warning border-0 rounded-4 mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="fs-4">📝</div>
+
+                <div>
+                    <div class="fw-bold">
+                        Complete today’s wellness survey
+                    </div>
+
+                    <small>
+                        Let your coach know how you feel before training.
+                    </small>
+                </div>
+            </div>
+
+            <a
+                href="{% url 'submit_survey' %}"
+                class="btn btn-warning fw-semibold"
+            >
+                Complete Survey
+            </a>
+        </div>
+    </div>
+{% endif %}
+
+<div class="row g-4 mb-4">
+    <div class="col-xl-8">
+        <div class="card dashboard-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>📈 Testing Progress</span>
+
+                <a
+                    href="{% url 'athlete_testing_history' %}"
+                    class="btn btn-sm btn-outline-primary"
+                >
+                    View Full History
+                </a>
+            </div>
+
+            <div class="card-body">
+                {% if testing_chart_scores %}
+                    <div style="height: 320px;">
+                        <canvas id="athleteTestingChart"></canvas>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            📊
+                        </div>
+
+                        <div class="fw-bold mb-1">
+                            No testing history yet
+                        </div>
+
+                        <div class="small">
+                            Your progress chart will appear after your
+                            coach publishes a testing session.
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="card dashboard-card h-100">
+            <div class="card-header">
+                🏆 Personal Performance
+            </div>
+
+            <div class="card-body">
+                {% if latest_testing_result %}
+                    {% if testing_personal_best == latest_testing_result.total_score %}
+                        <div class="personal-best-banner mb-4">
+                            <div class="fw-bold">
+                                🥇 Personal Best
+                            </div>
+
+                            <div class="small text-muted">
+                                Your latest score matches your best result.
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <small class="text-muted">
+                        Latest Session
+                    </small>
+
+                    <h5 class="mt-1 mb-1">
+                        {{ latest_testing_result.session.title }}
+                    </h5>
+
+                    <div class="text-muted small mb-4">
+                        {{ latest_testing_result.session.testing_date|date:"M d, Y" }}
+                    </div>
+
+                    <div class="row text-center g-3">
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded-4">
+                                <div class="fs-3 fw-bold">
+                                    {{ latest_testing_result.total_score }}
+                                </div>
+
+                                <small class="text-muted">
+                                    Latest
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded-4">
+                                <div class="fs-3 fw-bold">
+                                    {{ testing_personal_best|default:"-" }}
+                                </div>
+
+                                <small class="text-muted">
+                                    Personal Best
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if latest_testing_result.session.show_rankings_to_athletes %}
+                        <div class="text-center mt-4">
+                            <small class="text-muted">
+                                Team Ranking
+                            </small>
+
+                            <div class="fs-3 fw-bold">
+                                {% if latest_testing_result.rank %}
+                                    #{{ latest_testing_result.rank }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            🏆
+                        </div>
+
+                        <div class="fw-bold mb-1">
+                            Your results will appear here
+                        </div>
+
+                        <div class="small">
+                            Complete a published testing session to
+                            begin tracking your personal bests.
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card dashboard-card h-100">
+            <div class="card-header">
+                📅 Upcoming Events
+            </div>
+
+            <div class="card-body">
+                {% if upcoming_events %}
+                    <div class="d-flex flex-column gap-3">
+                        {% for event in upcoming_events %}
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="event-date-box">
+                                    <div class="event-date-month">
+                                        {{ event.event_date|date:"M" }}
+                                    </div>
+
+                                    <div class="event-date-day">
+                                        {{ event.event_date|date:"d" }}
+                                    </div>
+                                </div>
+
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold">
+                                        {{ event.title }}
+                                    </div>
+
+                                    <div class="small text-muted">
+                                        {% if event.start_time %}
+                                            {{ event.start_time|time:"g:i A" }}
+                                        {% endif %}
+
+                                        {% if event.location %}
+                                            · {{ event.location }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% if not forloop.last %}
+                                <hr class="my-0">
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            📅
+                        </div>
+
+                        <div class="fw-bold mb-1">
+                            No upcoming events
+                        </div>
+
+                        <div class="small">
+                            Meets, practices and team events will appear here.
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card dashboard-card h-100">
+            <div class="card-header">
+                💬 Latest Coach Feedback
+            </div>
+
+            <div class="card-body">
+                {% if recent_videos %}
+                    <div class="d-flex flex-column gap-3">
+                        {% for video in recent_videos %}
+                            <div class="feedback-card">
+                                <div class="d-flex justify-content-between gap-3 mb-2">
+                                    <div>
+                                        <div class="fw-bold">
+                                            {{ video.title }}
+                                        </div>
+
+                                        <div class="small text-muted">
+                                            {{ video.get_event_display }}
+
+                                            {% if video.skill %}
+                                                · {{ video.skill.name }}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <span class="badge bg-primary align-self-start">
+                                        Reviewed
+                                    </span>
+                                </div>
+
+                                {% if video.coach_feedback %}
+                                    <div class="small">
+                                        “{{ video.coach_feedback|truncatechars:180 }}”
+                                    </div>
+                                {% else %}
+                                    <div class="small text-muted">
+                                        Your coach reviewed this video.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            🎥
+                        </div>
+
+                        <div class="fw-bold mb-1">
+                            No coach feedback yet
+                        </div>
+
+                        <div class="small">
+                            Reviewed videos and coaching comments will
+                            appear here.
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if athlete_profile %}
+    <div class="card dashboard-card">
+        <div class="card-header">
+            👤 Athlete Profile
+        </div>
+
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded-4 h-100">
+                        <small class="text-muted">Level</small>
+
+                        <div class="fw-bold mt-1">
+                            {{ athlete_profile.level|default:"Not set" }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded-4 h-100">
+                        <small class="text-muted">Team</small>
+
+                        <div class="fw-bold mt-1">
+                            {{ athlete_profile.team_name|default:"Not set" }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded-4 h-100">
+                        <small class="text-muted">Training Group</small>
+
+                        <div class="fw-bold mt-1">
+                            {{ athlete_profile.training_group|default:"Not set" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+{% if testing_chart_scores %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    {{ testing_chart_labels|json_script:"athlete-testing-labels" }}
+    {{ testing_chart_scores|json_script:"athlete-testing-scores" }}
+
+    <script>
+        const athleteTestingLabels = JSON.parse(
+            document.getElementById(
+                "athlete-testing-labels"
+            ).textContent
+        );
+
+        const athleteTestingScores = JSON.parse(
+            document.getElementById(
+                "athlete-testing-scores"
+            ).textContent
+        );
+
+        const athleteTestingCanvas = document.getElementById(
+            "athleteTestingChart"
+        );
+
+        if (athleteTestingCanvas) {
+            new Chart(athleteTestingCanvas, {
+                type: "line",
+
+                data: {
+                    labels: athleteTestingLabels,
+
+                    datasets: [{
+                        label: "Testing Score",
+                        data: athleteTestingScores,
+                        tension: 0.35,
+                        fill: true,
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        borderColor: "#0d6efd",
+                        backgroundColor: "rgba(13, 110, 253, 0.08)",
+                        pointBackgroundColor: "#0d6efd"
+                    }]
+                },
+
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+
+                    interaction: {
+                        mode: "index",
+                        intersect: false
+                    },
+
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        },
+
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: "rgba(0, 0, 0, 0.05)"
+                            }
+                        }
+                    },
+
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+
+                        tooltip: {
+                            padding: 12,
+                            displayColors: false
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+{% endif %}
+
+{% endblock %}

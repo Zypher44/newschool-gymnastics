@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}Messages{% endblock %}
+{% block page_header %}Messages{% endblock %}
+
+{% block content %}
+
+<style>
+    .communications-page {
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    .communications-hero {
+        padding: 30px;
+        border-radius: 24px;
+        color: white;
+        background:
+            linear-gradient(
+                135deg,
+                #182848,
+                #0d6efd
+            );
+    }
+
+    .conversation-card {
+        border: 0;
+        border-radius: 18px;
+        box-shadow:
+            0 8px 26px
+            rgba(33, 37, 41, 0.06);
+        transition:
+            transform 0.18s ease,
+            box-shadow 0.18s ease;
+    }
+
+    .conversation-card:hover {
+        transform: translateY(-2px);
+        box-shadow:
+            0 12px 32px
+            rgba(33, 37, 41, 0.10);
+    }
+
+    .conversation-card.unread {
+        border-left: 5px solid #0d6efd;
+        background: #f5f8ff;
+    }
+
+    .conversation-avatar {
+        width: 52px;
+        height: 52px;
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        border-radius: 16px;
+        background: #eaf2ff;
+        font-size: 1.35rem;
+    }
+
+    .conversation-title {
+        font-weight: 800;
+        color: #172033;
+    }
+
+    .conversation-preview {
+        color: #697386;
+        font-size: 0.9rem;
+    }
+
+    .empty-inbox {
+        padding: 60px 24px;
+        border: 1px dashed #cbd2dc;
+        border-radius: 20px;
+        background: white;
+        text-align: center;
+    }
+</style>
+
+<div class="communications-page">
+
+    <div class="communications-hero mb-4">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="small text-uppercase fw-bold opacity-75 mb-2">
+                    Communication Hub
+                </div>
+
+                <h1 class="fw-bold mb-2">
+                    💬 Messages
+                </h1>
+
+                <p class="mb-0 opacity-75">
+                    Keep conversations with coaches, athletes and
+                    parents organized in one secure place.
+                </p>
+            </div>
+
+            <div class="col-lg-4 mt-4 mt-lg-0 text-lg-end">
+                <a
+                    href="{% url 'conversation_create' %}"
+                    class="btn btn-light fw-semibold"
+                >
+                    ＋ New Message
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-bold mb-0">
+            Inbox
+        </h4>
+
+        {% if total_unread_messages %}
+            <span class="badge bg-primary rounded-pill">
+                {{ total_unread_messages }} unread
+            </span>
+        {% endif %}
+    </div>
+
+    {% if conversation_rows %}
+
+        <div class="d-flex flex-column gap-3">
+
+            {% for row in conversation_rows %}
+                <a
+                    href="{% url 'conversation_detail' row.conversation.id %}"
+                    class="text-decoration-none text-dark"
+                >
+                    <div
+                        class="
+                            card
+                            conversation-card
+
+                            {% if row.unread_count %}
+                                unread
+                            {% endif %}
+                        "
+                    >
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-start gap-3">
+
+                                <div class="conversation-avatar">
+                                    {% if row.conversation.related_athlete %}
+                                        🤸
+                                    {% else %}
+                                        💬
+                                    {% endif %}
+                                </div>
+
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between gap-3">
+                                        <div class="conversation-title">
+                                            {% if row.conversation.subject %}
+                                                {{ row.conversation.subject }}
+                                            {% else %}
+                                                {% for participant in row.other_participants %}
+                                                    {% if participant.get_full_name %}
+                                                        {{ participant.get_full_name }}
+                                                    {% else %}
+                                                        {{ participant.username }}
+                                                    {% endif %}
+
+                                                    {% if not forloop.last %}
+                                                        ,
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% endif %}
+                                        </div>
+
+                                        {% if row.unread_count %}
+                                            <span class="badge bg-primary rounded-pill">
+                                                {{ row.unread_count }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+
+                                    {% if row.conversation.related_athlete %}
+                                        <div class="small text-muted mt-1">
+                                            Regarding
+                                            {% if row.conversation.related_athlete.get_full_name %}
+                                                {{ row.conversation.related_athlete.get_full_name }}
+                                            {% else %}
+                                                {{ row.conversation.related_athlete.username }}
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+
+                                    {% if row.latest_message %}
+                                        <div class="conversation-preview mt-2">
+                                            {% if row.latest_message.sender == user %}
+                                                <strong>You:</strong>
+                                            {% endif %}
+
+                                            {{ row.latest_message.body|truncatechars:120 }}
+                                        </div>
+
+                                        <div class="small text-muted mt-2">
+                                            {{ row.latest_message.created_at|timesince }}
+                                            ago
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="empty-inbox">
+            <div class="display-5 mb-3">
+                💬
+            </div>
+
+            <h4 class="fw-bold">
+                No conversations yet
+            </h4>
+
+            <p class="text-muted">
+                Start a secure conversation with someone connected
+                to your team.
+            </p>
+
+            <a
+                href="{% url 'conversation_create' %}"
+                class="btn btn-primary"
+            >
+                Send Your First Message
+            </a>
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

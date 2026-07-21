@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Account Setup Required{% endblock %}
+{% block page_header %}Account Setup Required{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+    <div
+        class="card border-0 shadow-sm mx-auto"
+        style="max-width: 620px; border-radius: 22px;"
+    >
+        <div class="card-body text-center p-5">
+            <div class="display-4 mb-3">
+                👤
+            </div>
+
+            <h2 class="fw-bold mb-3">
+                Your account needs a role
+            </h2>
+
+            <p class="text-muted mb-4">
+                Your account is active, but it has not been assigned
+                to a coach, athlete, parent, or administrator role.
+            </p>
+
+            <div class="bg-light rounded-4 p-3 mb-4">
+                <div>
+                    <strong>Username:</strong>
+                    {{ username }}
+                </div>
+
+                <div class="mt-1">
+                    <strong>Current role:</strong>
+                    {{ role|default:"Not assigned" }}
+                </div>
+            </div>
+
+            <p class="small text-muted mb-4">
+                Ask a club administrator to update your account role.
+            </p>
+
+            <form
+                method="post"
+                action="{% url 'logout' %}"
+            >
+                {% csrf_token %}
+
+                <button
+                    type="submit"
+                    class="btn btn-primary px-4"
+                >
+                    Return to Login
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

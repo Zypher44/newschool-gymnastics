@@ -25,14 +25,18 @@
             min-height: 100vh;
         }
 
-        .sidebar {
+       .sidebar {
             width: 300px;
-            min-height: 100vh;
+            height: 100vh;
             background-color: #111827;
             transition: width 0.25s ease;
-            overflow-x: hidden;
+            overflow: hidden;
             flex-shrink: 0;
-        }
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+         }
 
         .sidebar.collapsed {
             width: 90px;
@@ -49,6 +53,26 @@
         .sidebar.collapsed .brand-text {
             display: none;
         }
+
+        .sidebar-navigation {
+        flex-grow: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding-bottom: 10px;
+        }
+
+          .sidebar-navigation::-webkit-scrollbar {
+            width: 5px;
+            }
+
+          .sidebar-navigation::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        .sidebar-navigation::-webkit-scrollbar-thumb {
+        background-color: #374151;
+        border-radius: 999px;
+       }
 
         .sidebar-section {
             color: #6b7280;
@@ -74,11 +98,22 @@
             border-radius: 8px;
             margin: 0 10px 5px;
             white-space: nowrap;
+            transition:
+                background-color 0.2s ease,
+                color 0.2s ease;
         }
 
         .sidebar-link:hover {
             background-color: #1f2937;
             color: white;
+        }
+
+        .sidebar-link-button {
+            width: calc(100% - 20px);
+            border: 0;
+            background: transparent;
+            text-align: left;
+            font: inherit;
         }
 
         .sidebar-icon {
@@ -111,6 +146,12 @@
 
         .sidebar.collapsed .toggle-label {
             display: none;
+        }
+
+        .sidebar-account {
+            border-top: 1px solid #273244;
+            padding-top: 12px;
+            margin-top: 16px;
         }
 
         .main-area {
@@ -189,6 +230,150 @@
                 display: block;
             }
         }
+
+        .notification-dropdown-toggle {
+    position: relative;
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: white;
+    font-size: 1.15rem;
+}
+
+.notification-dropdown-toggle:hover {
+    background: #f8fafc;
+}
+
+.notification-dropdown-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    min-width: 19px;
+    height: 19px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    border: 2px solid white;
+    border-radius: 999px;
+    background: #dc3545;
+    color: white;
+    font-size: 0.64rem;
+    font-weight: 800;
+}
+
+.notification-dropdown-menu {
+    width: 380px;
+    max-width: calc(100vw - 24px);
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    border-radius: 18px;
+    box-shadow: 0 18px 50px rgba(17, 24, 39, 0.18);
+}
+
+.notification-dropdown-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid #eef0f3;
+    background: white;
+}
+
+.notification-dropdown-list {
+    max-height: 430px;
+    overflow-y: auto;
+}
+
+.notification-dropdown-item {
+    display: flex;
+    gap: 12px;
+    padding: 15px 18px;
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid #f0f2f5;
+    background: white;
+}
+
+.notification-dropdown-item:hover {
+    background: #f8fafc;
+}
+
+.notification-dropdown-item.unread {
+    background: #f4f8ff;
+}
+
+.notification-dropdown-item.unread:hover {
+    background: #edf4ff;
+}
+
+.notification-dropdown-icon {
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 13px;
+    background: #eaf2ff;
+    font-size: 1.15rem;
+}
+
+.notification-dropdown-title {
+    color: #172033;
+    font-size: 0.9rem;
+    font-weight: 750;
+}
+
+.notification-dropdown-message {
+    margin-top: 3px;
+    color: #667085;
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.notification-dropdown-time {
+    margin-top: 5px;
+    color: #98a2b3;
+    font-size: 0.72rem;
+}
+
+.notification-unread-dot {
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    margin-top: 6px;
+    border-radius: 50%;
+    background: #0d6efd;
+}
+
+.notification-dropdown-empty {
+    padding: 35px 20px;
+    color: #6c757d;
+    text-align: center;
+}
+
+.notification-dropdown-footer {
+    padding: 12px 16px;
+    background: white;
+    border-top: 1px solid #eef0f3;
+}
+
+@media (max-width: 575.98px) {
+    .notification-dropdown-menu {
+        position: fixed !important;
+        top: 68px !important;
+        right: 12px !important;
+        left: 12px !important;
+        width: auto;
+        transform: none !important;
+    }
+}
+
+
+
     </style>
 </head>
 
@@ -208,127 +393,274 @@
             </span>
         </div>
 
-        {% if user.is_authenticated %}
+        <div class="sidebar-navigation">
 
-            {% if user.role == 'coach' or user.role == 'head_coach' %}
+            {% if user.is_authenticated %}
 
-                <div class="sidebar-section">
-                    Home
-                </div>
+                {% if user.role == 'coach' or user.role == 'head_coach' %}
 
-                <a
-                    href="{% url 'coach_dashboard' %}"
-                    class="sidebar-link"
-                    title="Dashboard"
-                >
-                    <span class="sidebar-icon">🏠</span>
-                    <span class="sidebar-label">Dashboard</span>
-                </a>
+                    <div class="sidebar-section">
+                        Home
+                    </div>
 
-                <div class="sidebar-section">
-                    Athletes
-                </div>
 
-                <a
-                    href="{% url 'athlete_search' %}"
-                    class="sidebar-link"
-                    title="Athlete Search"
-                >
-                    <span class="sidebar-icon">👥</span>
-                    <span class="sidebar-label">Athlete Search</span>
-                </a>
 
-                <a
-                    href="{% url 'take_attendance' %}"
-                    class="sidebar-link"
-                    title="Attendance"
-                >
-                    <span class="sidebar-icon">✅</span>
-                    <span class="sidebar-label">Attendance</span>
-                </a>
+                    <a
+                        href="{% url 'coach_dashboard' %}"
+                        class="sidebar-link"
+                        title="Dashboard"
+                    >
+                        <span class="sidebar-icon">🏠</span>
+                        <span class="sidebar-label">Dashboard</span>
+                    </a>
 
-                <a
-                    href="{% url 'team_skills_dashboard' %}"
-                    class="sidebar-link"
-                    title="Team Skills"
-                >
-                    <span class="sidebar-icon">🏆</span>
-                    <span class="sidebar-label">Team Skills</span>
-                </a>
+                    <div class="sidebar-section">
+                        Athletes
+                    </div>
 
-                <div class="sidebar-section">
-                    Performance
-                </div>
+                    <a
+                        href="{% url 'athlete_search' %}"
+                        class="sidebar-link"
+                        title="Athlete Search"
+                    >
+                        <span class="sidebar-icon">👥</span>
+                        <span class="sidebar-label">Athlete Search</span>
+                    </a>
 
-                <a
-                    href="{% url 'testing_session_list' %}"
-                    class="sidebar-link"
-                    title="Testing Sessions"
-                >
-                    <span class="sidebar-icon">📊</span>
-                    <span class="sidebar-label">Testing Sessions</span>
-                </a>
+                    <a
+                        href="{% url 'take_attendance' %}"
+                        class="sidebar-link"
+                        title="Attendance"
+                    >
+                        <span class="sidebar-icon">✅</span>
+                        <span class="sidebar-label">Attendance</span>
+                    </a>
 
-                <a
-                    href="{% url 'testing_exercise_list' %}"
-                    class="sidebar-link"
-                    title="Exercise Library"
-                >
-                    <span class="sidebar-icon">🏋️</span>
-                    <span class="sidebar-label">Exercise Library</span>
-                </a>
+                    <a
+                        href="{% url 'team_skills_dashboard' %}"
+                        class="sidebar-link"
+                        title="Team Skills"
+                    >
+                        <span class="sidebar-icon">🏆</span>
+                        <span class="sidebar-label">Team Skills</span>
+                    </a>
 
-                <div class="sidebar-section">
-                    Planning
-                </div>
+                    <div class="sidebar-section">
+                        Performance
+                    </div>
 
-                <a
-                    href="{% url 'add_event' %}"
-                    class="sidebar-link"
-                    title="Create Event"
-                >
-                    <span class="sidebar-icon">📅</span>
-                    <span class="sidebar-label">Create Event</span>
-                </a>
+                    <a
+                        href="{% url 'testing_session_list' %}"
+                        class="sidebar-link"
+                        title="Testing Sessions"
+                    >
+                        <span class="sidebar-icon">📊</span>
+                        <span class="sidebar-label">Testing Sessions</span>
+                    </a>
 
-            {% elif user.role == 'athlete' %}
+                    <a
+                        href="{% url 'testing_exercise_list' %}"
+                        class="sidebar-link"
+                        title="Exercise Library"
+                    >
+                        <span class="sidebar-icon">🏋️</span>
+                        <span class="sidebar-label">Exercise Library</span>
+                    </a>
 
-    <div class="sidebar-section">
-        Athlete
-    </div>
+                    <div class="sidebar-section">
+                        Planning
+                    </div>
 
-    <a
-        href="{% url 'submit_survey' %}"
-        class="sidebar-link"
-        title="Daily Survey"
-    >
-        <span class="sidebar-icon">📝</span>
-        <span class="sidebar-label">Daily Survey</span>
-    </a>
+                    <a
+                        href="{% url 'add_event' %}"
+                        class="sidebar-link"
+                        title="Create Event"
+                    >
+                        <span class="sidebar-icon">📅</span>
+                        <span class="sidebar-label">Create Event</span>
+                    </a>
 
-    <a
-        href="{% url 'athlete_testing_history' %}"
-        class="sidebar-link"
-        title="Testing Progress"
-    >
-        <span class="sidebar-icon">📊</span>
-        <span class="sidebar-label">Testing Progress</span>
-    </a>
+                {% elif user.role == 'athlete' %}
 
-{% endif %}
+                    <div class="sidebar-section">
+                        Home
+                    </div>
 
-        {% endif %}
+                    <a
+                        href="{% url 'athlete_dashboard' %}"
+                        class="sidebar-link"
+                        title="Athlete Home"
+                    >
+                        <span class="sidebar-icon">🏠</span>
+                        <span class="sidebar-label">Athlete Home</span>
+                    </a>
 
-        <div class="sidebar-toggle-wrapper mt-4">
-            <button
-                type="button"
-                class="sidebar-toggle"
-                id="sidebar-toggle"
+                    <div class="sidebar-section">
+                        Wellness
+                    </div>
+
+                    <a
+                        href="{% url 'submit_survey' %}"
+                        class="sidebar-link"
+                        title="Daily Survey"
+                    >
+                        <span class="sidebar-icon">📝</span>
+                        <span class="sidebar-label">Daily Survey</span>
+                    </a>
+
+                    <div class="sidebar-section">
+                        Performance
+                    </div>
+
+                    <a
+                        href="{% url 'athlete_testing_history' %}"
+                        class="sidebar-link"
+                        title="Testing Progress"
+                    >
+                        <span class="sidebar-icon">📊</span>
+                        <span class="sidebar-label">Testing Progress</span>
+                    </a>
+
+                {% elif user.role == 'parent' %}
+
+                    <div class="sidebar-section">
+                        Home
+                    </div>
+
+                    <a
+                        href="{% url 'parent_dashboard' %}"
+                        class="sidebar-link"
+                        title="Parent Dashboard"
+                    >
+                        <span class="sidebar-icon">🏠</span>
+                        <span class="sidebar-label">Parent Home</span>
+                    </a>
+
+                    <div class="sidebar-section">
+                        Family
+                    </div>
+
+                    <a
+                        href="{% url 'parent_dashboard' %}"
+                        class="sidebar-link"
+                        title="Athlete Progress"
+                    >
+                        <span class="sidebar-icon">📈</span>
+                        <span class="sidebar-label">Athlete Progress</span>
+                    </a>
+
+                    <a
+                        href="{% url 'parent_dashboard' %}"
+                        class="sidebar-link"
+                        title="Upcoming Events"
+                    >
+                        <span class="sidebar-icon">📅</span>
+                        <span class="sidebar-label">Upcoming Events</span>
+                    </a>
+
+                {% endif %}
+
+            <div class="sidebar-section">
+    Communication
+</div>
+
+<a
+    href="{% url 'notification_list' %}"
+    class="sidebar-link"
+    title="Notifications"
+>
+    <span class="sidebar-icon position-relative">
+        🔔
+
+        {% if global_unread_notification_count %}
+            <span
+                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                style="font-size: 0.58rem;"
             >
-                <span id="toggle-icon">◀</span>
-                <span class="toggle-label ms-2">Collapse Menu</span>
-            </button>
+                {% if global_unread_notification_count > 99 %}
+                    99+
+                {% else %}
+                    {{ global_unread_notification_count }}
+                {% endif %}
+            </span>
+        {% endif %}
+    </span>
+
+    <span class="sidebar-label">
+        Notifications
+    </span>
+
+    <a
+    href="{% url 'communication_inbox' %}"
+    class="sidebar-link"
+    title="Messages"
+>
+    <span class="sidebar-icon position-relative">
+        💬
+
+        {% if global_unread_message_count %}
+            <span
+                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                style="font-size: 0.58rem;"
+            >
+                {% if global_unread_message_count > 99 %}
+                    99+
+                {% else %}
+                    {{ global_unread_message_count }}
+                {% endif %}
+            </span>
+        {% endif %}
+    </span>
+
+    <span class="sidebar-label">
+        Messages
+    </span>
+</a>
+
+
+                <div class="sidebar-account">
+                    <div class="sidebar-section">
+                        Account
+                    </div>
+
+                    <form
+                        method="post"
+                        action="{% url 'logout' %}"
+                        class="m-0"
+                    >
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="sidebar-link sidebar-link-button"
+                            title="Logout"
+                        >
+                            <span class="sidebar-icon">🚪</span>
+                            <span class="sidebar-label">Logout</span>
+                        </button>
+                    </form>
+                </div>
+
+            {% endif %}
+
         </div>
+
+        <div class="sidebar-toggle-wrapper">
+    <button
+        type="button"
+        class="sidebar-toggle"
+        id="sidebar-toggle"
+    >
+        <span id="toggle-icon">◀</span>
+
+        <span
+            class="toggle-label ms-2"
+            id="toggle-label"
+        >
+            Collapse Menu
+        </span>
+    </button>
+</div>
 
     </nav>
 
@@ -380,11 +712,155 @@
                 {% endif %}
             {% endif %}
 
-            <div class="text-muted">
-                {% if user.is_authenticated %}
-                    Logged in as {{ user.username }}
+          <div class="d-flex align-items-center gap-3">
+
+    {% if user.is_authenticated %}
+
+        <div class="dropdown">
+            <button
+                type="button"
+                class="notification-dropdown-toggle"
+                data-bs-toggle="dropdown"
+                data-bs-auto-close="outside"
+                aria-expanded="false"
+                aria-label="Notifications"
+            >
+                🔔
+
+                {% if global_unread_notification_count %}
+                    <span class="notification-dropdown-badge">
+                        {% if global_unread_notification_count > 99 %}
+                            99+
+                        {% else %}
+                            {{ global_unread_notification_count }}
+                        {% endif %}
+                    </span>
                 {% endif %}
+            </button>
+
+            <div
+                class="dropdown-menu dropdown-menu-end notification-dropdown-menu"
+            >
+                <div class="notification-dropdown-header">
+                    <div class="d-flex justify-content-between align-items-center gap-3">
+                        <div>
+                            <div class="fw-bold">
+                                Notifications
+                            </div>
+
+                            <div class="small text-muted">
+                                {% if global_unread_notification_count %}
+                                    {{ global_unread_notification_count }}
+                                    unread
+                                {% else %}
+                                    You’re all caught up
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if global_unread_notification_count %}
+                            <form
+                                method="post"
+                                action="{% url 'notification_mark_all_read' %}"
+                            >
+                                {% csrf_token %}
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-sm btn-outline-primary"
+                                >
+                                    Mark all read
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="notification-dropdown-list">
+
+                    {% if global_recent_notifications %}
+
+                        {% for notification in global_recent_notifications %}
+                            <a
+                                href="{% url 'notification_open' notification.id %}"
+                                class="
+                                    notification-dropdown-item
+
+                                    {% if not notification.is_read %}
+                                        unread
+                                    {% endif %}
+                                "
+                            >
+                                <div class="notification-dropdown-icon">
+                                    {{ notification.get_icon }}
+                                </div>
+
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between gap-2">
+                                        <div class="notification-dropdown-title">
+                                            {{ notification.title }}
+                                        </div>
+
+                                        {% if not notification.is_read %}
+                                            <span
+                                                class="notification-unread-dot"
+                                                title="Unread"
+                                            ></span>
+                                        {% endif %}
+                                    </div>
+
+                                    {% if notification.message %}
+                                        <div class="notification-dropdown-message">
+                                            {{ notification.message|truncatechars:95 }}
+                                        </div>
+                                    {% endif %}
+
+                                    <div class="notification-dropdown-time">
+                                        {{ notification.created_at|timesince }}
+                                        ago
+                                    </div>
+                                </div>
+                            </a>
+                        {% endfor %}
+
+                    {% else %}
+
+                        <div class="notification-dropdown-empty">
+                            <div class="fs-2 mb-2">
+                                🔔
+                            </div>
+
+                            <div class="fw-semibold">
+                                No notifications yet
+                            </div>
+
+                            <div class="small mt-1">
+                                New updates will appear here.
+                            </div>
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+                <div class="notification-dropdown-footer">
+                    <a
+                        href="{% url 'notification_list' %}"
+                        class="btn btn-primary w-100"
+                    >
+                        View All Notifications
+                    </a>
+                </div>
             </div>
+        </div>
+
+        <div class="text-muted">
+            Logged in as {{ user.username }}
+        </div>
+
+    {% endif %}
+
+</div>
 
         </div>
 
@@ -401,58 +877,105 @@
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
 ></script>
 
+
 <script>
-    const sidebar = document.getElementById('sidebar');
-    const sidebarToggle = document.getElementById('sidebar-toggle');
-    const toggleIcon = document.getElementById('toggle-icon');
-    const mobileMenuButton = document.getElementById('mobile-menu-button');
-    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    const sidebar = document.getElementById("sidebar");
+    const sidebarToggle = document.getElementById("sidebar-toggle");
+    const toggleIcon = document.getElementById("toggle-icon");
+    const toggleLabel = document.getElementById("toggle-label");
+    const mobileMenuButton = document.getElementById(
+        "mobile-menu-button"
+    );
+    const sidebarOverlay = document.getElementById(
+        "sidebar-overlay"
+    );
 
-    const savedSidebarState = localStorage.getItem('sidebarCollapsed');
+    function updateSidebarToggle(isCollapsed) {
+        if (toggleIcon) {
+            toggleIcon.textContent = isCollapsed ? "▶" : "◀";
+        }
 
-    if (savedSidebarState === 'true' && window.innerWidth >= 768) {
-        sidebar.classList.add('collapsed');
-        toggleIcon.textContent = '▶';
+        if (toggleLabel) {
+            toggleLabel.textContent = (
+                isCollapsed
+                ? "Expand Menu"
+                : "Collapse Menu"
+            );
+        }
+    }
+
+    const savedSidebarState = localStorage.getItem(
+        "sidebarCollapsed"
+    );
+
+    if (
+        savedSidebarState === "true"
+        && window.innerWidth >= 768
+    ) {
+        sidebar.classList.add("collapsed");
+        updateSidebarToggle(true);
+    } else {
+        updateSidebarToggle(false);
     }
 
     if (sidebarToggle) {
-        sidebarToggle.addEventListener('click', function () {
-            sidebar.classList.toggle('collapsed');
+        sidebarToggle.addEventListener(
+            "click",
+            function () {
+                sidebar.classList.toggle("collapsed");
 
-            const isCollapsed = sidebar.classList.contains('collapsed');
+                const isCollapsed = sidebar.classList.contains(
+                    "collapsed"
+                );
 
-            toggleIcon.textContent = isCollapsed ? '▶' : '◀';
+                updateSidebarToggle(isCollapsed);
 
-            localStorage.setItem(
-                'sidebarCollapsed',
-                isCollapsed
-            );
-        });
+                localStorage.setItem(
+                    "sidebarCollapsed",
+                    isCollapsed
+                );
+            }
+        );
     }
 
     if (mobileMenuButton) {
-        mobileMenuButton.addEventListener('click', function () {
-            sidebar.classList.add('mobile-open');
-            sidebarOverlay.classList.add('show');
-        });
+        mobileMenuButton.addEventListener(
+            "click",
+            function () {
+                sidebar.classList.add("mobile-open");
+                sidebarOverlay.classList.add("show");
+            }
+        );
     }
 
     if (sidebarOverlay) {
-        sidebarOverlay.addEventListener('click', function () {
-            sidebar.classList.remove('mobile-open');
-            sidebarOverlay.classList.remove('show');
-        });
+        sidebarOverlay.addEventListener(
+            "click",
+            function () {
+                sidebar.classList.remove("mobile-open");
+                sidebarOverlay.classList.remove("show");
+            }
+        );
     }
 
-    document.querySelectorAll('.sidebar-link').forEach(function (link) {
-        link.addEventListener('click', function () {
-            if (window.innerWidth < 768) {
-                sidebar.classList.remove('mobile-open');
-                sidebarOverlay.classList.remove('show');
+    document.querySelectorAll(
+        ".sidebar-link"
+    ).forEach(function (link) {
+        link.addEventListener(
+            "click",
+            function () {
+                if (window.innerWidth < 768) {
+                    sidebar.classList.remove("mobile-open");
+                    sidebarOverlay.classList.remove("show");
+                }
             }
-        });
+        );
     });
 </script>
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+></script>
 
 </body>
 </html>

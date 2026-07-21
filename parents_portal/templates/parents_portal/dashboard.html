@@ -1,0 +1,1213 @@
+{% extends "base.html" %}
+
+{% block title %}Parent Dashboard{% endblock %}
+{% block page_header %}Parent Dashboard{% endblock %}
+
+{% block content %}
+
+<style>
+    .parent-dashboard {
+        --parent-primary: #0d6efd;
+        --parent-secondary: #20c997;
+        --parent-dark: #18243a;
+        --parent-muted: #6c757d;
+        --parent-surface: #ffffff;
+        --parent-soft: #f6f8fc;
+    }
+
+    .parent-hero {
+        position: relative;
+        overflow: hidden;
+        padding: 34px;
+        border-radius: 26px;
+        color: white;
+        background:
+            linear-gradient(
+                135deg,
+                rgba(13, 110, 253, 0.98),
+                rgba(32, 201, 151, 0.91)
+            );
+        box-shadow: 0 18px 45px rgba(13, 110, 253, 0.18);
+    }
+
+    .parent-hero::before {
+        content: "";
+        position: absolute;
+        width: 280px;
+        height: 280px;
+        right: -90px;
+        top: -120px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.10);
+    }
+
+    .parent-hero::after {
+        content: "";
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        right: 180px;
+        bottom: -110px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.07);
+    }
+
+    .parent-hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .parent-hero-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        margin-bottom: 16px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.16);
+        font-size: 0.83rem;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+    }
+
+    .parent-hero-subtitle {
+        max-width: 650px;
+        color: rgba(255, 255, 255, 0.83);
+    }
+
+    .athlete-selector-wrapper {
+        display: inline-block;
+        min-width: 240px;
+        padding: 14px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.14);
+        backdrop-filter: blur(10px);
+    }
+
+    .athlete-selector {
+        width: 100%;
+        border: 0;
+        border-radius: 12px;
+        padding: 11px 14px;
+        background: white;
+        font-weight: 600;
+        color: var(--parent-dark);
+    }
+
+    .parent-card,
+    .parent-metric-card {
+        height: 100%;
+        border: 0;
+        border-radius: 21px;
+        background: var(--parent-surface);
+        box-shadow: 0 9px 30px rgba(33, 37, 41, 0.065);
+    }
+
+    .parent-card .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 20px 22px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.055);
+        background: transparent;
+        font-weight: 750;
+        color: var(--parent-dark);
+    }
+
+    .parent-card .card-body {
+        padding: 22px;
+    }
+
+    .metric-label {
+        margin-bottom: 6px;
+        color: var(--parent-muted);
+        font-size: 0.81rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.035em;
+    }
+
+    .metric-value {
+        color: var(--parent-dark);
+        font-size: 1.8rem;
+        font-weight: 800;
+        line-height: 1.1;
+    }
+
+    .metric-icon {
+        width: 49px;
+        height: 49px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        border-radius: 15px;
+        background: #eef4ff;
+        font-size: 1.35rem;
+    }
+
+    .progress-ring {
+        --value: 0;
+        position: relative;
+        width: 100px;
+        height: 100px;
+        display: grid;
+        place-items: center;
+        margin: auto;
+        border-radius: 50%;
+        background:
+            conic-gradient(
+                var(--parent-primary) calc(var(--value) * 1%),
+                #e9ecef 0
+            );
+    }
+
+    .progress-ring::before {
+        content: "";
+        position: absolute;
+        width: 76px;
+        height: 76px;
+        border-radius: 50%;
+        background: white;
+    }
+
+    .progress-ring-value {
+        position: relative;
+        z-index: 2;
+        color: var(--parent-dark);
+        font-size: 1.17rem;
+        font-weight: 800;
+    }
+
+    .metric-footer {
+        margin-top: 15px;
+        color: var(--parent-muted);
+        font-size: 0.82rem;
+        text-align: center;
+    }
+
+    .readiness-panel {
+        padding: 21px;
+        border-radius: 19px;
+    }
+
+    .readiness-ready {
+        border: 1px solid rgba(25, 135, 84, 0.16);
+        background: rgba(25, 135, 84, 0.09);
+    }
+
+    .readiness-attention {
+        border: 1px solid rgba(255, 193, 7, 0.21);
+        background: rgba(255, 193, 7, 0.13);
+    }
+
+    .readiness-unknown {
+        border: 1px solid rgba(108, 117, 125, 0.14);
+        background: rgba(108, 117, 125, 0.08);
+    }
+
+    .reassurance-message {
+        color: #526071;
+        font-size: 0.92rem;
+        line-height: 1.55;
+    }
+
+    .event-countdown-card {
+        position: relative;
+        overflow: hidden;
+        min-height: 220px;
+        padding: 25px;
+        border-radius: 21px;
+        color: white;
+        background:
+            linear-gradient(
+                135deg,
+                #263b63,
+                #0d6efd
+            );
+        box-shadow: 0 10px 32px rgba(38, 59, 99, 0.18);
+    }
+
+    .event-countdown-card::after {
+        content: "";
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        right: -40px;
+        bottom: -55px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .event-countdown-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .countdown-number {
+        font-size: 3.3rem;
+        font-weight: 850;
+        line-height: 1;
+    }
+
+    .countdown-label {
+        color: rgba(255, 255, 255, 0.75);
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+
+    .soft-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 11px;
+        border-radius: 999px;
+        background: #edf4ff;
+        color: var(--parent-primary);
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+
+    .trend-up {
+        background: rgba(25, 135, 84, 0.10);
+        color: #198754;
+    }
+
+    .testing-summary {
+        padding: 18px;
+        border-radius: 17px;
+        background: var(--parent-soft);
+    }
+
+    .testing-number {
+        color: var(--parent-dark);
+        font-size: 2rem;
+        font-weight: 850;
+    }
+
+    .feedback-featured {
+        position: relative;
+        padding: 22px;
+        border: 1px solid rgba(13, 110, 253, 0.10);
+        border-radius: 19px;
+        background:
+            linear-gradient(
+                135deg,
+                rgba(13, 110, 253, 0.075),
+                rgba(32, 201, 151, 0.055)
+            );
+    }
+
+    .feedback-featured::before {
+        content: "“";
+        position: absolute;
+        right: 18px;
+        top: 2px;
+        color: rgba(13, 110, 253, 0.14);
+        font-size: 5rem;
+        font-family: Georgia, serif;
+        line-height: 1;
+    }
+
+    .feedback-text {
+        position: relative;
+        z-index: 2;
+        color: #445064;
+        font-size: 0.95rem;
+        line-height: 1.65;
+    }
+
+    .video-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 13px;
+    }
+
+    .video-meta span {
+        padding: 6px 9px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.75);
+        color: var(--parent-muted);
+        font-size: 0.75rem;
+        font-weight: 650;
+    }
+
+    .event-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .event-date-box {
+        width: 62px;
+        min-width: 62px;
+        padding: 9px 8px;
+        border-radius: 15px;
+        background: #eef4ff;
+        text-align: center;
+    }
+
+    .event-month {
+        color: var(--parent-primary);
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .event-day {
+        color: var(--parent-dark);
+        font-size: 1.35rem;
+        font-weight: 850;
+        line-height: 1.1;
+    }
+
+    .attendance-breakdown {
+        display: flex;
+        justify-content: center;
+        gap: 22px;
+        margin-top: 17px;
+    }
+
+    .attendance-stat {
+        text-align: center;
+    }
+
+    .attendance-stat strong {
+        display: block;
+        color: var(--parent-dark);
+        font-size: 1.1rem;
+    }
+
+    .attendance-stat span {
+        color: var(--parent-muted);
+        font-size: 0.72rem;
+    }
+
+    .empty-state {
+        padding: 35px 22px;
+        border: 1px dashed #ced4da;
+        border-radius: 18px;
+        color: var(--parent-muted);
+        text-align: center;
+    }
+
+    .empty-state-icon {
+        margin-bottom: 10px;
+        font-size: 2.2rem;
+    }
+
+    .privacy-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 13px;
+        padding: 17px 19px;
+        border-radius: 17px;
+        background: #f7f8fa;
+        color: #667085;
+        font-size: 0.86rem;
+        line-height: 1.5;
+    }
+
+    @media (max-width: 991.98px) {
+        .parent-hero {
+            padding: 27px;
+        }
+
+        .athlete-selector-wrapper {
+            width: 100%;
+            margin-top: 22px;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .parent-hero {
+            padding: 23px;
+            border-radius: 19px;
+        }
+
+        .parent-hero h1 {
+            font-size: 1.75rem;
+        }
+
+        .parent-card,
+        .parent-metric-card,
+        .event-countdown-card {
+            border-radius: 17px;
+        }
+
+        .parent-card .card-header,
+        .parent-card .card-body {
+            padding: 18px;
+        }
+
+        .countdown-number {
+            font-size: 2.7rem;
+        }
+    }
+</style>
+
+<div class="parent-dashboard">
+
+{% if selected_athlete %}
+
+    <div class="parent-hero mb-4">
+        <div class="parent-hero-content">
+            <div class="row align-items-center">
+                <div class="col-lg-7">
+                    <div class="parent-hero-label">
+                        👨‍👩‍👧 Family Progress Center
+                    </div>
+
+                    <h1 class="fw-bold mb-2">
+                        {% if selected_athlete.first_name %}
+                            {{ selected_athlete.first_name }}’s Journey
+                        {% else %}
+                            {{ selected_athlete.username }}’s Journey
+                        {% endif %}
+                    </h1>
+
+                    <p class="parent-hero-subtitle mb-0">
+                        Follow your athlete’s progress, celebrate their
+                        achievements and stay connected with their team.
+                    </p>
+                </div>
+
+                {% if linked_athletes|length > 1 %}
+                    <div class="col-lg-5 text-lg-end">
+                        <div class="athlete-selector-wrapper text-start">
+                            <label
+                                for="athlete-select"
+                                class="d-block small fw-semibold mb-2"
+                            >
+                                Viewing athlete
+                            </label>
+
+                            <form method="get">
+                                <select
+                                    id="athlete-select"
+                                    name="athlete"
+                                    class="athlete-selector"
+                                    onchange="this.form.submit()"
+                                >
+                                    {% for athlete in linked_athletes %}
+                                        <option
+                                            value="{{ athlete.id }}"
+                                            {% if athlete.id == selected_athlete.id %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            {% if athlete.get_full_name %}
+                                                {{ athlete.get_full_name }}
+                                            {% else %}
+                                                {{ athlete.username }}
+                                            {% endif %}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </form>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card parent-metric-card">
+                <div class="card-body text-center">
+                    <div class="metric-label">
+                        Attendance
+                    </div>
+
+                    <div
+                        class="progress-ring mt-3"
+                        style="--value: {{ attendance_rate }};"
+                    >
+                        <span class="progress-ring-value">
+                            {{ attendance_rate }}%
+                        </span>
+                    </div>
+
+                    <div class="attendance-breakdown">
+                        <div class="attendance-stat">
+                            <strong>{{ attendance_present }}</strong>
+                            <span>Present</span>
+                        </div>
+
+                        <div class="attendance-stat">
+                            <strong>{{ attendance_late }}</strong>
+                            <span>Late</span>
+                        </div>
+
+                        <div class="attendance-stat">
+                            <strong>{{ attendance_total }}</strong>
+                            <span>Total</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card parent-metric-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between gap-3">
+                        <div>
+                            <div class="metric-label">
+                                Wellness Today
+                            </div>
+
+                            <div class="metric-value fs-5">
+                                {{ readiness_status.label }}
+                            </div>
+                        </div>
+
+                        <div class="metric-icon">
+                            {{ readiness_status.icon }}
+                        </div>
+                    </div>
+
+                    <p class="reassurance-message mt-3 mb-0">
+                        {{ readiness_status.message }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card parent-metric-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between gap-3">
+                        <div>
+                            <div class="metric-label">
+                                Latest Testing
+                            </div>
+
+                            {% if latest_testing_result %}
+                                <div class="metric-value">
+                                    {{ latest_testing_result.total_score }}
+                                </div>
+                            {% else %}
+                                <div class="fw-bold text-muted">
+                                    No published result
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="metric-icon">
+                            📊
+                        </div>
+                    </div>
+
+                    {% if latest_testing_result %}
+                        <div class="mt-3">
+                            {% if testing_score_change > 0 %}
+                                <span class="soft-badge trend-up">
+                                    ↗ {{ testing_trend }}
+                                </span>
+                            {% else %}
+                                <span class="soft-badge">
+                                    {{ testing_trend }}
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        {% if testing_score_change is not None %}
+                            <div class="small text-muted mt-3">
+                                {% if testing_score_change > 0 %}
+                                    Improved by
+                                    {{ testing_score_change }}
+                                    points
+                                {% elif testing_score_change < 0 %}
+                                    Building consistency across sessions
+                                {% else %}
+                                    Score remained consistent
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card parent-metric-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between gap-3">
+                        <div>
+                            <div class="metric-label">
+                                Personal Best
+                            </div>
+
+                            {% if testing_personal_best %}
+                                <div class="metric-value">
+                                    {{ testing_personal_best }}
+                                </div>
+
+                                <div class="small text-muted mt-2">
+                                    Best published testing result
+                                </div>
+                            {% else %}
+                                <div class="fw-bold text-muted">
+                                    Not available yet
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="metric-icon">
+                            🏆
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div
+        class="
+            readiness-panel
+            mb-4
+
+            {% if readiness_status.level == 'ready' %}
+                readiness-ready
+            {% elif readiness_status.level == 'attention' %}
+                readiness-attention
+            {% else %}
+                readiness-unknown
+            {% endif %}
+        "
+    >
+        <div class="d-flex align-items-start gap-3">
+            <div class="fs-3">
+                {{ readiness_status.icon }}
+            </div>
+
+            <div>
+                <div class="fw-bold fs-5">
+                    Today’s Wellness Update
+                </div>
+
+                <div class="reassurance-message mt-1">
+                    {{ readiness_status.message }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-xl-8">
+            <div class="card parent-card">
+                <div class="card-header">
+                    <span>📈 Testing Progress</span>
+
+                    {% if testing_score_change > 0 %}
+                        <span class="soft-badge trend-up">
+                            ↗ Positive Progress
+                        </span>
+                    {% endif %}
+                </div>
+
+                <div class="card-body">
+                    {% if testing_chart_scores %}
+                        <div style="height: 325px;">
+                            <canvas id="parentTestingChart"></canvas>
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                📊
+                            </div>
+
+                            <div class="fw-bold mb-1">
+                                No testing progress available yet
+                            </div>
+
+                            <div class="small">
+                                Results will appear here after a coach
+                                publishes a completed testing session.
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            {% if next_event %}
+                <div class="event-countdown-card h-100">
+                    <div class="event-countdown-content">
+                        <div class="countdown-label mb-3">
+                            Next Team Event
+                        </div>
+
+                        {% if days_until_next_event == 0 %}
+                            <div class="countdown-number">
+                                Today
+                            </div>
+                        {% elif days_until_next_event == 1 %}
+                            <div class="countdown-number">
+                                1
+                            </div>
+
+                            <div class="fs-5 fw-semibold">
+                                Day Away
+                            </div>
+                        {% else %}
+                            <div class="countdown-number">
+                                {{ days_until_next_event }}
+                            </div>
+
+                            <div class="fs-5 fw-semibold">
+                                Days Away
+                            </div>
+                        {% endif %}
+
+                        <hr class="border-light opacity-25 my-4">
+
+                        <h4 class="fw-bold">
+                            {{ next_event.title }}
+                        </h4>
+
+                        <div class="small opacity-75 mt-2">
+                            📅 {{ next_event.event_date|date:"F d, Y" }}
+                        </div>
+
+                        {% if next_event.start_time %}
+                            <div class="small opacity-75 mt-2">
+                                🕒 {{ next_event.start_time|time:"g:i A" }}
+                            </div>
+                        {% endif %}
+
+                        {% if next_event.location %}
+                            <div class="small opacity-75 mt-2">
+                                📍 {{ next_event.location }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="card parent-card">
+                    <div class="card-body">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                📅
+                            </div>
+
+                            <div class="fw-bold mb-1">
+                                No upcoming event
+                            </div>
+
+                            <div class="small">
+                                The next practice, meet or team event
+                                will appear here.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-5">
+            <div class="card parent-card">
+                <div class="card-header">
+                    <span>🏆 Recent Progress</span>
+                </div>
+
+                <div class="card-body">
+                    {% if latest_testing_result %}
+                        <div class="mb-4">
+                            <div class="metric-label">
+                                Latest Session
+                            </div>
+
+                            <h5 class="fw-bold mb-1">
+                                {{ latest_testing_result.session.title }}
+                            </h5>
+
+                            <div class="small text-muted">
+                                {{ latest_testing_result.session.testing_date|date:"F d, Y" }}
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="testing-summary text-center">
+                                    <div class="testing-number">
+                                        {{ latest_testing_result.total_score }}
+                                    </div>
+
+                                    <div class="small text-muted">
+                                        Latest Score
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <div class="testing-summary text-center">
+                                    <div class="testing-number">
+                                        {{ testing_personal_best|default:"-" }}
+                                    </div>
+
+                                    <div class="small text-muted">
+                                        Personal Best
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if testing_score_change > 0 %}
+                            <div class="alert alert-success border-0 rounded-4 mt-4 mb-0">
+                                <div class="fw-bold">
+                                    🎉 Great progress
+                                </div>
+
+                                <div class="small mt-1">
+                                    The latest score improved by
+                                    {{ testing_score_change }}
+                                    points.
+                                </div>
+                            </div>
+                        {% elif testing_score_change == 0 %}
+                            <div class="alert alert-primary border-0 rounded-4 mt-4 mb-0">
+                                <div class="fw-bold">
+                                    ⭐ Strong consistency
+                                </div>
+
+                                <div class="small mt-1">
+                                    The latest result matched the
+                                    previous testing session.
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                🏆
+                            </div>
+
+                            <div class="fw-bold mb-1">
+                                Progress is coming
+                            </div>
+
+                            <div class="small">
+                                Testing achievements and personal bests
+                                will be highlighted here.
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card parent-card">
+                <div class="card-header">
+                    <span>💬 Featured Coach Feedback</span>
+
+                    {% if recent_videos %}
+                        <span class="soft-badge">
+                            Coach Reviewed
+                        </span>
+                    {% endif %}
+                </div>
+
+                <div class="card-body">
+                    {% if recent_videos %}
+                        {% with featured_video=recent_videos.0 %}
+                            <div class="feedback-featured">
+                                <div class="position-relative">
+                                    <div class="fw-bold fs-5 mb-1">
+                                        {{ featured_video.title }}
+                                    </div>
+
+                                    <div class="small text-muted mb-3">
+                                        {% if featured_video.skill %}
+                                            {{ featured_video.skill.name }}
+                                        {% else %}
+                                            {{ featured_video.get_event_display }}
+                                        {% endif %}
+                                    </div>
+
+                                    {% if featured_video.coach_feedback %}
+                                        <div class="feedback-text">
+                                            {{ featured_video.coach_feedback }}
+                                        </div>
+                                    {% else %}
+                                        <div class="feedback-text">
+                                            A coach reviewed this video and
+                                            marked it as complete.
+                                        </div>
+                                    {% endif %}
+
+                                    <div class="video-meta">
+                                        <span>
+                                            🎥 {{ featured_video.get_event_display }}
+                                        </span>
+
+                                        <span>
+                                            ✅ Reviewed
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endwith %}
+
+                        {% if recent_videos|length > 1 %}
+                            <div class="mt-4">
+                                <div class="metric-label mb-3">
+                                    More Recent Reviews
+                                </div>
+
+                                <div class="d-flex flex-column gap-3">
+                                    {% for video in recent_videos %}
+                                        {% if not forloop.first %}
+                                            <div class="d-flex justify-content-between align-items-center gap-3">
+                                                <div>
+                                                    <div class="fw-semibold">
+                                                        {{ video.title }}
+                                                    </div>
+
+                                                    <div class="small text-muted">
+                                                        {% if video.skill %}
+                                                            {{ video.skill.name }}
+                                                        {% else %}
+                                                            {{ video.get_event_display }}
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+
+                                                <span class="badge bg-light text-primary">
+                                                    Reviewed
+                                                </span>
+                                            </div>
+
+                                            {% if not forloop.last %}
+                                                <hr class="my-0">
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                💬
+                            </div>
+
+                            <div class="fw-bold mb-1">
+                                No shared coach feedback yet
+                            </div>
+
+                            <div class="small">
+                                Coach-reviewed videos and feedback will
+                                appear here when they are available.
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card parent-card mb-4">
+        <div class="card-header">
+            <span>📅 Upcoming Schedule</span>
+
+            <span class="small text-muted fw-normal">
+                Next {{ upcoming_events|length }} events
+            </span>
+        </div>
+
+        <div class="card-body">
+            {% if upcoming_events %}
+                <div class="d-flex flex-column gap-3">
+                    {% for event in upcoming_events %}
+                        <div class="event-row">
+                            <div class="event-date-box">
+                                <div class="event-month">
+                                    {{ event.event_date|date:"M" }}
+                                </div>
+
+                                <div class="event-day">
+                                    {{ event.event_date|date:"d" }}
+                                </div>
+                            </div>
+
+                            <div class="flex-grow-1">
+                                <div class="fw-bold">
+                                    {{ event.title }}
+                                </div>
+
+                                <div class="small text-muted mt-1">
+                                    {% if event.start_time %}
+                                        {{ event.start_time|time:"g:i A" }}
+                                    {% endif %}
+
+                                    {% if event.location %}
+                                        · {{ event.location }}
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="text-end d-none d-sm-block">
+                                <span class="soft-badge">
+                                    {{ event.event_date|date:"D" }}
+                                </span>
+                            </div>
+                        </div>
+
+                        {% if not forloop.last %}
+                            <hr class="my-0">
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        📅
+                    </div>
+
+                    <div class="fw-bold mb-1">
+                        The schedule is currently clear
+                    </div>
+
+                    <div class="small">
+                        New practices, meets and team events will
+                        appear here.
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="privacy-note">
+        <div class="fs-5">🔒</div>
+
+        <div>
+            <strong>Parent-friendly and private.</strong>
+            This page displays approved progress information,
+            shared feedback and family-relevant updates. Internal
+            coaching notes, detailed wellness answers and private
+            team comparisons remain visible only to authorized coaches.
+        </div>
+    </div>
+
+{% else %}
+
+    <div class="card parent-card">
+        <div class="card-body">
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    👨‍👩‍👧
+                </div>
+
+                <h4 class="fw-bold">
+                    No athlete linked yet
+                </h4>
+
+                <p class="mb-0">
+                    A coach or administrator must link an athlete
+                    to your parent account before their progress
+                    can appear here.
+                </p>
+            </div>
+        </div>
+    </div>
+
+{% endif %}
+
+</div>
+
+{% if testing_chart_scores %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    {{ testing_chart_labels|json_script:"parent-testing-labels" }}
+    {{ testing_chart_scores|json_script:"parent-testing-scores" }}
+
+    <script>
+        const parentTestingLabels = JSON.parse(
+            document.getElementById(
+                "parent-testing-labels"
+            ).textContent
+        );
+
+        const parentTestingScores = JSON.parse(
+            document.getElementById(
+                "parent-testing-scores"
+            ).textContent
+        );
+
+        const parentTestingCanvas = document.getElementById(
+            "parentTestingChart"
+        );
+
+        if (parentTestingCanvas) {
+            new Chart(parentTestingCanvas, {
+                type: "line",
+
+                data: {
+                    labels: parentTestingLabels,
+
+                    datasets: [{
+                        label: "Testing Score",
+                        data: parentTestingScores,
+                        tension: 0.35,
+                        fill: true,
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        borderColor: "#0d6efd",
+                        backgroundColor: "rgba(13, 110, 253, 0.08)",
+                        pointBackgroundColor: "#0d6efd"
+                    }]
+                },
+
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+
+                    interaction: {
+                        mode: "index",
+                        intersect: false
+                    },
+
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        },
+
+                        y: {
+                            beginAtZero: true,
+
+                            grid: {
+                                color: "rgba(0, 0, 0, 0.05)"
+                            }
+                        }
+                    },
+
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+
+                        tooltip: {
+                            padding: 12,
+                            displayColors: false
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+{% endif %}
+
+{% endblock %}

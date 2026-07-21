@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}New Message{% endblock %}
+{% block page_header %}New Message{% endblock %}
+
+{% block content %}
+
+<div
+    class="card border-0 shadow-sm mx-auto"
+    style="max-width: 760px; border-radius: 22px;"
+>
+    <div class="card-body p-4 p-md-5">
+
+        <div class="mb-4">
+            <div class="fs-2 mb-2">
+                💬
+            </div>
+
+            <h2 class="fw-bold mb-2">
+                Start a Conversation
+            </h2>
+
+            <p class="text-muted mb-0">
+                You can only message users connected to your
+                coaching or family relationships.
+            </p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">
+                    Recipient
+                </label>
+
+                {{ form.recipient }}
+
+                {% for error in form.recipient.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ error }}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">
+                    Subject
+                </label>
+
+                {{ form.subject }}
+
+                {% for error in form.subject.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ error }}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold">
+                    Message
+                </label>
+
+                {{ form.message }}
+
+                {% for error in form.message.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ error }}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="d-flex flex-wrap justify-content-between gap-2">
+                <a
+                    href="{% url 'communication_inbox' %}"
+                    class="btn btn-outline-secondary"
+                >
+                    Cancel
+                </a>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary px-4"
+                >
+                    Send Message
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}
