@@ -2,6 +2,10 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.http import Http404
+from django.urls import reverse
+from .dashboard import send_dashboard_message
+from accounts.models import User
+from .services import get_allowed_message_recipients
 from django.shortcuts import (
     get_object_or_404,
     redirect,
@@ -22,7 +26,106 @@ from .services import (
     create_or_get_conversation,
     send_message,
 )
+@login_required
+@require_POST
+def dashboard_message_send(request):
+    recipient_id = request.POST.get(
+        'recipient'
+    )
 
+    message_body = request.POST.get(
+        'message',
+        ''
+    ).strip()
+
+    related_athlete_id = request.POST.get(
+        'related_athlete'
+    )
+
+    next_url = request.POST.get(
+        'next'
+    )
+
+    if not recipient_id:
+        messages.error(
+            request,
+            'Please choose a recipient.'
+        )
+
+        return redirect(
+            next_url or 'communication_inbox'
+        )
+
+    if not message_body:
+        messages.error(
+            request,
+            'Please enter a message.'
+        )
+
+        return redirect(
+            next_url or 'communication_inbox'
+        )
+
+    allowed_recipients = (
+        get_allowed_message_recipients(
+            request.user
+        )
+    )
+
+    recipient = allowed_recipients.filter(
+        id=recipient_id
+    ).first()
+
+    if recipient is None:
+        messages.error(
+            request,
+            'You are not allowed to message that user.'
+        )
+
+        return redirect(
+            next_url or 'communication_inbox'
+        )
+
+    related_athlete = None
+
+    if related_athlete_id:
+        related_athlete = User.objects.filter(
+            id=related_athlete_id,
+            role='athlete'
+        ).first()
+
+    try:
+        conversation = send_dashboard_message(
+            sender=request.user,
+            recipient=recipient,
+            message_body=message_body,
+            related_athlete=related_athlete
+        )
+
+    except (
+        PermissionError,
+        ValueError
+    ) as error:
+        messages.error(
+            request,
+            str(error)
+        )
+
+        return redirect(
+            next_url or 'communication_inbox'
+        )
+
+    messages.success(
+        request,
+        'Message sent successfully.'
+    )
+
+    return redirect(
+        next_url or reverse(
+            'conversation_detail',
+            args=[conversation.id]
+        )
+    )
 
 @login_required
 def communication_inbox(request):

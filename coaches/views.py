@@ -18,6 +18,11 @@ from athletes.models import (
     Skill,
 )
 
+from communications.dashboard import (
+    get_dashboard_communication_data,
+)
+
+
 
 def count_consecutive(surveys, condition):
     count = 0
@@ -522,6 +527,7 @@ def coach_dashboard(request):
         today=today,
     )
 
+
     return render(request, 'coaches/dashboard.html', {
         **dashboard_data,
         **skill_stats,
@@ -533,6 +539,11 @@ def coach_dashboard(request):
         'notifications': notifications,
         'skill_chart_labels': skill_chart_labels,
         'skill_chart_values': skill_chart_values,
+        'dashboard_communication': (
+            get_dashboard_communication_data(
+                request.user
+            )
+        ),
     })
 
 

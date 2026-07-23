@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}{{ report_title }}{% endblock %}
+{% block page_header %}{{ report_title }}{% endblock %}
+
+{% block content %}
+
+<div
+    class="card border-0 shadow-sm mx-auto"
+    style="max-width: 850px; border-radius: 22px;"
+>
+    <div class="card-body text-center p-5">
+
+        <div class="display-4 mb-3">
+            {{ report_icon }}
+        </div>
+
+        <h2 class="fw-bold mb-3">
+            {{ report_title }}
+        </h2>
+
+        <p class="text-muted mb-4">
+            This report is connected and ready for its
+            reporting calculations and filters.
+        </p>
+
+        <a
+            href="{% url 'report_center' %}"
+            class="btn btn-primary"
+        >
+            ← Back to Reports Center
+        </a>
+
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>
+        {% block title %}
+            NewSchool Gymnastics
+        {% endblock %}
+    </title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <style>
+        :root {
+            --public-primary: #0d6efd;
+            --public-secondary: #6610f2;
+            --public-dark: #14213d;
+            --public-muted: #667085;
+            --public-background: #f7f9fc;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            color: var(--public-dark);
+            background: var(--public-background);
+        }
+
+        .public-navbar {
+            position: relative;
+            z-index: 100;
+            padding: 18px 0;
+            background: rgba(255, 255, 255, 0.94);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            backdrop-filter: blur(12px);
+        }
+
+        .public-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--public-dark);
+            font-size: 1.1rem;
+            font-weight: 850;
+            text-decoration: none;
+        }
+
+        .public-brand-icon {
+            width: 42px;
+            height: 42px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 13px;
+            background: #eef4ff;
+            font-size: 1.25rem;
+        }
+
+        .public-nav-link {
+            color: #475467;
+            font-weight: 650;
+            text-decoration: none;
+        }
+
+        .public-nav-link:hover {
+            color: var(--public-primary);
+        }
+
+      .public-footer {
+    margin-top: 80px;
+    padding: 70px 0 35px;
+    border-top: 1px solid rgba(0,0,0,.06);
+    background: white;
+}
+
+.public-footer h6 {
+    color: #172033;
+    font-weight: 800;
+}
+
+.public-footer a {
+    transition: .2s;
+}
+
+.public-footer a:hover {
+    color: #0d6efd !important;
+}
+
+.public-footer hr {
+    opacity: .08;
+}
+
+        .public-alerts {
+            position: relative;
+            z-index: 20;
+        }
+    </style>
+
+    {% block extra_css %}
+    {% endblock %}
+</head>
+
+<body>
+
+<nav class="public-navbar">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center gap-3">
+            <a
+                href="{% url 'home' %}"
+                class="public-brand"
+            >
+                <span class="public-brand-icon">
+                    🤸
+                </span>
+
+                <span>
+                    NewSchool Gymnastics
+                </span>
+            </a>
+
+            <div class="d-flex align-items-center gap-3">
+                <a
+                    href="{% url 'login' %}"
+                    class="public-nav-link d-none d-sm-inline"
+                >
+                    Log In
+                </a>
+
+                <a
+                    href="{% url 'signup' %}"
+                    class="btn btn-primary rounded-pill px-4"
+                >
+                    Create Account
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+{% if messages %}
+    <div class="container public-alerts mt-3">
+        {% for message in messages %}
+            <div
+                class="
+                    alert
+                    alert-{{ message.tags|default:'info' }}
+                    alert-dismissible
+                    fade
+                    show
+                "
+                role="alert"
+            >
+                {{ message }}
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close"
+                ></button>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<main>
+    {% block content %}
+    {% endblock %}
+</main>
+
+<footer class="public-footer">
+
+    <div class="container">
+
+        <div class="row g-5">
+
+            <!-- Brand -->
+            <div class="col-lg-4">
+
+                <div class="d-flex align-items-center gap-3 mb-3">
+
+                    <div
+                        class="d-flex align-items-center justify-content-center rounded-4"
+                        style="
+                            width:56px;
+                            height:56px;
+                            background:#eef4ff;
+                            font-size:1.6rem;
+                        "
+                    >
+                        🤸
+                    </div>
+
+                    <div>
+                        <h5 class="fw-bold mb-0">
+                            NewSchool Gymnastics
+                        </h5>
+
+                        <small class="text-muted">
+                            Coaching • Athletes • Families
+                        </small>
+                    </div>
+
+                </div>
+
+                <p class="text-muted mb-0">
+                    A modern platform built to connect coaches,
+                    athletes, and parents through communication,
+                    wellness, testing, attendance, and athlete
+                    development.
+                </p>
+
+            </div>
+
+            <!-- Platform -->
+            <div class="col-6 col-lg-2">
+
+                <h6 class="fw-bold mb-3">
+                    Platform
+                </h6>
+
+                <ul class="list-unstyled">
+
+                    <li class="mb-2">
+                        <a href="#" class="text-decoration-none text-muted">
+                            Features
+                        </a>
+                    </li>
+
+                    <li class="mb-2">
+                        <a href="#" class="text-decoration-none text-muted">
+                            Pricing
+                        </a>
+                    </li>
+
+                    <li class="mb-2">
+                        <a href="#" class="text-decoration-none text-muted">
+                            Roadmap
+                        </a>
+                    </li>
+
+                </ul>
+
+            </div>
+
+            <!-- Resources -->
+            <div class="col-6 col-lg-2">
+
+                <h6 class="fw-bold mb-3">
+                    Resources
+                </h6>
+
+                <ul class="list-unstyled">
+
+                    <li class="mb-2">
+                        <a href="#" class="text-decoration-none text-muted">
+                            Help Center
+                        </a>
+                    </li>
+
+                    <li class="mb-2">
+                        <a href="#" class="text-decoration-none text-muted">
+                            Contact
+                        </a>
+                    </li>
+
+                    <li class="mb-2">
+                        <a href="#" class="text-decoration-none text-muted">
+                            Support
+                        </a>
+                    </li>
+
+                </ul>
+
+            </div>
+
+            <!-- Legal -->
+            <div class="col-6 col-lg-2">
+
+                <h6 class="fw-bold mb-3">
+                    Legal
+                </h6>
+
+                <ul class="list-unstyled">
+
+                    <li class="mb-2">
+                        <a href="#" class="text-decoration-none text-muted">
+                            Privacy
+                        </a>
+                    </li>
+
+                    <li class="mb-2">
+                        <a href="#" class="text-decoration-none text-muted">
+                            Terms
+                        </a>
+                    </li>
+
+                    <li class="mb-2">
+                        <a href="#" class="text-decoration-none text-muted">
+                            Cookies
+                        </a>
+                    </li>
+
+                </ul>
+
+            </div>
+
+            <!-- Contact -->
+            <div class="col-lg-2">
+
+                <h6 class="fw-bold mb-3">
+                    Get Started
+                </h6>
+
+                <a
+                    href="{% url 'signup' %}"
+                    class="btn btn-primary rounded-pill w-100 mb-2"
+                >
+                    Create Account
+                </a>
+
+                <a
+                    href="{% url 'login' %}"
+                    class="btn btn-outline-secondary rounded-pill w-100"
+                >
+                    Log In
+                </a>
+
+            </div>
+
+        </div>
+
+        <hr class="my-5">
+
+        <div
+            class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3"
+        >
+
+            <small class="text-muted">
+                © {% now "Y" %} NewSchool Gymnastics.
+                All Rights Reserved.
+            </small>
+
+            <div class="d-flex gap-4">
+
+                <a href="#" class="text-muted text-decoration-none">
+                    Privacy
+                </a>
+
+                <a href="#" class="text-muted text-decoration-none">
+                    Terms
+                </a>
+
+                <a href="#" class="text-muted text-decoration-none">
+                    Contact
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</footer>
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+></script>
+
+{% block extra_js %}
+{% endblock %}
+
+</body>
+</html>

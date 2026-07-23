@@ -1,6 +1,9 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
+from . import public_views
+from . import redirect_views
+
 from .redirect_views import role_redirect
 
 
@@ -24,4 +27,17 @@ urlpatterns = [
         role_redirect,
         name='role_redirect'
     ),
+
+    path(
+        'signup/',
+        public_views.signup,
+        name='signup',
+    ),
+
+    path(
+        'redirect/',
+        redirect_views.role_redirect,
+        name='role_redirect',
+    ),
+
 ]

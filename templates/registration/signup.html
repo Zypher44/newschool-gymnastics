@@ -1,0 +1,421 @@
+{% extends "public_base.html" %}
+
+{% block title %}
+    Create Account | NewSchool Gymnastics
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .signup-page {
+        min-height: calc(100vh - 160px);
+        padding: 70px 0;
+    }
+
+    .signup-intro {
+        max-width: 560px;
+    }
+
+    .signup-label {
+        display: inline-flex;
+        padding: 7px 12px;
+        border-radius: 999px;
+        background: #eef4ff;
+        color: #0d6efd;
+        font-size: 0.78rem;
+        font-weight: 800;
+    }
+
+    .signup-title {
+        margin-top: 18px;
+        color: #172033;
+        font-size: clamp(2.2rem, 5vw, 4rem);
+        font-weight: 900;
+        letter-spacing: -0.045em;
+    }
+
+    .signup-description {
+        margin-top: 18px;
+        color: #667085;
+        font-size: 1.02rem;
+        line-height: 1.7;
+    }
+
+    .signup-benefit {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-top: 22px;
+    }
+
+    .signup-benefit-icon {
+        width: 39px;
+        height: 39px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        border-radius: 12px;
+        background: #eef4ff;
+    }
+
+    .signup-card {
+        padding: 32px;
+        border: 0;
+        border-radius: 25px;
+        background: white;
+        box-shadow: 0 18px 55px rgba(33, 37, 41, 0.10);
+    }
+
+    .signup-card-title {
+        color: #172033;
+        font-weight: 850;
+    }
+
+    .form-label {
+        color: #344054;
+        font-size: 0.86rem;
+        font-weight: 700;
+    }
+
+    .form-control {
+        min-height: 48px;
+        border-radius: 12px;
+        border-color: #dfe3ea;
+    }
+
+    .form-control:focus {
+        border-color: rgba(13, 110, 253, 0.6);
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.10);
+    }
+
+    .role-options {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .role-options > div {
+        position: relative;
+    }
+
+    .role-options label {
+        width: 100%;
+        min-height: 78px;
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border: 1px solid #dfe3ea;
+        border-radius: 14px;
+        background: white;
+        cursor: pointer;
+        font-weight: 700;
+    }
+
+    .role-options input {
+        margin-right: 10px;
+    }
+
+    .role-options label:has(input:checked) {
+        border-color: #0d6efd;
+        background: #f2f7ff;
+        color: #0d6efd;
+    }
+
+    .form-help {
+        margin-top: 5px;
+        color: #98a2b3;
+        font-size: 0.74rem;
+        line-height: 1.45;
+    }
+
+    .form-error {
+        margin-top: 5px;
+        color: #dc3545;
+        font-size: 0.78rem;
+    }
+
+    @media (max-width: 575.98px) {
+        .signup-page {
+            padding: 45px 0;
+        }
+
+        .signup-card {
+            padding: 23px;
+            border-radius: 20px;
+        }
+
+        .role-options {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="signup-page">
+    <div class="container">
+        <div class="row align-items-center g-5">
+
+            <div class="col-lg-6">
+                <div class="signup-intro">
+                    <div class="signup-label">
+                        Create your account
+                    </div>
+
+                    <h1 class="signup-title">
+                        Join your gymnastics community.
+                    </h1>
+
+                    <p class="signup-description">
+                        Create an athlete or parent account to access
+                        wellness, schedules, progress, feedback, and secure
+                        communication.
+                    </p>
+
+                    <div class="signup-benefit">
+                        <div class="signup-benefit-icon">
+                            🤸
+                        </div>
+
+                        <div>
+                            <div class="fw-bold">
+                                Athlete accounts
+                            </div>
+
+                            <div class="small text-muted mt-1">
+                                Complete wellness surveys and follow testing,
+                                feedback, events, and progress.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="signup-benefit">
+                        <div class="signup-benefit-icon">
+                            👨‍👩‍👧
+                        </div>
+
+                        <div>
+                            <div class="fw-bold">
+                                Parent accounts
+                            </div>
+
+                            <div class="small text-muted mt-1">
+                                View approved athlete information and
+                                communicate with the coaching team.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-light border rounded-4 mt-4">
+                        <div class="fw-semibold">
+                            Are you a coach?
+                        </div>
+
+                        <div class="small text-muted mt-1">
+                            Coach and Head Coach accounts are created by an
+                            authorized administrator to protect athlete data.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="signup-card">
+                    <h2 class="signup-card-title mb-1">
+                        Create Account
+                    </h2>
+
+                    <p class="text-muted mb-4">
+                        Enter your information below.
+                    </p>
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                <div>
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <div class="mb-4">
+                            <label class="form-label">
+                                Account Type
+                            </label>
+
+                            <div class="role-options">
+                                {% for radio in form.role %}
+                                    <div>
+                                        {{ radio.tag }}
+
+                                        <label for="{{ radio.id_for_label }}">
+                                            {% if radio.choice_label == 'Athlete' %}
+                                                🤸 Athlete
+                                            {% else %}
+                                                👨‍👩‍👧 Parent or Guardian
+                                            {% endif %}
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            {% for error in form.role.errors %}
+                                <div class="form-error">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <label
+                                    for="{{ form.first_name.id_for_label }}"
+                                    class="form-label"
+                                >
+                                    First Name
+                                </label>
+
+                                {{ form.first_name }}
+
+                                {% for error in form.first_name.errors %}
+                                    <div class="form-error">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-sm-6">
+                                <label
+                                    for="{{ form.last_name.id_for_label }}"
+                                    class="form-label"
+                                >
+                                    Last Name
+                                </label>
+
+                                {{ form.last_name }}
+
+                                {% for error in form.last_name.errors %}
+                                    <div class="form-error">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <label
+                                for="{{ form.email.id_for_label }}"
+                                class="form-label"
+                            >
+                                Email Address
+                            </label>
+
+                            {{ form.email }}
+
+                            {% for error in form.email.errors %}
+                                <div class="form-error">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mt-3">
+                            <label
+                                for="{{ form.username.id_for_label }}"
+                                class="form-label"
+                            >
+                                Username
+                            </label>
+
+                            {{ form.username }}
+
+                            {% if form.username.help_text %}
+                                <div class="form-help">
+                                    {{ form.username.help_text }}
+                                </div>
+                            {% endif %}
+
+                            {% for error in form.username.errors %}
+                                <div class="form-error">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mt-3">
+                            <label
+                                for="{{ form.password1.id_for_label }}"
+                                class="form-label"
+                            >
+                                Password
+                            </label>
+
+                            {{ form.password1 }}
+
+                            {% if form.password1.help_text %}
+                                <div class="form-help">
+                                    {{ form.password1.help_text }}
+                                </div>
+                            {% endif %}
+
+                            {% for error in form.password1.errors %}
+                                <div class="form-error">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mt-3">
+                            <label
+                                for="{{ form.password2.id_for_label }}"
+                                class="form-label"
+                            >
+                                Confirm Password
+                            </label>
+
+                            {{ form.password2 }}
+
+                            {% if form.password2.help_text %}
+                                <div class="form-help">
+                                    {{ form.password2.help_text }}
+                                </div>
+                            {% endif %}
+
+                            {% for error in form.password2.errors %}
+                                <div class="form-error">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary btn-lg w-100 rounded-3 mt-4"
+                        >
+                            Create My Account
+                        </button>
+                    </form>
+
+                    <div class="text-center text-muted small mt-4">
+                        Already have an account?
+
+                        <a
+                            href="{% url 'login' %}"
+                            class="text-decoration-none fw-semibold"
+                        >
+                            Log in
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+{% endblock %}

@@ -11,6 +11,9 @@ from .models import (
     AthleteProfile,
     AthleteVideo,
 )
+from communications.dashboard import (
+    get_dashboard_communication_data,
+)
 
 
 def calculate_athlete_readiness(survey):
@@ -230,6 +233,11 @@ def athlete_dashboard(request):
             'attendance_total': attendance_total,
             'attendance_rate': attendance_rate,
             'survey_streak': survey_streak,
+            'dashboard_communication': (
+                get_dashboard_communication_data(
+                    request.user
+                )
+            ),
         }
     )
 

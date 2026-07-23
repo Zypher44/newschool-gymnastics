@@ -551,7 +551,6 @@
                 </div>
             </div>
         </div>
-
         <div class="col-12 col-sm-6 col-xl-3">
             <div class="card parent-metric-card">
                 <div class="card-body">
@@ -693,6 +692,60 @@
 
                 <div class="reassurance-message mt-1">
                     {{ readiness_status.message }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-xl-5">
+            {% include "communications/dashboard_communication_card.html" %}
+        </div>
+
+        <div class="col-xl-7">
+            <div class="card parent-card h-100">
+                <div class="card-header">
+                    <span>🤝 Stay Connected</span>
+                </div>
+
+                <div class="card-body">
+                    <div class="d-flex align-items-start gap-3 mb-4">
+                        <div class="metric-icon">
+                            💬
+                        </div>
+
+                        <div>
+                            <h5 class="fw-bold mb-1">
+                                Contact your athlete’s coach
+                            </h5>
+
+                            <p class="text-muted mb-0">
+                                Share schedule updates, attendance information,
+                                questions or anything the coaching team should know.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="testing-summary">
+                        <div class="fw-semibold mb-2">
+                            Messages stay connected to the athlete
+                        </div>
+
+                        <div class="small text-muted">
+                            When you choose a coach, the conversation is automatically
+                            linked to the correct athlete so the coaching team has the
+                            right context.
+                        </div>
+                    </div>
+
+                    <div class="privacy-note mt-4">
+                        <div class="fs-5">🔒</div>
+
+                        <div>
+                            Messages are visible only to authorized participants
+                            in the conversation.
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

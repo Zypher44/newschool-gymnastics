@@ -1,0 +1,339 @@
+{% extends "base.html" %}
+
+{% block title %}Reports Center{% endblock %}
+{% block page_header %}Reports Center{% endblock %}
+
+{% block content %}
+
+<style>
+    .reports-page {
+        max-width: 1320px;
+        margin: 0 auto;
+    }
+
+    .reports-hero {
+        position: relative;
+        overflow: hidden;
+        padding: 34px;
+        border-radius: 26px;
+        color: white;
+        background:
+            linear-gradient(
+                135deg,
+                #182848,
+                #0d6efd
+            );
+        box-shadow:
+            0 18px 45px
+            rgba(13, 110, 253, 0.17);
+    }
+
+    .reports-hero::after {
+        content: "";
+        position: absolute;
+        width: 250px;
+        height: 250px;
+        top: -100px;
+        right: -70px;
+        border-radius: 50%;
+        background:
+            rgba(255, 255, 255, 0.09);
+    }
+
+    .reports-hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .reports-hero-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        margin-bottom: 15px;
+        border-radius: 999px;
+        background:
+            rgba(255, 255, 255, 0.15);
+        font-size: 0.82rem;
+        font-weight: 700;
+    }
+
+    .report-card {
+        height: 100%;
+        overflow: hidden;
+        border: 0;
+        border-radius: 21px;
+        box-shadow:
+            0 9px 30px
+            rgba(33, 37, 41, 0.065);
+        transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+    }
+
+    .report-card:hover {
+        transform: translateY(-4px);
+        box-shadow:
+            0 16px 38px
+            rgba(33, 37, 41, 0.11);
+    }
+
+    .report-card-body {
+        padding: 24px;
+    }
+
+    .report-icon {
+        width: 58px;
+        height: 58px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 17px;
+        background: #edf4ff;
+        font-size: 1.6rem;
+    }
+
+    .report-title {
+        color: #172033;
+        font-size: 1.14rem;
+        font-weight: 800;
+    }
+
+    .report-description {
+        color: #697386;
+        font-size: 0.9rem;
+        line-height: 1.55;
+    }
+
+    .report-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: #f0f5ff;
+        color: #0d6efd;
+        font-size: 0.72rem;
+        font-weight: 750;
+    }
+
+    .report-arrow {
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 11px;
+        background: #f5f7fa;
+        color: #0d6efd;
+        font-weight: 800;
+    }
+
+    .report-card-link {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .report-card-link:hover {
+        color: inherit;
+    }
+
+    .reports-summary-card {
+        border: 0;
+        border-radius: 20px;
+        background: white;
+        box-shadow:
+            0 8px 28px
+            rgba(33, 37, 41, 0.06);
+    }
+
+    .summary-icon {
+        width: 46px;
+        height: 46px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        background: #edf4ff;
+        font-size: 1.25rem;
+    }
+
+    @media (max-width: 767.98px) {
+        .reports-hero {
+            padding: 25px;
+            border-radius: 19px;
+        }
+
+        .reports-hero h1 {
+            font-size: 1.8rem;
+        }
+
+        .report-card {
+            border-radius: 17px;
+        }
+    }
+</style>
+
+<div class="reports-page">
+
+    <div class="reports-hero mb-4">
+        <div class="reports-hero-content">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <div class="reports-hero-label">
+                        📈 Coaching Intelligence
+                    </div>
+
+                    <h1 class="fw-bold mb-2">
+                        Reports Center
+                    </h1>
+
+                    <p class="mb-0 opacity-75">
+                        Turn athlete data into clear coaching insights,
+                        progress updates and actionable team decisions.
+                    </p>
+                </div>
+
+                <div class="col-lg-4 mt-4 mt-lg-0">
+                    <div
+                        class="p-3 rounded-4"
+                        style="background: rgba(255,255,255,0.13);"
+                    >
+                        <div class="small opacity-75">
+                            Available Reports
+                        </div>
+
+                        <div class="fs-2 fw-bold">
+                            {{ report_cards|length }}
+                        </div>
+
+                        <div class="small opacity-75">
+                            Athlete and team reporting tools
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-4">
+            <div class="card reports-summary-card h-100">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="summary-icon">
+                        🖨️
+                    </div>
+
+                    <div>
+                        <div class="fw-bold">
+                            Print Ready
+                        </div>
+
+                        <div class="small text-muted">
+                            Clean layouts for meetings and reviews
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="card reports-summary-card h-100">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="summary-icon">
+                        📅
+                    </div>
+
+                    <div>
+                        <div class="fw-bold">
+                            Date Filters
+                        </div>
+
+                        <div class="small text-muted">
+                            Analyze specific reporting periods
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="card reports-summary-card h-100">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="summary-icon">
+                        📥
+                    </div>
+
+                    <div>
+                        <div class="fw-bold">
+                            Export Ready
+                        </div>
+
+                        <div class="small text-muted">
+                            CSV and PDF exports coming next
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="fw-bold mb-1">
+                Available Reports
+            </h4>
+
+            <div class="text-muted small">
+                Choose a report to review athlete or team performance.
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {% for report in report_cards %}
+            <div class="col-12 col-md-6 col-xl-4">
+                <a
+                    href="{% url report.url_name %}"
+                    class="report-card-link"
+                >
+                    <div class="card report-card">
+                        <div class="report-card-body">
+
+                            <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
+                                <div class="report-icon">
+                                    {{ report.icon }}
+                                </div>
+
+                                <span class="report-badge">
+                                    {{ report.badge }}
+                                </span>
+                            </div>
+
+                            <div class="report-title mb-2">
+                                {{ report.title }}
+                            </div>
+
+                            <div class="report-description mb-4">
+                                {{ report.description }}
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-primary fw-semibold small">
+                                    Open Report
+                                </span>
+
+                                <span class="report-arrow">
+                                    →
+                                </span>
+                            </div>
+
+                        </div>
+                    </div>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+{% endblock %}

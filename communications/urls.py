@@ -17,6 +17,12 @@ urlpatterns = [
     ),
 
     path(
+        'messages/dashboard-send/',
+        views.dashboard_message_send,
+        name='dashboard_message_send'
+    ),
+
+    path(
         'messages/<int:conversation_id>/',
         views.conversation_detail,
         name='conversation_detail'

@@ -9,7 +9,9 @@ from performance_testing.models import AthleteTestingResult
 from surveys.models import DailySurvey
 
 from .models import ParentAthleteLink
-
+from communications.dashboard import (
+    get_dashboard_communication_data,
+)
 
 def calculate_parent_readiness_status(survey):
     """
@@ -124,6 +126,12 @@ def parent_dashboard(request):
     context = {
         'linked_athletes': linked_athletes,
         'selected_athlete': selected_athlete,
+
+        'dashboard_communication': (
+            get_dashboard_communication_data(
+                request.user
+            )
+        ),
     }
 
     if selected_athlete is None:

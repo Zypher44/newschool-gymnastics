@@ -1,0 +1,579 @@
+{% extends "public_base.html" %}
+
+{% block title %}
+    NewSchool Gymnastics
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .home-hero {
+        position: relative;
+        overflow: hidden;
+        padding: 105px 0 95px;
+        color: white;
+        background:
+            linear-gradient(
+                135deg,
+                rgba(13, 110, 253, 0.98),
+                rgba(102, 16, 242, 0.94)
+            );
+    }
+
+    .home-hero::before {
+        content: "";
+        position: absolute;
+        width: 520px;
+        height: 520px;
+        right: -170px;
+        top: -220px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.09);
+    }
+
+    .home-hero::after {
+        content: "";
+        position: absolute;
+        width: 280px;
+        height: 280px;
+        left: -130px;
+        bottom: -170px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.07);
+    }
+
+    .home-hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.15);
+        font-size: 0.84rem;
+        font-weight: 750;
+    }
+
+    .hero-title {
+        max-width: 760px;
+        margin-top: 22px;
+        font-size: clamp(2.5rem, 6vw, 5rem);
+        font-weight: 900;
+        line-height: 1.03;
+        letter-spacing: -0.045em;
+    }
+
+    .hero-description {
+        max-width: 670px;
+        margin-top: 24px;
+        color: rgba(255, 255, 255, 0.82);
+        font-size: 1.12rem;
+        line-height: 1.7;
+    }
+
+    .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 13px;
+        margin-top: 32px;
+    }
+
+    .hero-stat-card {
+        height: 100%;
+        padding: 22px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.11);
+        backdrop-filter: blur(12px);
+    }
+
+    .hero-stat-icon {
+        font-size: 1.7rem;
+    }
+
+    .hero-stat-title {
+        margin-top: 12px;
+        font-weight: 800;
+    }
+
+    .hero-stat-text {
+        margin-top: 6px;
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 0.83rem;
+        line-height: 1.5;
+    }
+
+    .home-section {
+        padding: 88px 0;
+    }
+
+    .section-label {
+        color: #0d6efd;
+        font-size: 0.78rem;
+        font-weight: 850;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+    }
+
+    .section-title {
+        max-width: 720px;
+        margin-top: 12px;
+        color: #172033;
+        font-size: clamp(2rem, 4vw, 3.1rem);
+        font-weight: 850;
+        letter-spacing: -0.035em;
+    }
+
+    .section-description {
+        max-width: 720px;
+        margin-top: 18px;
+        color: #667085;
+        font-size: 1rem;
+        line-height: 1.7;
+    }
+
+    .feature-card {
+        height: 100%;
+        padding: 27px;
+        border: 0;
+        border-radius: 22px;
+        background: white;
+        box-shadow: 0 10px 34px rgba(33, 37, 41, 0.07);
+    }
+
+    .feature-icon {
+        width: 55px;
+        height: 55px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 17px;
+        background: #eef4ff;
+        font-size: 1.45rem;
+    }
+
+    .feature-card h4 {
+        margin-top: 20px;
+        font-weight: 800;
+    }
+
+    .feature-card p {
+        margin-bottom: 0;
+        color: #667085;
+        line-height: 1.65;
+    }
+
+    .role-section {
+        background: white;
+    }
+
+    .role-card {
+        height: 100%;
+        padding: 30px;
+        border: 1px solid #e8ecf2;
+        border-radius: 23px;
+        background: #ffffff;
+    }
+
+    .role-card-highlight {
+        border-color: rgba(13, 110, 253, 0.24);
+        background:
+            linear-gradient(
+                145deg,
+                rgba(13, 110, 253, 0.055),
+                rgba(102, 16, 242, 0.035)
+            );
+    }
+
+    .role-icon {
+        font-size: 2.2rem;
+    }
+
+    .role-card h3 {
+        margin-top: 18px;
+        font-weight: 850;
+    }
+
+    .role-card p {
+        color: #667085;
+        line-height: 1.65;
+    }
+
+    .role-list {
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    .role-list li {
+        display: flex;
+        gap: 9px;
+        margin-top: 11px;
+        color: #475467;
+        font-size: 0.9rem;
+    }
+
+    .home-cta {
+        margin-bottom: 88px;
+        padding: 52px;
+        overflow: hidden;
+        border-radius: 28px;
+        color: white;
+        background:
+            linear-gradient(
+                135deg,
+                #172033,
+                #263b63
+            );
+    }
+
+    @media (max-width: 767.98px) {
+        .home-hero {
+            padding: 72px 0;
+        }
+
+        .home-section {
+            padding: 65px 0;
+        }
+
+        .home-cta {
+            padding: 32px 24px;
+            border-radius: 21px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="home-hero">
+    <div class="container home-hero-content">
+        <div class="row align-items-center g-5">
+            <div class="col-xl-8">
+                <div class="hero-label">
+                    🤸 Built for modern gymnastics programs
+                </div>
+
+                <h1 class="hero-title">
+                    Stronger communication. Smarter coaching. Better progress.
+                </h1>
+
+                <p class="hero-description">
+                    NewSchool Gymnastics brings athletes, parents, and
+                    coaches together through wellness tracking, attendance,
+                    skill development, testing, video feedback, reporting,
+                    and secure communication.
+                </p>
+
+                <div class="hero-actions">
+                    <a
+                        href="{% url 'signup' %}"
+                        class="btn btn-light btn-lg rounded-pill px-4 fw-semibold"
+                    >
+                        Create Your Account
+                    </a>
+
+                    <a
+                        href="{% url 'login' %}"
+                        class="btn btn-outline-light btn-lg rounded-pill px-4"
+                    >
+                        Log In
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-xl-4">
+                <div class="row g-3">
+                    <div class="col-sm-4 col-xl-12">
+                        <div class="hero-stat-card">
+                            <div class="hero-stat-icon">
+                                ⚡
+                            </div>
+
+                            <div class="hero-stat-title">
+                                Daily Readiness
+                            </div>
+
+                            <div class="hero-stat-text">
+                                Help coaches understand how athletes feel
+                                before training begins.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-4 col-xl-12">
+                        <div class="hero-stat-card">
+                            📈
+
+                            <div class="hero-stat-title">
+                                Progress Tracking
+                            </div>
+
+                            <div class="hero-stat-text">
+                                Follow testing, skills, attendance, and
+                                personal bests in one place.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-4 col-xl-12">
+                        <div class="hero-stat-card">
+                            💬
+
+                            <div class="hero-stat-title">
+                                Secure Communication
+                            </div>
+
+                            <div class="hero-stat-text">
+                                Keep coaches, athletes, and families
+                                informed and connected.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="home-section">
+    <div class="container">
+        <div class="section-label">
+            One connected platform
+        </div>
+
+        <h2 class="section-title">
+            Everything your gymnastics program needs to stay aligned.
+        </h2>
+
+        <p class="section-description">
+            Replace disconnected spreadsheets, messages, and paper records
+            with one central system designed around athlete development.
+        </p>
+
+        <div class="row g-4 mt-4">
+            <div class="col-md-6 col-xl-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        📝
+                    </div>
+
+                    <h4>
+                        Athlete Wellness
+                    </h4>
+
+                    <p>
+                        Track energy, soreness, stress, sleep, nutrition,
+                        hydration, and readiness before practice.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        🏆
+                    </div>
+
+                    <h4>
+                        Skill Development
+                    </h4>
+
+                    <p>
+                        Monitor skills from not started through competition
+                        ready and celebrate athlete progress.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        📊
+                    </div>
+
+                    <h4>
+                        Performance Testing
+                    </h4>
+
+                    <p>
+                        Publish testing results, monitor score trends, and
+                        identify personal bests.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        ✅
+                    </div>
+
+                    <h4>
+                        Attendance
+                    </h4>
+
+                    <p>
+                        Record attendance quickly and give families a clear
+                        view of participation.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        🎥
+                    </div>
+
+                    <h4>
+                        Video Feedback
+                    </h4>
+
+                    <p>
+                        Review athlete videos, provide feedback, and connect
+                        technical progress to individual skills.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        💬
+                    </div>
+
+                    <h4>
+                        Communication
+                    </h4>
+
+                    <p>
+                        Keep messages, notifications, athlete context, and
+                        important updates together.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="home-section role-section">
+    <div class="container">
+        <div class="section-label">
+            Designed for every role
+        </div>
+
+        <h2 class="section-title">
+            A dashboard built around what each person needs.
+        </h2>
+
+        <div class="row g-4 mt-4">
+            <div class="col-lg-4">
+                <div class="role-card role-card-highlight">
+                    <div class="role-icon">
+                        👨‍🏫
+                    </div>
+
+                    <h3>
+                        Coaches
+                    </h3>
+
+                    <p>
+                        Manage teams, athlete readiness, attendance,
+                        skills, testing, feedback, and communication.
+                    </p>
+
+                    <ul class="role-list">
+                        <li>✓ Team command center</li>
+                        <li>✓ Athlete alerts and priorities</li>
+                        <li>✓ Reports and testing</li>
+                        <li>✓ Secure family communication</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="role-card">
+                    <div class="role-icon">
+                        🤸
+                    </div>
+
+                    <h3>
+                        Athletes
+                    </h3>
+
+                    <p>
+                        Complete wellness surveys, review feedback, and
+                        follow personal progress.
+                    </p>
+
+                    <ul class="role-list">
+                        <li>✓ Daily wellness</li>
+                        <li>✓ Testing history</li>
+                        <li>✓ Coach feedback</li>
+                        <li>✓ Upcoming events</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="role-card">
+                    <div class="role-icon">
+                        👨‍👩‍👧
+                    </div>
+
+                    <h3>
+                        Parents
+                    </h3>
+
+                    <p>
+                        Stay informed with family-friendly progress,
+                        attendance, schedules, and coach communication.
+                    </p>
+
+                    <ul class="role-list">
+                        <li>✓ Athlete progress</li>
+                        <li>✓ Attendance summaries</li>
+                        <li>✓ Upcoming schedule</li>
+                        <li>✓ Message the coaching team</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="container">
+    <div class="home-cta">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-8">
+                <div class="small text-uppercase opacity-75 fw-bold">
+                    Start your journey
+                </div>
+
+                <h2 class="fw-bold mt-2 mb-2">
+                    Join NewSchool Gymnastics.
+                </h2>
+
+                <p class="mb-0 opacity-75">
+                    Create an athlete or parent account and connect with
+                    your gymnastics program.
+                </p>
+            </div>
+
+            <div class="col-lg-4 text-lg-end">
+                <a
+                    href="{% url 'signup' %}"
+                    class="btn btn-light btn-lg rounded-pill px-4 fw-semibold"
+                >
+                    Create Account
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

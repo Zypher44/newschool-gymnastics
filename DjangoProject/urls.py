@@ -1,8 +1,15 @@
 from django.contrib import admin
 from django.urls import include, path
-
+from accounts import public_views
 
 urlpatterns = [
+    path(
+        '',
+        public_views.home,
+        name='home',
+    ),
+
+
     path('admin/', admin.site.urls),
 
     path(
@@ -39,4 +46,12 @@ urlpatterns = [
         'communications/',
         include('communications.urls')
     ),
+    path(
+        'reports/',
+        include('reports.urls')
+    ),
 ]
+
+handler403 = 'accounts.error_views.custom_403'
+handler404 = 'accounts.error_views.custom_404'
+handler500 = 'accounts.error_views.custom_500'
