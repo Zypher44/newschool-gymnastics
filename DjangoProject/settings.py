@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'surveys',
     'performance_testing',
     'communications',
-    'reports'
+    'reports',
+    'practice_planner',
 
 
 

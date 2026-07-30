@@ -1,0 +1,400 @@
+{% extends "base.html" %}
+
+{% block title %}
+Practice Templates
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .template-library-shell {
+        max-width: 1500px;
+        margin: 0 auto;
+    }
+
+    .template-card {
+        border: 0;
+        border-radius: 20px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+        transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+    }
+
+    .template-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 14px 34px rgba(15, 23, 42, 0.11);
+    }
+
+    .template-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fff3cd;
+        font-size: 1.35rem;
+    }
+
+    .filter-card {
+        border: 0;
+        border-radius: 18px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+    }
+</style>
+
+
+<div class="container-fluid py-4">
+
+    <div class="template-library-shell">
+
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+
+            <div>
+
+                <a
+                    href="{% url 'practice_planner:dashboard' %}"
+                    class="text-decoration-none text-muted"
+                >
+                    ← Practice Planner
+                </a>
+
+                <h1 class="h2 mt-3 mb-1">
+                    Practice Templates
+                </h1>
+
+                <p class="text-muted mb-0">
+                    Reuse proven practice structures instead of starting from scratch.
+                </p>
+
+            </div>
+
+            <a
+                href="{% url 'practice_planner:practice_create' %}"
+                class="btn btn-primary"
+            >
+                Create Practice
+            </a>
+
+        </div>
+
+
+        <section class="card filter-card mb-4">
+
+            <div class="card-body p-4">
+
+                <form method="get">
+
+                    <div class="row g-3 align-items-end">
+
+                        <div class="col-12 col-lg-5">
+
+                            <label
+                                for="template-search"
+                                class="form-label"
+                            >
+                                Search
+                            </label>
+
+                            <input
+                                type="search"
+                                name="search"
+                                id="template-search"
+                                class="form-control"
+                                value="{{ search_query }}"
+                                placeholder="Search by name, level, season, or focus"
+                            >
+
+                        </div>
+
+
+                        <div class="col-12 col-md-6 col-lg-3">
+
+                            <label
+                                for="category-filter"
+                                class="form-label"
+                            >
+                                Category
+                            </label>
+
+                            <select
+                                name="category"
+                                id="category-filter"
+                                class="form-select"
+                            >
+
+                                <option value="">
+                                    All categories
+                                </option>
+
+                                {% for value, label in category_choices %}
+
+                                    <option
+                                        value="{{ value }}"
+                                        {% if category_filter == value %}selected{% endif %}
+                                    >
+                                        {{ label }}
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="col-12 col-md-6 col-lg-2">
+
+                            <label
+                                for="ownership-filter"
+                                class="form-label"
+                            >
+                                Templates
+                            </label>
+
+                            <select
+                                name="ownership"
+                                id="ownership-filter"
+                                class="form-select"
+                            >
+
+                                <option
+                                    value="all"
+                                    {% if ownership_filter == 'all' %}selected{% endif %}
+                                >
+                                    All
+                                </option>
+
+                                <option
+                                    value="mine"
+                                    {% if ownership_filter == 'mine' %}selected{% endif %}
+                                >
+                                    My templates
+                                </option>
+
+                                <option
+                                    value="shared"
+                                    {% if ownership_filter == 'shared' %}selected{% endif %}
+                                >
+                                    Shared
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="col-12 col-lg-2">
+
+                            <div class="d-grid gap-2">
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary"
+                                >
+                                    Filter
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </section>
+
+
+        {% if templates %}
+
+            <div class="row g-4">
+
+                {% for template in templates %}
+
+                    <div class="col-12 col-md-6 col-xl-4">
+
+                        <article class="card template-card h-100">
+
+                            <div class="card-body p-4">
+
+                                <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+
+                                    <div class="template-icon">
+                                        ⭐
+                                    </div>
+
+                                    <div class="d-flex flex-wrap justify-content-end gap-2">
+
+                                        {% if template.created_by == request.user %}
+
+                                            <span class="badge text-bg-primary">
+                                                My Template
+                                            </span>
+
+                                        {% elif template.is_shared %}
+
+                                            <span class="badge text-bg-success">
+                                                Shared
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="small text-muted mb-1">
+                                    {{ template.get_category_display }}
+                                </div>
+
+                                <h2 class="h4 mb-2">
+                                    {{ template.name }}
+                                </h2>
+
+                                {% if template.description %}
+
+                                    <p class="text-muted">
+                                        {{ template.description|truncatechars:140 }}
+                                    </p>
+
+                                {% else %}
+
+                                    <p class="text-muted">
+                                        Reusable practice template.
+                                    </p>
+
+                                {% endif %}
+
+
+                                <div class="d-flex flex-wrap gap-2 mb-3">
+
+                                    <span class="badge text-bg-light border">
+                                        {{ template.default_duration_minutes }}
+                                        min
+                                    </span>
+
+                                    <span class="badge text-bg-light border">
+                                        {{ template.rotations.count }}
+                                        rotation{{ template.rotations.count|pluralize }}
+                                    </span>
+
+                                    <span class="badge text-bg-light border">
+                                        {{ template.get_planned_intensity_display }}
+                                    </span>
+
+                                </div>
+
+
+                                {% if template.level %}
+
+                                    <div class="small mb-1">
+
+                                        <strong>
+                                            Level:
+                                        </strong>
+
+                                        {{ template.level }}
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                {% if template.season_phase %}
+
+                                    <div class="small mb-1">
+
+                                        <strong>
+                                            Season:
+                                        </strong>
+
+                                        {{ template.season_phase }}
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                {% if template.primary_focus %}
+
+                                    <div class="small mb-3">
+
+                                        <strong>
+                                            Focus:
+                                        </strong>
+
+                                        {{ template.primary_focus }}
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                <div class="small text-muted mt-3">
+                                    Created by
+                                    {{ template.created_by.get_full_name|default:template.created_by.username }}
+                                </div>
+
+                            </div>
+
+
+                            <div class="card-footer bg-white border-0 px-4 pb-4 pt-0">
+
+                                <a
+                                    href="{% url 'practice_planner:practice_template_detail' template.id %}"
+                                    class="btn btn-outline-primary w-100"
+                                >
+                                    View Template
+                                </a>
+
+                            </div>
+
+                        </article>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <section class="card template-card">
+
+                <div class="card-body text-center py-5">
+
+                    <div class="display-5 mb-3">
+                        ⭐
+                    </div>
+
+                    <h2 class="h4">
+                        No templates found
+                    </h2>
+
+                    <p class="text-muted">
+                        Save a practice as a template or adjust your search filters.
+                    </p>
+
+                    <a
+                        href="{% url 'practice_planner:dashboard' %}"
+                        class="btn btn-primary"
+                    >
+                        View Practices
+                    </a>
+
+                </div>
+
+            </section>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

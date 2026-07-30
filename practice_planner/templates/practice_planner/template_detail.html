@@ -1,0 +1,587 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ practice_template.name }}
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .template-detail-shell {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .template-hero {
+        border-radius: 24px;
+        padding: 28px;
+        color: white;
+        background:
+            linear-gradient(
+                135deg,
+                rgba(245, 158, 11, 0.96),
+                rgba(234, 88, 12, 0.94)
+            );
+    }
+
+    .template-detail-card {
+        border: 0;
+        border-radius: 20px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    }
+
+    .template-rotation {
+        border: 1px solid #e9ecef;
+        border-radius: 18px;
+        overflow: hidden;
+    }
+
+    .template-rotation + .template-rotation {
+        margin-top: 14px;
+    }
+
+    .rotation-number {
+        width: 42px;
+        height: 42px;
+        border-radius: 13px;
+        background: #fff3cd;
+        color: #9a6700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .template-station {
+        border: 1px solid #e9ecef;
+        border-radius: 14px;
+        padding: 14px;
+    }
+</style>
+
+
+<div class="container-fluid py-4">
+
+    <div class="template-detail-shell">
+
+        <div class="mb-4">
+
+            <a
+                href="{% url 'practice_planner:practice_template_list' %}"
+                class="text-decoration-none text-muted"
+            >
+                ← Practice Templates
+            </a>
+
+        </div>
+
+
+        <section class="template-hero mb-4">
+
+            <div class="d-flex flex-column flex-xl-row justify-content-between gap-4">
+
+                <div>
+
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+
+                        <span class="badge bg-white text-warning">
+                            {{ practice_template.get_category_display }}
+                        </span>
+
+                        {% if practice_template.is_shared %}
+
+                            <span class="badge bg-white bg-opacity-25">
+                                Shared Template
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                    <h1 class="display-6 fw-bold mb-2">
+                        {{ practice_template.name }}
+                    </h1>
+
+                    {% if practice_template.description %}
+
+                        <p class="mb-0 opacity-75">
+                            {{ practice_template.description }}
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="d-flex flex-wrap align-content-start gap-2">
+
+                    <a
+                        href="{% url 'practice_planner:create_practice_from_template' practice_template.id %}"
+                        class="btn btn-light"
+                    >
+                        Create Practice from Template
+                    </a>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <div class="row g-3 mb-4">
+
+            <div class="col-6 col-lg-3">
+
+                <div class="card template-detail-card h-100">
+
+                    <div class="card-body">
+
+                        <div class="small text-muted">
+                            Duration
+                        </div>
+
+                        <div class="h3 mb-0">
+                            {{ practice_template.default_duration_minutes }}
+                            min
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-6 col-lg-3">
+
+                <div class="card template-detail-card h-100">
+
+                    <div class="card-body">
+
+                        <div class="small text-muted">
+                            Rotations
+                        </div>
+
+                        <div class="h3 mb-0">
+                            {{ rotations|length }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-6 col-lg-3">
+
+                <div class="card template-detail-card h-100">
+
+                    <div class="card-body">
+
+                        <div class="small text-muted">
+                            Stations
+                        </div>
+
+                        <div class="h3 mb-0">
+                            {{ total_station_count }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-6 col-lg-3">
+
+                <div class="card template-detail-card h-100">
+
+                    <div class="card-body">
+
+                        <div class="small text-muted">
+                            Times Used
+                        </div>
+
+                        <div class="h3 mb-0">
+                            {{ practice_template.times_used }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="row g-4">
+
+            <main class="col-12 col-xl-8">
+
+                <section class="card template-detail-card">
+
+                    <div class="card-header bg-white border-0 p-4">
+
+                        <h2 class="h4 mb-1">
+                            Template Structure
+                        </h2>
+
+                        <p class="text-muted mb-0">
+                            Rotations and stations that will be copied into a new practice.
+                        </p>
+
+                    </div>
+
+                    <div class="card-body p-4 pt-0">
+
+                        {% if rotations %}
+
+                            {% for rotation in rotations %}
+
+                                <article class="template-rotation">
+
+                                    <div class="p-3 p-lg-4 bg-light">
+
+                                        <div class="d-flex align-items-start gap-3">
+
+                                            <div class="rotation-number">
+                                                {{ rotation.order }}
+                                            </div>
+
+                                            <div>
+
+                                                <div class="d-flex flex-wrap align-items-center gap-2">
+
+                                                    <h3 class="h5 mb-0">
+                                                        {{ rotation.title }}
+                                                    </h3>
+
+                                                    <span class="badge text-bg-light border">
+                                                        {{ rotation.get_event_display }}
+                                                    </span>
+
+                                                    {% if rotation.include_testing %}
+
+                                                        <span class="badge text-bg-warning">
+                                                            Testing Block
+                                                        </span>
+
+                                                    {% endif %}
+
+                                                    {% if rotation.is_optional %}
+
+                                                        <span class="badge text-bg-secondary">
+                                                            Optional
+                                                        </span>
+
+                                                    {% endif %}
+
+                                                </div>
+
+                                                <div class="small text-muted mt-1">
+
+                                                    {{ rotation.duration_minutes }}
+                                                    minutes
+
+                                                    {% if rotation.location %}
+
+                                                        ·
+                                                        {{ rotation.location }}
+
+                                                    {% endif %}
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                        {% if rotation.objective %}
+
+                                            <p class="mb-0 mt-3">
+                                                <strong>Objective:</strong>
+                                                {{ rotation.objective }}
+                                            </p>
+
+                                        {% endif %}
+
+                                    </div>
+
+
+                                    <div class="p-3 p-lg-4">
+
+                                        {% if rotation.include_testing %}
+
+                                            <div class="alert alert-warning mb-0">
+
+                                                A Performance Testing session will be selected
+                                                or created when this template is used.
+
+                                            </div>
+
+                                        {% elif rotation.stations.all %}
+
+                                            <div class="d-flex flex-column gap-2">
+
+                                                {% for station in rotation.stations.all %}
+
+                                                    <div class="template-station">
+
+                                                        <div class="d-flex justify-content-between align-items-start gap-3">
+
+                                                            <div>
+
+                                                                <div class="d-flex flex-wrap align-items-center gap-2">
+
+                                                                    <strong>
+                                                                        {{ station.order }}.
+                                                                        {{ station.title }}
+                                                                    </strong>
+
+                                                                    <span class="badge text-bg-light border">
+                                                                        {{ station.get_station_type_display }}
+                                                                    </span>
+
+                                                                    {% if station.is_optional %}
+
+                                                                        <span class="badge text-bg-secondary">
+                                                                            Optional
+                                                                        </span>
+
+                                                                    {% endif %}
+
+                                                                </div>
+
+                                                                <div class="small text-muted mt-1">
+
+                                                                    {% if station.duration_minutes %}
+                                                                        {{ station.duration_minutes }} min
+                                                                    {% endif %}
+
+                                                                    {% if station.sets %}
+                                                                        · {{ station.sets }} sets
+                                                                    {% endif %}
+
+                                                                    {% if station.repetitions %}
+                                                                        · {{ station.repetitions }} reps
+                                                                    {% endif %}
+
+                                                                    {% if station.target_attempts %}
+                                                                        · {{ station.target_attempts }} attempts
+                                                                    {% endif %}
+
+                                                                </div>
+
+                                                                {% if station.instructions %}
+
+                                                                    <p class="small mb-0 mt-2">
+                                                                        {{ station.instructions }}
+                                                                    </p>
+
+                                                                {% endif %}
+
+                                                            </div>
+
+                                                        </div>
+
+                                                    </div>
+
+                                                {% endfor %}
+
+                                            </div>
+
+                                        {% else %}
+
+                                            <p class="text-muted mb-0">
+                                                No stations are saved in this rotation.
+                                            </p>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </article>
+
+                            {% endfor %}
+
+                        {% else %}
+
+                            <p class="text-muted mb-0">
+                                This template has no rotations.
+                            </p>
+
+                        {% endif %}
+
+                    </div>
+
+                </section>
+
+            </main>
+
+
+            <aside class="col-12 col-xl-4">
+
+                <section class="card template-detail-card mb-4">
+
+                    <div class="card-body p-4">
+
+                        <h2 class="h5 mb-3">
+                            Template Information
+                        </h2>
+
+                        <div class="mb-3">
+
+                            <div class="small text-muted">
+                                Created By
+                            </div>
+
+                            <strong>
+                                {{ practice_template.created_by.get_full_name|default:practice_template.created_by.username }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="mb-3">
+
+                            <div class="small text-muted">
+                                Intensity
+                            </div>
+
+                            <strong>
+                                {{ practice_template.get_planned_intensity_display }}
+                            </strong>
+
+                        </div>
+
+
+                        {% if practice_template.level %}
+
+                            <div class="mb-3">
+
+                                <div class="small text-muted">
+                                    Level
+                                </div>
+
+                                <strong>
+                                    {{ practice_template.level }}
+                                </strong>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if practice_template.season_phase %}
+
+                            <div class="mb-3">
+
+                                <div class="small text-muted">
+                                    Season Phase
+                                </div>
+
+                                <strong>
+                                    {{ practice_template.season_phase }}
+                                </strong>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if practice_template.primary_focus %}
+
+                            <div class="mb-3">
+
+                                <div class="small text-muted">
+                                    Primary Focus
+                                </div>
+
+                                <strong>
+                                    {{ practice_template.primary_focus }}
+                                </strong>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if practice_template.source_practice %}
+
+                            <div>
+
+                                <div class="small text-muted">
+                                    Source Practice
+                                </div>
+
+                                <a
+                                    href="{% url 'practice_planner:practice_builder' practice_template.source_practice.id %}"
+                                    class="text-decoration-none"
+                                >
+                                    {{ practice_template.source_practice.title }}
+                                </a>
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </section>
+
+
+                {% if practice_template.coach_objectives %}
+
+                    <section class="card template-detail-card mb-4">
+
+                        <div class="card-body p-4">
+
+                            <h2 class="h5">
+                                Coaching Objectives
+                            </h2>
+
+                            <p class="mb-0">
+                                {{ practice_template.coach_objectives }}
+                            </p>
+
+                        </div>
+
+                    </section>
+
+                {% endif %}
+
+
+                {% if practice_template.general_notes %}
+
+                    <section class="card template-detail-card">
+
+                        <div class="card-body p-4">
+
+                            <h2 class="h5">
+                                Notes
+                            </h2>
+
+                            <p class="mb-0">
+                                {{ practice_template.general_notes }}
+                            </p>
+
+                        </div>
+
+                    </section>
+
+                {% endif %}
+
+            </aside>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

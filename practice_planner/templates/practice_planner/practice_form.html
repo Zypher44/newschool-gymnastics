@@ -1,0 +1,414 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ page_title }}
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-4">
+
+    <div class="row justify-content-center">
+
+        <div class="col-12 col-xl-10">
+
+            <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
+
+                <div>
+                    <a
+                        href="{% url 'practice_planner:dashboard' %}"
+                        class="text-decoration-none text-muted"
+                    >
+                        ← Back to Practice Planner
+                    </a>
+
+                    <h1 class="h2 mt-3 mb-1">
+                        {{ page_title }}
+                    </h1>
+
+                    <p class="text-muted mb-0">
+                        Set the schedule, training group, coaching team, and practice focus.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <form method="post" novalidate>
+
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+
+                    <div class="alert alert-danger">
+
+                        {% for error in form.non_field_errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+
+                    </div>
+
+                {% endif %}
+
+
+                <div class="card border-0 shadow-sm mb-4">
+
+                    <div class="card-header bg-white border-0 px-4 pt-4 pb-3">
+
+                        <h2 class="h4 mb-1">
+                            Practice Details
+                        </h2>
+
+                        <p class="text-muted mb-0">
+                            Name the practice and choose when it will take place.
+                        </p>
+
+                    </div>
+
+                    <div class="card-body px-4">
+
+                        <div class="row g-3">
+
+                            <div class="col-12">
+
+                                <label
+                                    for="{{ form.title.id_for_label }}"
+                                    class="form-label"
+                                >
+                                    Practice Title
+                                </label>
+
+                                {{ form.title }}
+
+                                {% for error in form.title.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+
+                            </div>
+
+
+                            <div class="col-12 col-md-4">
+
+                                <label
+                                    for="{{ form.practice_date.id_for_label }}"
+                                    class="form-label"
+                                >
+                                    Practice Date
+                                </label>
+
+                                {{ form.practice_date }}
+
+                                {% for error in form.practice_date.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+
+                            </div>
+
+
+                            <div class="col-12 col-md-4">
+
+                                <label
+                                    for="{{ form.start_time.id_for_label }}"
+                                    class="form-label"
+                                >
+                                    Start Time
+                                </label>
+
+                                {{ form.start_time }}
+
+                                {% for error in form.start_time.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+
+                            </div>
+
+
+                            <div class="col-12 col-md-4">
+
+                                <label
+                                    for="{{ form.end_time.id_for_label }}"
+                                    class="form-label"
+                                >
+                                    End Time
+                                </label>
+
+                                {{ form.end_time }}
+
+                                {% for error in form.end_time.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+
+                            </div>
+
+
+                            <div class="col-12 col-md-6">
+
+                                <label
+                                    for="{{ form.training_group.id_for_label }}"
+                                    class="form-label"
+                                >
+                                    Training Group
+                                </label>
+
+                                {{ form.training_group }}
+
+                                {% for error in form.training_group.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+
+                            </div>
+
+
+                            <div class="col-12 col-md-6">
+
+                                <label
+                                    for="{{ form.status.id_for_label }}"
+                                    class="form-label"
+                                >
+                                    Status
+                                </label>
+
+                                {{ form.status }}
+
+                                {% for error in form.status.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card border-0 shadow-sm mb-4">
+
+                    <div class="card-header bg-white border-0 px-4 pt-4 pb-3">
+
+                        <h2 class="h4 mb-1">
+                            Coaching Team
+                        </h2>
+
+                        <p class="text-muted mb-0">
+                            Choose the lead coach and any assistant coaches.
+                        </p>
+
+                    </div>
+
+                    <div class="card-body px-4">
+
+                        <div class="row g-4">
+
+                            <div class="col-12 col-lg-6">
+
+                                <label
+                                    for="{{ form.lead_coach.id_for_label }}"
+                                    class="form-label"
+                                >
+                                    Lead Coach
+                                </label>
+
+                                {{ form.lead_coach }}
+
+                                {% for error in form.lead_coach.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+
+                            </div>
+
+
+                            <div class="col-12 col-lg-6">
+
+                                <label class="form-label">
+                                    Assistant Coaches
+                                </label>
+
+                                <div class="border rounded-3 p-3">
+
+                                    {% for checkbox in form.assistant_coaches %}
+
+                                        <div class="form-check mb-2">
+
+                                            {{ checkbox.tag }}
+
+                                            <label
+                                                class="form-check-label"
+                                                for="{{ checkbox.id_for_label }}"
+                                            >
+                                                {{ checkbox.choice_label }}
+                                            </label>
+
+                                        </div>
+
+                                    {% empty %}
+
+                                        <p class="text-muted mb-0">
+                                            No assistant coaches are available.
+                                        </p>
+
+                                    {% endfor %}
+
+                                </div>
+
+                                {% for error in form.assistant_coaches.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card border-0 shadow-sm mb-4">
+
+                    <div class="card-header bg-white border-0 px-4 pt-4 pb-3">
+
+                        <h2 class="h4 mb-1">
+                            Practice Focus
+                        </h2>
+
+                        <p class="text-muted mb-0">
+                            Define the intended intensity and coaching objectives.
+                        </p>
+
+                    </div>
+
+                    <div class="card-body px-4">
+
+                        <div class="row g-3">
+
+                            <div class="col-12 col-md-6">
+
+                                <label
+                                    for="{{ form.planned_intensity.id_for_label }}"
+                                    class="form-label"
+                                >
+                                    Planned Intensity
+                                </label>
+
+                                {{ form.planned_intensity }}
+
+                                {% for error in form.planned_intensity.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+
+                            </div>
+
+
+                            <div class="col-12 col-md-6">
+
+                                <label
+                                    for="{{ form.primary_focus.id_for_label }}"
+                                    class="form-label"
+                                >
+                                    Primary Focus
+                                </label>
+
+                                {{ form.primary_focus }}
+
+                                {% for error in form.primary_focus.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+
+                            </div>
+
+
+                            <div class="col-12">
+
+                                <label
+                                    for="{{ form.coach_objectives.id_for_label }}"
+                                    class="form-label"
+                                >
+                                    Coach Objectives
+                                </label>
+
+                                {{ form.coach_objectives }}
+
+                                {% for error in form.coach_objectives.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+
+                            </div>
+
+
+                            <div class="col-12">
+
+                                <label
+                                    for="{{ form.general_notes.id_for_label }}"
+                                    class="form-label"
+                                >
+                                    General Notes
+                                </label>
+
+                                {{ form.general_notes }}
+
+                                {% for error in form.general_notes.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="d-flex flex-column flex-sm-row justify-content-end gap-2">
+
+                    <a
+                        href="{% url 'practice_planner:dashboard' %}"
+                        class="btn btn-outline-secondary"
+                    >
+                        Cancel
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        {{ submit_label }}
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

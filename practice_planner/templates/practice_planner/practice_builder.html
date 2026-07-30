@@ -1,0 +1,1748 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ practice_plan.title }} | Practice Builder
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .builder-shell {
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+
+    .practice-hero {
+        background:
+            linear-gradient(
+                135deg,
+                rgba(13, 110, 253, 0.96),
+                rgba(79, 70, 229, 0.94)
+            );
+        color: white;
+        border-radius: 24px;
+        padding: 28px;
+    }
+
+    .metric-card {
+        border: 0;
+        border-radius: 18px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    }
+
+    .builder-card {
+        border: 0;
+        border-radius: 20px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    }
+
+    .rotation-details {
+        border: 1px solid #e9ecef;
+        border-radius: 18px;
+        background: white;
+        overflow: hidden;
+    }
+
+    .rotation-details + .rotation-details {
+        margin-top: 14px;
+    }
+
+    .rotation-summary {
+        list-style: none;
+        cursor: pointer;
+        padding: 18px;
+        background: #ffffff;
+    }
+
+    .rotation-summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .rotation-details[open] .rotation-summary {
+        background: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .rotation-number {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        background: #0d6efd;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-weight: 700;
+    }
+
+    .rotation-chevron {
+        transition: transform 0.2s ease;
+    }
+
+    .rotation-details[open] .rotation-chevron {
+        transform: rotate(180deg);
+    }
+
+    .station-card {
+        border: 1px solid #e9ecef;
+        border-radius: 14px;
+        padding: 14px;
+        background: #ffffff;
+    }
+
+    .station-order {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        background: #eef4ff;
+        color: #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-weight: 700;
+    }
+
+    .timeline-item {
+        min-width: 125px;
+        flex: 1 1 125px;
+        border-radius: 14px;
+        padding: 12px;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+    }
+
+    .timeline-item.testing {
+        background: #fff8db;
+        border-color: #ffe08a;
+    }
+
+    .sticky-sidebar {
+        position: sticky;
+        top: 90px;
+    }
+
+    .progress {
+        height: 12px;
+        border-radius: 999px;
+    }
+
+    .drag-handle {
+        border: 0;
+        background: transparent;
+        color: #6c757d;
+        cursor: grab;
+        padding: 6px 8px;
+        border-radius: 8px;
+        line-height: 1;
+        font-size: 1.15rem;
+    }
+
+    .drag-handle:hover {
+        color: #0d6efd;
+        background: #eef4ff;
+    }
+
+    .drag-handle:active {
+        cursor: grabbing;
+    }
+
+    .dragging-item {
+        opacity: 0.45;
+        border: 2px dashed #0d6efd;
+    }
+
+    .drag-over-item {
+        border-top: 4px solid #0d6efd;
+    }
+
+    .drag-save-message {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        z-index: 1100;
+        min-width: 240px;
+        border-radius: 14px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
+    }
+
+    .rotation-drag-list,
+    .station-drag-list {
+        min-height: 30px;
+    }
+
+    @media (max-width: 1199px) {
+        .sticky-sidebar {
+            position: static;
+        }
+    }
+</style>
+
+
+<div class="container-fluid py-4">
+
+    <div class="builder-shell">
+
+        <section class="practice-hero mb-4">
+
+            <div class="d-flex flex-column flex-xl-row justify-content-between gap-4">
+
+                <div>
+
+                    <a
+                        href="{% url 'practice_planner:dashboard' %}"
+                        class="text-white text-decoration-none opacity-75"
+                    >
+                        ← Practice Planner
+                    </a>
+
+                    <div class="d-flex flex-wrap gap-2 mt-3 mb-2">
+
+                        <span class="badge bg-white text-primary">
+                            {{ practice_plan.training_group.name }}
+                        </span>
+
+                        <span class="badge bg-white bg-opacity-25">
+                            {{ practice_plan.get_status_display }}
+                        </span>
+
+                        <span class="badge bg-white bg-opacity-25">
+                            {{ practice_plan.get_planned_intensity_display }}
+                        </span>
+
+                    </div>
+
+                    <h1 class="display-6 fw-bold mb-2">
+                        {{ practice_plan.title }}
+                    </h1>
+
+                    <p class="mb-0 opacity-75">
+
+                        {{ practice_plan.practice_date|date:"l, F j, Y" }}
+
+                        ·
+
+                        {{ practice_plan.start_time|time:"g:i A" }}
+
+                        –
+
+                        {{ practice_plan.end_time|time:"g:i A" }}
+
+                    </p>
+
+                    {% if practice_plan.primary_focus %}
+
+                        <p class="mt-3 mb-0">
+                            <strong>Focus:</strong>
+                            {{ practice_plan.primary_focus }}
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="d-flex flex-wrap align-content-start gap-2">
+                    <a
+                        href="{% url 'practice_planner:save_practice_as_template' practice_plan.id %}"
+                         class="btn btn-warning"
+                    >
+                        ⭐ Save as Template
+                    </a>
+
+                    <a
+                        href="{% url 'practice_planner:practice_update' practice_plan.id %}"
+                        class="btn btn-light"
+                    >
+                        Edit Details
+                    </a>
+
+                    <a
+                        href="{% url 'practice_planner:practice_detail' practice_plan.id %}"
+                        class="btn btn-outline-light"
+                    >
+                        Preview
+                    </a>
+
+                    {% if practice_plan.status == 'draft' or practice_plan.status == 'scheduled' %}
+
+                        <form
+                            method="post"
+                            action="{% url 'practice_planner:practice_start' practice_plan.id %}"
+                        >
+                            {% csrf_token %}
+
+                            <button
+                                type="submit"
+                                class="btn btn-success"
+                            >
+                                ▶ Start Practice
+                            </button>
+                        </form>
+
+                    {% elif practice_plan.status == 'in_progress' %}
+
+                        <form
+                            method="post"
+                            action="{% url 'practice_planner:practice_complete' practice_plan.id %}"
+                        >
+                            {% csrf_token %}
+
+                            <button
+                                type="submit"
+                                class="btn btn-dark"
+                            >
+                                Complete Practice
+                            </button>
+                        </form>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section class="row g-3 mb-4">
+
+            <div class="col-6 col-lg-3">
+
+                <div class="card metric-card h-100">
+
+                    <div class="card-body">
+
+                        <div class="small text-muted">
+                            Practice Length
+                        </div>
+
+                        <div class="h2 mb-0">
+                            {{ practice_plan.duration_minutes }}
+                            <span class="fs-6 text-muted">min</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-6 col-lg-3">
+
+                <div class="card metric-card h-100">
+
+                    <div class="card-body">
+
+                        <div class="small text-muted">
+                            Rotations
+                        </div>
+
+                        <div class="h2 mb-0">
+                            {{ rotations|length }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-6 col-lg-3">
+
+                <div class="card metric-card h-100">
+
+                    <div class="card-body">
+
+                        <div class="small text-muted">
+                            Planned Time
+                        </div>
+
+                        <div class="h2 mb-0">
+                            {{ total_rotation_minutes }}
+                            <span class="fs-6 text-muted">min</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-6 col-lg-3">
+
+                <div class="card metric-card h-100">
+
+                    <div class="card-body">
+
+                        {% if over_minutes > 0 %}
+
+                            <div class="small text-danger">
+                                Over Schedule
+                            </div>
+
+                            <div class="h2 text-danger mb-0">
+                                {{ over_minutes }}
+                                <span class="fs-6">min</span>
+                            </div>
+
+                        {% else %}
+
+                            <div class="small text-muted">
+                                Unplanned Time
+                            </div>
+
+                            <div class="h2 mb-0">
+                                {{ remaining_minutes }}
+                                <span class="fs-6 text-muted">min</span>
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section class="card builder-card mb-4">
+
+            <div class="card-body p-4">
+
+                <div class="d-flex justify-content-between align-items-center mb-2">
+
+                    <div>
+
+                        <h2 class="h5 mb-1">
+                            Practice Timeline
+                        </h2>
+
+                        <p class="text-muted small mb-0">
+                            {{ planned_percentage }}% of the scheduled practice is planned.
+                        </p>
+
+                    </div>
+
+                    <strong>
+                        {{ total_rotation_minutes }}
+                        /
+                        {{ practice_plan.duration_minutes }}
+                        min
+                    </strong>
+
+                </div>
+
+                <div class="progress mb-4">
+
+                    <div
+                        class="progress-bar {% if over_minutes > 0 %}bg-danger{% elif remaining_minutes == 0 %}bg-success{% endif %}"
+                        role="progressbar"
+                        style="width: {{ display_percentage }}%;"
+                        aria-valuenow="{{ display_percentage }}"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                    ></div>
+
+                </div>
+
+                {% if rotations %}
+
+                    <div class="d-flex flex-wrap gap-2">
+
+                        {% for rotation in rotations %}
+
+                            <div
+                                class="timeline-item {% if rotation.is_testing_rotation %}testing{% endif %}"
+                                data-timeline-rotation-id="{{ rotation.id }}"
+                            >
+
+                                <div class="small text-muted">
+                                    <span class="timeline-order-number">
+                                        {{ rotation.order }}
+                                    </span>.
+                                    {{ rotation.get_event_display }}
+                                </div>
+
+                                <strong class="d-block text-truncate">
+                                    {{ rotation.title }}
+                                </strong>
+
+                                <span class="small">
+                                    {{ rotation.duration_minutes }} min
+                                </span>
+
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                {% else %}
+
+                    <p class="text-muted mb-0">
+                        Add rotations to create the practice timeline.
+                    </p>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <div class="row g-4">
+
+            <main class="col-12 col-xl-8">
+
+                <section class="card builder-card">
+
+                    <div class="card-header bg-white border-0 p-4">
+
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+
+                            <div>
+
+                                <h2 class="h4 mb-1">
+                                    Practice Schedule
+                                </h2>
+
+                                <p class="text-muted mb-0">
+                                    Open a rotation to view or edit its stations.
+                                </p>
+
+                            </div>
+
+                            <div class="d-flex flex-wrap gap-2">
+
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-outline-secondary"
+                                    id="expand-all"
+                                >
+                                    Expand All
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-outline-secondary"
+                                    id="collapse-all"
+                                >
+                                    Collapse All
+                                </button>
+
+                                <a
+                                    href="{% url 'practice_planner:rotation_create' practice_plan.id %}"
+                                    class="btn btn-primary"
+                                >
+                                    + Add Rotation
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="card-body p-4 pt-0">
+
+                        {% if rotations %}
+
+                            <div
+                                id="rotation-drag-list"
+                                class="rotation-drag-list"
+                                data-reorder-url="{% url 'practice_planner:reorder_rotations' practice_plan.id %}"
+                            >
+
+                                {% for rotation in rotations %}
+
+                                <details
+                                    class="rotation-details rotation-drag-item"
+                                    data-rotation-id="{{ rotation.id }}"
+                                    {% if forloop.first %}open{% endif %}
+                                >
+                                    <summary class="rotation-summary">
+
+                                        <div class="d-flex justify-content-between align-items-center gap-3">
+
+                                            <div class="d-flex align-items-center gap-3 min-w-0">
+
+                                                <button
+                                                    type="button"
+                                                    class="drag-handle rotation-drag-handle"
+                                                    title="Drag to reorder rotation"
+                                                    aria-label="Drag to reorder rotation"
+                                                    draggable="true"
+                                                >
+                                                    ☰
+                                                </button>
+
+                                                <div class="rotation-number rotation-order-number">
+                                                    {{ rotation.order }}
+                                                </div>
+
+                                                <div class="min-w-0">
+
+                                                    <div class="d-flex flex-wrap align-items-center gap-2">
+
+                                                        <h3 class="h5 mb-0">
+                                                            {{ rotation.title }}
+                                                        </h3>
+
+                                                        <span class="badge text-bg-light border">
+                                                            {{ rotation.get_event_display }}
+                                                        </span>
+
+                                                        {% if rotation.is_testing_rotation %}
+
+                                                            <span class="badge text-bg-warning">
+                                                                Testing
+                                                            </span>
+
+                                                        {% endif %}
+
+                                                    </div>
+
+                                                    <div class="small text-muted mt-1">
+
+                                                        {{ rotation.duration_minutes }}
+                                                        minutes
+
+                                                        {% if rotation.start_time %}
+
+                                                            ·
+                                                            {{ rotation.start_time|time:"g:i A" }}
+
+                                                        {% endif %}
+
+                                                        {% if rotation.location %}
+
+                                                            ·
+                                                            {{ rotation.location }}
+
+                                                        {% endif %}
+
+                                                        {% if rotation.assigned_coach %}
+
+                                                            ·
+                                                            Coach
+                                                            {{ rotation.assigned_coach.get_full_name|default:rotation.assigned_coach.username }}
+
+                                                        {% endif %}
+
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+                                            <span class="rotation-chevron">
+                                                ▼
+                                            </span>
+
+                                        </div>
+
+                                    </summary>
+
+
+                                    <div class="p-3 p-lg-4">
+
+                                        {% if rotation.objective %}
+
+                                            <div class="alert alert-primary py-2">
+
+                                                <strong>Objective:</strong>
+
+                                                {{ rotation.objective }}
+
+                                            </div>
+
+                                        {% endif %}
+
+
+                                        {% if rotation.is_testing_rotation %}
+
+                                            {% if rotation.testing_session %}
+
+                                                <div class="border border-warning rounded-4 p-3">
+
+                                                    <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
+
+                                                        <div>
+
+                                                            <div class="small text-muted">
+                                                                Performance Testing Session
+                                                            </div>
+
+                                                            <h4 class="h5 mb-1">
+                                                                {{ rotation.testing_session.title }}
+                                                            </h4>
+
+                                                            <p class="text-muted mb-2">
+
+                                                                {{ rotation.testing_session.testing_date|date:"M j, Y" }}
+
+                                                                {% if rotation.testing_session.week_number %}
+
+                                                                    · Week {{ rotation.testing_session.week_number }}
+
+                                                                {% endif %}
+
+                                                            </p>
+
+                                                            <div class="d-flex flex-wrap gap-2">
+
+                                                                <span class="badge text-bg-light border">
+
+                                                                    {{ rotation.testing_session.exercises.count }}
+
+                                                                    exercise{{ rotation.testing_session.exercises.count|pluralize }}
+
+                                                                </span>
+
+                                                                <span class="badge text-bg-light border">
+
+                                                                    {{ rotation.testing_session.athletes.count }}
+
+                                                                    athlete{{ rotation.testing_session.athletes.count|pluralize }}
+
+                                                                </span>
+
+                                                                <span class="badge text-bg-light border">
+
+                                                                    {{ rotation.testing_session.get_status_display }}
+
+                                                                </span>
+
+                                                            </div>
+
+                                                        </div>
+
+                                                    </div>
+
+
+                                                    {% if rotation.testing_session.exercises.all %}
+
+                                                        <hr>
+
+                                                        <div class="row g-2">
+
+                                                            {% for exercise in rotation.testing_session.exercises.all %}
+
+                                                                <div class="col-12 col-md-6">
+
+                                                                    <div class="station-card">
+
+                                                                        <strong>
+                                                                            {{ exercise.name }}
+                                                                        </strong>
+
+                                                                        <div class="small text-muted">
+                                                                            {{ exercise.get_unit_display }}
+                                                                        </div>
+
+                                                                    </div>
+
+                                                                </div>
+
+                                                            {% endfor %}
+
+                            </div>
+
+                                                        </div>
+
+                                                    {% endif %}
+
+                                                </div>
+
+                                            {% else %}
+
+                                                <div class="alert alert-warning mb-0">
+                                                    No testing session is attached to this rotation.
+                                                </div>
+
+                                            {% endif %}
+
+                                        {% else %}
+
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+
+                                                <h4 class="h6 mb-0">
+                                                    Stations
+                                                </h4>
+
+                                                <a
+                                                    href="{% url 'practice_planner:station_create' rotation.id %}"
+                                                    class="btn btn-sm btn-primary"
+                                                >
+                                                    + Add Station
+                                                </a>
+
+                                            </div>
+
+
+                                            {% if rotation.stations.all %}
+
+                                                 <div
+                                                    class="d-flex flex-column gap-2 station-drag-list"
+                                                    data-reorder-url="{% url 'practice_planner:reorder_stations' rotation.id %}"
+                                                 >
+
+                                                    {% for station in rotation.stations.all %}
+
+                                                        <div
+                                                            class="station-card station-drag-item"
+                                                            data-station-id="{{ station.id }}"
+                                                        >
+
+                                                            <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
+
+                                                               <div class="d-flex gap-3">
+
+                                                                    <button
+                                                                        type="button"
+                                                                        class="drag-handle station-drag-handle"
+                                                                        title="Drag to reorder station"
+                                                                        aria-label="Drag to reorder station"
+                                                                        draggable="true"
+                                                                    >
+                                                                        ☰
+                                                                    </button>
+
+                                                                    <div class="station-order station-order-number">
+                                                                        {{ station.order }}
+                                                                    </div>
+
+                                                                    <div>
+
+                                                                        <div class="d-flex flex-wrap align-items-center gap-2">
+
+                                                                            <strong>
+                                                                                {{ station.title }}
+                                                                            </strong>
+
+                                                                            <span class="badge text-bg-light border">
+                                                                                {{ station.get_station_type_display }}
+                                                                            </span>
+
+                                                                            {% if station.is_optional %}
+
+                                                                                <span class="badge text-bg-secondary">
+                                                                                    Optional
+                                                                                </span>
+
+                                                                            {% endif %}
+
+                                                                        </div>
+
+                                                                        <div class="small text-muted mt-1">
+
+                                                                            {% if station.duration_minutes %}
+
+                                                                                {{ station.duration_minutes }} min
+
+                                                                            {% endif %}
+
+                                                                            {% if station.sets %}
+
+                                                                                · {{ station.sets }} sets
+
+                                                                            {% endif %}
+
+                                                                            {% if station.repetitions %}
+
+                                                                                · {{ station.repetitions }} reps
+
+                                                                            {% endif %}
+
+                                                                            {% if station.target_attempts %}
+
+                                                                                · {{ station.target_attempts }} attempts
+
+                                                                            {% endif %}
+
+                                                                        </div>
+
+                                                                        {% if station.instructions %}
+
+                                                                            <p class="small mb-1 mt-2">
+                                                                                {{ station.instructions }}
+                                                                            </p>
+
+                                                                        {% endif %}
+
+                                                                        {% if station.coaching_cues %}
+
+                                                                            <div class="small mt-1">
+
+                                                                                <strong>Coaching cues:</strong>
+
+                                                                                {{ station.coaching_cues }}
+
+                                                                            </div>
+
+                                                                        {% endif %}
+
+                                                                        {% if station.success_criteria %}
+
+                                                                            <div class="small mt-1">
+
+                                                                                <strong>Success:</strong>
+
+                                                                                {{ station.success_criteria }}
+
+                                                                            </div>
+
+                                                                        {% endif %}
+
+                                                                    </div>
+
+                                                                </div>
+
+
+                                                                <div class="d-flex align-items-start gap-2">
+
+                                                                    <a
+                                                                        href="{% url 'practice_planner:station_update' station.id %}"
+                                                                        class="btn btn-sm btn-outline-secondary"
+                                                                    >
+                                                                        Edit
+                                                                    </a>
+
+                                                                    <a
+                                                                        href="{% url 'practice_planner:station_delete' station.id %}"
+                                                                        class="btn btn-sm btn-outline-danger"
+                                                                    >
+                                                                        Delete
+                                                                    </a>
+
+                                                                </div>
+
+                                                            </div>
+
+                                                        </div>
+
+                                                    {% endfor %}
+
+                                                </div>
+
+                                            {% else %}
+
+                                                <div class="text-center border rounded-4 py-4">
+
+                                                    <p class="text-muted mb-2">
+                                                        No stations have been added.
+                                                    </p>
+
+                                                    <a
+                                                        href="{% url 'practice_planner:station_create' rotation.id %}"
+                                                        class="btn btn-sm btn-outline-primary"
+                                                    >
+                                                        Add First Station
+                                                    </a>
+
+                                                </div>
+
+                                            {% endif %}
+
+                                        {% endif %}
+
+
+                                        {% if rotation.coach_notes %}
+
+                                            <div class="mt-3 p-3 bg-light rounded-3">
+
+                                                <strong class="small">
+                                                    Coach Notes
+                                                </strong>
+
+                                                <p class="small mb-0 mt-1">
+                                                    {{ rotation.coach_notes }}
+                                                </p>
+
+                                            </div>
+
+                                        {% endif %}
+
+
+                                        <div class="d-flex flex-wrap justify-content-end gap-2 mt-3">
+
+                                            <a
+                                                href="{% url 'practice_planner:rotation_update' rotation.id %}"
+                                                class="btn btn-sm btn-outline-secondary"
+                                            >
+                                                Edit Rotation
+                                            </a>
+
+                                            <a
+                                                href="{% url 'practice_planner:rotation_delete' rotation.id %}"
+                                                class="btn btn-sm btn-outline-danger"
+                                            >
+                                                Delete Rotation
+                                            </a>
+
+                                        </div>
+
+                                    </div>
+
+                                </details>
+
+                            {% endfor %}
+
+                        {% else %}
+
+                            <div class="text-center py-5">
+
+                                <h3 class="h5">
+                                    Build your first rotation
+                                </h3>
+
+                                <p class="text-muted">
+                                    Add warm-up, apparatus, strength, testing, or recovery.
+                                </p>
+
+                                <a
+                                    href="{% url 'practice_planner:rotation_create' practice_plan.id %}"
+                                    class="btn btn-primary"
+                                >
+                                    Add First Rotation
+                                </a>
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </section>
+
+            </main>
+
+
+            <aside class="col-12 col-xl-4">
+
+                <div class="sticky-sidebar">
+
+                    <section class="card builder-card mb-4">
+
+                        <div class="card-body p-4">
+
+                            <h2 class="h5 mb-3">
+                                Coaching Plan
+                            </h2>
+
+                            <div class="mb-3">
+
+                                <div class="small text-muted">
+                                    Lead Coach
+                                </div>
+
+                                <strong>
+                                    {{ practice_plan.lead_coach.get_full_name|default:practice_plan.lead_coach.username }}
+                                </strong>
+
+                            </div>
+
+                            {% if practice_plan.coach_objectives %}
+
+                                <div class="mb-3">
+
+                                    <div class="small text-muted">
+                                        Objectives
+                                    </div>
+
+                                    <p class="mb-0">
+                                        {{ practice_plan.coach_objectives }}
+                                    </p>
+
+                                </div>
+
+                            {% endif %}
+
+                            {% if practice_plan.general_notes %}
+
+                                <div>
+
+                                    <div class="small text-muted">
+                                        Notes
+                                    </div>
+
+                                    <p class="mb-0">
+                                        {{ practice_plan.general_notes }}
+                                    </p>
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </section>
+
+
+                    <section class="card builder-card mb-4">
+
+                        <div class="card-body p-4">
+
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+
+                                <div>
+
+                                    <h2 class="h5 mb-1">
+                                        Athlete Workloads
+                                    </h2>
+
+                                    <div class="small text-muted">
+                                        {{ athlete_assignments|length }}
+                                        athletes
+                                    </div>
+
+                                </div>
+
+                                {% if modified_athletes %}
+
+                                    <span class="badge text-bg-warning">
+                                        {{ modified_athletes|length }}
+                                        adjusted
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            {% if athlete_assignments %}
+
+                                <div class="list-group list-group-flush">
+
+                                    {% for assignment in athlete_assignments %}
+
+                                        <div class="list-group-item px-0 py-3">
+
+                                            <div class="d-flex justify-content-between align-items-start gap-2">
+
+                                                <div>
+
+                                                    <strong>
+
+                                                        {% if assignment.athlete.get_full_name %}
+
+                                                            {{ assignment.athlete.get_full_name }}
+
+                                                        {% else %}
+
+                                                            {{ assignment.athlete.username }}
+
+                                                        {% endif %}
+
+                                                    </strong>
+
+                                                    <div class="small text-muted">
+                                                        {{ assignment.get_workload_display }}
+                                                    </div>
+
+                                                    {% if assignment.restrictions %}
+
+                                                        <div class="small text-danger mt-1">
+                                                            {{ assignment.restrictions }}
+                                                        </div>
+
+                                                    {% endif %}
+
+                                                </div>
+
+                                                <a
+                                                    href="{% url 'practice_planner:athlete_assignment_update' assignment.id %}"
+                                                    class="btn btn-sm btn-outline-secondary"
+                                                >
+                                                    Edit
+                                                </a>
+
+                                            </div>
+
+                                        </div>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            {% else %}
+
+                                <p class="text-muted mb-0">
+                                    No athletes are assigned.
+                                </p>
+
+                            {% endif %}
+
+                        </div>
+
+                    </section>
+
+
+                    <section class="card builder-card">
+
+                        <div class="card-body p-4">
+
+                            <h2 class="h5 mb-2">
+                                Performance Testing
+                            </h2>
+
+                            <p class="text-muted small">
+                                Create a session using this practice’s date and training group.
+                            </p>
+
+                            <a
+                                href="{% url 'practice_planner:create_testing_session_for_practice' practice_plan.id %}"
+                                class="btn btn-outline-warning w-100"
+                            >
+                                Create Testing Session
+                            </a>
+
+                        </div>
+
+                    </section>
+
+                </div>
+
+            </aside>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div
+    id="drag-save-message"
+    class="alert drag-save-message d-none"
+    role="alert"
+></div>
+
+<script>
+    document.addEventListener(
+        'DOMContentLoaded',
+        function () {
+            const rotationCards = document.querySelectorAll(
+                '.rotation-details'
+            );
+
+            const expandButton = document.getElementById(
+                'expand-all'
+            );
+
+            const collapseButton = document.getElementById(
+                'collapse-all'
+            );
+
+            const saveMessage = document.getElementById(
+                'drag-save-message'
+            );
+
+
+            function getCookie(name) {
+                const cookies = document.cookie
+                    ? document.cookie.split(';')
+                    : [];
+
+                for (const cookieValue of cookies) {
+                    const cookie = cookieValue.trim();
+
+                    if (
+                        cookie.substring(
+                            0,
+                            name.length + 1
+                        ) === `${name}=`
+                    ) {
+                        return decodeURIComponent(
+                            cookie.substring(
+                                name.length + 1
+                            )
+                        );
+                    }
+                }
+
+                return null;
+            }
+
+
+            function showSaveMessage(
+                message,
+                isError = false
+            ) {
+                if (!saveMessage) {
+                    return;
+                }
+
+                saveMessage.textContent = message;
+
+                saveMessage.classList.remove(
+                    'd-none',
+                    'alert-success',
+                    'alert-danger'
+                );
+
+                saveMessage.classList.add(
+                    isError
+                        ? 'alert-danger'
+                        : 'alert-success'
+                );
+
+                window.clearTimeout(
+                    showSaveMessage.timeoutId
+                );
+
+                showSaveMessage.timeoutId = window.setTimeout(
+                    function () {
+                        saveMessage.classList.add(
+                            'd-none'
+                        );
+                    },
+                    2500
+                );
+            }
+
+
+            async function saveOrder(
+                url,
+                payload
+            ) {
+                const response = await fetch(
+                    url,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': (
+                                'application/json'
+                            ),
+                            'X-CSRFToken': getCookie(
+                                'csrftoken'
+                            ),
+                            'X-Requested-With': (
+                                'XMLHttpRequest'
+                            ),
+                        },
+                        body: JSON.stringify(
+                            payload
+                        ),
+                    }
+                );
+
+                const data = await response.json();
+
+                if (
+                    !response.ok
+                    || !data.success
+                ) {
+                    throw new Error(
+                        data.error
+                        || 'The new order could not be saved.'
+                    );
+                }
+
+                return data;
+            }
+
+
+            function clearDragStyles() {
+                document.querySelectorAll(
+                    '.dragging-item, .drag-over-item'
+                ).forEach(
+                    function (element) {
+                        element.classList.remove(
+                            'dragging-item',
+                            'drag-over-item'
+                        );
+                    }
+                );
+            }
+
+
+            function updateRotationNumbers(
+                rotationList
+            ) {
+                const rotationItems = [
+                    ...rotationList.querySelectorAll(
+                        ':scope > .rotation-drag-item'
+                    ),
+                ];
+
+                const timelineItems = document.querySelectorAll(
+                    '[data-timeline-rotation-id]'
+                );
+
+                const timelineContainer = (
+                    timelineItems.length
+                    ? timelineItems[0].parentElement
+                    : null
+                );
+
+                rotationItems.forEach(
+                    function (
+                        item,
+                        index
+                    ) {
+                        const orderNumber = (
+                            index + 1
+                        );
+
+                        const numberElement = item.querySelector(
+                            '.rotation-order-number'
+                        );
+
+                        if (numberElement) {
+                            numberElement.textContent = (
+                                orderNumber
+                            );
+                        }
+
+                        const rotationId = (
+                            item.dataset.rotationId
+                        );
+
+                        const timelineItem = document.querySelector(
+                            `[data-timeline-rotation-id="${rotationId}"]`
+                        );
+
+                        if (timelineItem) {
+                            const timelineNumber = (
+                                timelineItem.querySelector(
+                                    '.timeline-order-number'
+                                )
+                            );
+
+                            if (timelineNumber) {
+                                timelineNumber.textContent = (
+                                    orderNumber
+                                );
+                            }
+
+                            if (timelineContainer) {
+                                timelineContainer.appendChild(
+                                    timelineItem
+                                );
+                            }
+                        }
+                    }
+                );
+            }
+
+
+            function updateStationNumbers(
+                stationList
+            ) {
+                const stationItems = (
+                    stationList.querySelectorAll(
+                        ':scope > .station-drag-item'
+                    )
+                );
+
+                stationItems.forEach(
+                    function (
+                        item,
+                        index
+                    ) {
+                        const numberElement = item.querySelector(
+                            '.station-order-number'
+                        );
+
+                        if (numberElement) {
+                            numberElement.textContent = (
+                                index + 1
+                            );
+                        }
+                    }
+                );
+            }
+
+
+            function calculateDropTarget(
+                container,
+                selector,
+                mouseY
+            ) {
+                const draggableItems = [
+                    ...container.querySelectorAll(
+                        selector
+                    ),
+                ].filter(
+                    function (item) {
+                        return !item.classList.contains(
+                            'dragging-item'
+                        );
+                    }
+                );
+
+                let closestItem = null;
+                let closestOffset = (
+                    Number.NEGATIVE_INFINITY
+                );
+
+                draggableItems.forEach(
+                    function (item) {
+                        const box = (
+                            item.getBoundingClientRect()
+                        );
+
+                        const offset = (
+                            mouseY
+                            - box.top
+                            - box.height / 2
+                        );
+
+                        if (
+                            offset < 0
+                            && offset > closestOffset
+                        ) {
+                            closestOffset = offset;
+                            closestItem = item;
+                        }
+                    }
+                );
+
+                return closestItem;
+            }
+
+
+            function setupDragList({
+                container,
+                itemSelector,
+                handleSelector,
+                idAttribute,
+                payloadKey,
+                updateNumbers,
+            }) {
+                if (!container) {
+                    console.warn(
+                        'Drag-and-drop container was not found.'
+                    );
+
+                    return;
+                }
+
+                let draggingItem = null;
+
+
+                container.addEventListener(
+                    'dragstart',
+                    function (event) {
+                        const handle = event.target.closest(
+                            handleSelector
+                        );
+
+                        if (!handle) {
+                            event.preventDefault();
+                            return;
+                        }
+
+                        const item = handle.closest(
+                            itemSelector
+                        );
+
+                        if (!item) {
+                            event.preventDefault();
+                            return;
+                        }
+
+                        draggingItem = item;
+
+                        draggingItem.classList.add(
+                            'dragging-item'
+                        );
+
+                        event.dataTransfer.effectAllowed = (
+                            'move'
+                        );
+
+                        event.dataTransfer.setData(
+                            'text/plain',
+                            item.dataset[idAttribute]
+                        );
+                    }
+                );
+
+
+                container.addEventListener(
+                    'dragover',
+                    function (event) {
+                        if (!draggingItem) {
+                            return;
+                        }
+
+                        event.preventDefault();
+
+                        event.dataTransfer.dropEffect = (
+                            'move'
+                        );
+
+                        const target = calculateDropTarget(
+                            container,
+                            `:scope > ${itemSelector}`,
+                            event.clientY
+                        );
+
+                        container.querySelectorAll(
+                            ':scope > .drag-over-item'
+                        ).forEach(
+                            function (item) {
+                                item.classList.remove(
+                                    'drag-over-item'
+                                );
+                            }
+                        );
+
+                        if (target) {
+                            target.classList.add(
+                                'drag-over-item'
+                            );
+
+                            container.insertBefore(
+                                draggingItem,
+                                target
+                            );
+                        } else {
+                            container.appendChild(
+                                draggingItem
+                            );
+                        }
+                    }
+                );
+
+
+                container.addEventListener(
+                    'drop',
+                    function (event) {
+                        if (draggingItem) {
+                            event.preventDefault();
+                        }
+                    }
+                );
+
+
+                container.addEventListener(
+                    'dragend',
+                    async function () {
+                        if (!draggingItem) {
+                            return;
+                        }
+
+                        clearDragStyles();
+
+                        const items = [
+                            ...container.querySelectorAll(
+                                `:scope > ${itemSelector}`
+                            ),
+                        ];
+
+                        const orderedIds = items.map(
+                            function (item) {
+                                return Number(
+                                    item.dataset[idAttribute]
+                                );
+                            }
+                        );
+
+                        updateNumbers(
+                            container
+                        );
+
+                        draggingItem = null;
+
+                        try {
+                            await saveOrder(
+                                container.dataset.reorderUrl,
+                                {
+                                    [payloadKey]: orderedIds,
+                                }
+                            );
+
+                            showSaveMessage(
+                                'New order saved.'
+                            );
+                        } catch (error) {
+                            console.error(
+                                error
+                            );
+
+                            showSaveMessage(
+                                error.message,
+                                true
+                            );
+
+                            window.setTimeout(
+                                function () {
+                                    window.location.reload();
+                                },
+                                1200
+                            );
+                        }
+                    }
+                );
+            }
+
+
+            if (expandButton) {
+                expandButton.addEventListener(
+                    'click',
+                    function () {
+                        rotationCards.forEach(
+                            function (card) {
+                                card.open = true;
+                            }
+                        );
+                    }
+                );
+            }
+
+
+            if (collapseButton) {
+                collapseButton.addEventListener(
+                    'click',
+                    function () {
+                        rotationCards.forEach(
+                            function (card) {
+                                card.open = false;
+                            }
+                        );
+                    }
+                );
+            }
+
+
+            setupDragList({
+                container: document.getElementById(
+                    'rotation-drag-list'
+                ),
+                itemSelector: '.rotation-drag-item',
+                handleSelector: '.rotation-drag-handle',
+                idAttribute: 'rotationId',
+                payloadKey: 'rotation_ids',
+                updateNumbers: updateRotationNumbers,
+            });
+
+
+            document.querySelectorAll(
+                '.station-drag-list'
+            ).forEach(
+                function (stationList) {
+                    setupDragList({
+                        container: stationList,
+                        itemSelector: '.station-drag-item',
+                        handleSelector: '.station-drag-handle',
+                        idAttribute: 'stationId',
+                        payloadKey: 'station_ids',
+                        updateNumbers: updateStationNumbers,
+                    });
+                }
+            );
+        }
+    );
+</script>
+
+{% endblock %}

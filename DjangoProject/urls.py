@@ -50,6 +50,11 @@ urlpatterns = [
         'reports/',
         include('reports.urls')
     ),
+
+    path(
+        'practice-planner/',
+        include('practice_planner.urls'),
+    ),
 ]
 
 handler403 = 'accounts.error_views.custom_403'

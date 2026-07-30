@@ -1,0 +1,526 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ page_title }}
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .station-form-shell {
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    .station-form-card {
+        border: 0;
+        border-radius: 20px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    }
+
+    .form-section-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+
+    .rotation-banner {
+        border-radius: 18px;
+        background: linear-gradient(
+            135deg,
+            rgba(13, 110, 253, 0.95),
+            rgba(79, 70, 229, 0.92)
+        );
+        color: white;
+        padding: 22px;
+    }
+
+    .field-help {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 4px;
+    }
+</style>
+
+
+<div class="container-fluid py-4">
+
+    <div class="station-form-shell">
+
+        <div class="mb-4">
+
+            <a
+                href="{% url 'practice_planner:practice_builder' practice_plan.id %}"
+                class="text-decoration-none text-muted"
+            >
+                ← Back to Practice Builder
+            </a>
+
+        </div>
+
+
+        <section class="rotation-banner mb-4">
+
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+
+                <div>
+
+                    <div class="small opacity-75 mb-1">
+                        {{ practice_plan.title }}
+                    </div>
+
+                    <h1 class="h3 mb-1">
+                        {{ page_title }}
+                    </h1>
+
+                    <p class="mb-0 opacity-75">
+                        Rotation:
+                        {{ rotation.title }}
+                        ·
+                        {{ rotation.duration_minutes }} minutes
+                    </p>
+
+                </div>
+
+                <span class="badge bg-white text-primary fs-6">
+                    {{ rotation.get_event_display }}
+                </span>
+
+            </div>
+
+        </section>
+
+
+        <form method="post" novalidate>
+
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+
+                <div class="alert alert-danger">
+
+                    {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+
+                </div>
+
+            {% endif %}
+
+
+            <section class="card station-form-card mb-4">
+
+                <div class="card-header bg-white border-0 px-4 pt-4 pb-2">
+
+                    <div class="form-section-title">
+                        Station Details
+                    </div>
+
+                    <p class="text-muted mb-0">
+                        Define the drill, skill, routine, or exercise.
+                    </p>
+
+                </div>
+
+                <div class="card-body px-4 pb-4">
+
+                    <div class="row g-3">
+
+                        <div class="col-12 col-md-8">
+
+                            <label
+                                for="{{ form.title.id_for_label }}"
+                                class="form-label"
+                            >
+                                Station Title
+                            </label>
+
+                            {{ form.title }}
+
+                            {% for error in form.title.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+
+                        <div class="col-12 col-md-4">
+
+                            <label
+                                for="{{ form.station_type.id_for_label }}"
+                                class="form-label"
+                            >
+                                Station Type
+                            </label>
+
+                            {{ form.station_type }}
+
+                            {% for error in form.station_type.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+
+                        <div class="col-12 col-md-4">
+
+                            <label
+                                for="{{ form.order.id_for_label }}"
+                                class="form-label"
+                            >
+                                Station Order
+                            </label>
+
+                            {{ form.order }}
+
+                            <div class="field-help">
+                                Determines where this station appears.
+                            </div>
+
+                            {% for error in form.order.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+
+                        <div class="col-12 col-md-4">
+
+                            <label
+                                for="{{ form.duration_minutes.id_for_label }}"
+                                class="form-label"
+                            >
+                                Duration
+                            </label>
+
+                            <div class="input-group">
+
+                                {{ form.duration_minutes }}
+
+                                <span class="input-group-text">
+                                    minutes
+                                </span>
+
+                            </div>
+
+                            {% for error in form.duration_minutes.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+
+                        <div class="col-12 col-md-4">
+
+                            <div class="h-100 d-flex align-items-end">
+
+                                <div class="form-check mb-2">
+
+                                    {{ form.is_optional }}
+
+                                    <label
+                                        class="form-check-label"
+                                        for="{{ form.is_optional.id_for_label }}"
+                                    >
+                                        Optional station
+                                    </label>
+
+                                </div>
+
+                            </div>
+
+                            {% for error in form.is_optional.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <section class="card station-form-card mb-4">
+
+                <div class="card-header bg-white border-0 px-4 pt-4 pb-2">
+
+                    <div class="form-section-title">
+                        Training Volume
+                    </div>
+
+                    <p class="text-muted mb-0">
+                        Set the expected volume for this station.
+                    </p>
+
+                </div>
+
+                <div class="card-body px-4 pb-4">
+
+                    <div class="row g-3">
+
+                        <div class="col-12 col-md-4">
+
+                            <label
+                                for="{{ form.sets.id_for_label }}"
+                                class="form-label"
+                            >
+                                Sets
+                            </label>
+
+                            {{ form.sets }}
+
+                            {% for error in form.sets.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+
+                        <div class="col-12 col-md-4">
+
+                            <label
+                                for="{{ form.repetitions.id_for_label }}"
+                                class="form-label"
+                            >
+                                Repetitions
+                            </label>
+
+                            {{ form.repetitions }}
+
+                            {% for error in form.repetitions.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+
+                        <div class="col-12 col-md-4">
+
+                            <label
+                                for="{{ form.target_attempts.id_for_label }}"
+                                class="form-label"
+                            >
+                                Target Attempts
+                            </label>
+
+                            {{ form.target_attempts }}
+
+                            <div class="field-help">
+                                Useful for skills where quality attempts matter more than reps.
+                            </div>
+
+                            {% for error in form.target_attempts.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <section class="card station-form-card mb-4">
+
+                <div class="card-header bg-white border-0 px-4 pt-4 pb-2">
+
+                    <div class="form-section-title">
+                        Coaching Instructions
+                    </div>
+
+                    <p class="text-muted mb-0">
+                        Explain how the station should be performed and coached.
+                    </p>
+
+                </div>
+
+                <div class="card-body px-4 pb-4">
+
+                    <div class="row g-3">
+
+                        <div class="col-12">
+
+                            <label
+                                for="{{ form.instructions.id_for_label }}"
+                                class="form-label"
+                            >
+                                Instructions
+                            </label>
+
+                            {{ form.instructions }}
+
+                            {% for error in form.instructions.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+
+                        <div class="col-12">
+
+                            <label
+                                for="{{ form.coaching_cues.id_for_label }}"
+                                class="form-label"
+                            >
+                                Coaching Cues
+                            </label>
+
+                            {{ form.coaching_cues }}
+
+                            <div class="field-help">
+                                Examples: push tall, open shoulders, finish the turn.
+                            </div>
+
+                            {% for error in form.coaching_cues.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+
+                        <div class="col-12">
+
+                            <label
+                                for="{{ form.success_criteria.id_for_label }}"
+                                class="form-label"
+                            >
+                                Success Criteria
+                            </label>
+
+                            {{ form.success_criteria }}
+
+                            <div class="field-help">
+                                Describe what successful completion looks like.
+                            </div>
+
+                            {% for error in form.success_criteria.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <section class="card station-form-card mb-4">
+
+                <div class="card-header bg-white border-0 px-4 pt-4 pb-2">
+
+                    <div class="form-section-title">
+                        Equipment and Reference
+                    </div>
+
+                    <p class="text-muted mb-0">
+                        Add equipment requirements and an optional demonstration video.
+                    </p>
+
+                </div>
+
+                <div class="card-body px-4 pb-4">
+
+                    <div class="row g-3">
+
+                        <div class="col-12">
+
+                            <label
+                                for="{{ form.equipment.id_for_label }}"
+                                class="form-label"
+                            >
+                                Equipment
+                            </label>
+
+                            {{ form.equipment }}
+
+                            {% for error in form.equipment.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+
+                        <div class="col-12">
+
+                            <label
+                                for="{{ form.reference_video_url.id_for_label }}"
+                                class="form-label"
+                            >
+                                Reference Video URL
+                            </label>
+
+                            {{ form.reference_video_url }}
+
+                            <div class="field-help">
+                                Optional link to a drill or skill demonstration.
+                            </div>
+
+                            {% for error in form.reference_video_url.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <div class="d-flex flex-column flex-sm-row justify-content-end gap-2">
+
+                <a
+                    href="{% url 'practice_planner:practice_builder' practice_plan.id %}"
+                    class="btn btn-outline-secondary"
+                >
+                    Cancel
+                </a>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    {{ submit_label }}
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}
+Save Practice as Template
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .template-form-shell {
+        max-width: 950px;
+        margin: 0 auto;
+    }
+
+    .template-form-card {
+        border: 0;
+        border-radius: 20px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    }
+
+    .practice-summary {
+        border-radius: 18px;
+        background: linear-gradient(
+            135deg,
+            rgba(13, 110, 253, 0.96),
+            rgba(79, 70, 229, 0.94)
+        );
+        color: white;
+        padding: 24px;
+    }
+</style>
+
+
+<div class="container-fluid py-4">
+
+    <div class="template-form-shell">
+
+        <div class="mb-4">
+
+            <a
+                href="{% url 'practice_planner:practice_builder' practice_plan.id %}"
+                class="text-decoration-none text-muted"
+            >
+                ← Back to Practice Builder
+            </a>
+
+        </div>
+
+
+        <section class="practice-summary mb-4">
+
+            <div class="small opacity-75 mb-1">
+                Save as reusable template
+            </div>
+
+            <h1 class="h2 mb-2">
+                {{ practice_plan.title }}
+            </h1>
+
+            <p class="mb-0 opacity-75">
+                {{ practice_plan.training_group.name }}
+                ·
+                {{ practice_plan.duration_minutes }} minutes
+                ·
+                {{ practice_plan.rotations.count }}
+                rotation{{ practice_plan.rotations.count|pluralize }}
+            </p>
+
+        </section>
+
+
+        <form method="post" novalidate>
+
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+
+                <div class="alert alert-danger">
+
+                    {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+
+                </div>
+
+            {% endif %}
+
+
+            <section class="card template-form-card mb-4">
+
+                <div class="card-header bg-white border-0 px-4 pt-4 pb-2">
+
+                    <h2 class="h4 mb-1">
+                        Template Details
+                    </h2>
+
+                    <p class="text-muted mb-0">
+                        Give the template a name and describe when it should be used.
+                    </p>
+
+                </div>
+
+                <div class="card-body px-4 pb-4">
+
+                    <div class="row g-3">
+
+                        <div class="col-12">
+
+                            <label
+                                for="{{ form.name.id_for_label }}"
+                                class="form-label"
+                            >
+                                Template Name
+                            </label>
+
+                            {{ form.name }}
+
+                            {% for error in form.name.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+
+                        <div class="col-12">
+
+                            <label
+                                for="{{ form.description.id_for_label }}"
+                                class="form-label"
+                            >
+                                Description
+                            </label>
+
+                            {{ form.description }}
+
+                            {% for error in form.description.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+
+                        <div class="col-12 col-md-6">
+
+                            <label
+                                for="{{ form.category.id_for_label }}"
+                                class="form-label"
+                            >
+                                Category
+                            </label>
+
+                            {{ form.category }}
+
+                            {% for error in form.category.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+
+                        <div class="col-12 col-md-6">
+
+                            <label
+                                for="{{ form.level.id_for_label }}"
+                                class="form-label"
+                            >
+                                Level or Group Type
+                            </label>
+
+                            {{ form.level }}
+
+                            {% for error in form.level.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+
+                        <div class="col-12">
+
+                            <label
+                                for="{{ form.season_phase.id_for_label }}"
+                                class="form-label"
+                            >
+                                Season Phase
+                            </label>
+
+                            {{ form.season_phase }}
+
+                            {% for error in form.season_phase.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+
+                        <div class="col-12">
+
+                            <div class="form-check">
+
+                                {{ form.is_shared }}
+
+                                <label
+                                    for="{{ form.is_shared.id_for_label }}"
+                                    class="form-check-label"
+                                >
+                                    Share this template with other coaches
+                                </label>
+
+                            </div>
+
+                            {% for error in form.is_shared.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <div class="alert alert-info">
+
+                The practice structure, rotations, stations, coaching cues,
+                equipment, volume targets, and notes will be copied.
+
+                Athlete assignments, dates, coaches, and completed testing
+                results will not be copied.
+
+            </div>
+
+
+            <div class="d-flex justify-content-end gap-2">
+
+                <a
+                    href="{% url 'practice_planner:practice_builder' practice_plan.id %}"
+                    class="btn btn-outline-secondary"
+                >
+                    Cancel
+                </a>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    ⭐ Save Template
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}
