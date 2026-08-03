@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.urls import include, path
 from accounts import public_views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path(
@@ -55,7 +57,20 @@ urlpatterns = [
         'practice-planner/',
         include('practice_planner.urls'),
     ),
+
+    path(
+        'videos/',
+        include('video_library.urls'),
+    ),
+
+
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(
+        settings.MEDIA_URL,
+        document_root=settings.MEDIA_ROOT,
+    )
 
 handler403 = 'accounts.error_views.custom_403'
 handler404 = 'accounts.error_views.custom_404'

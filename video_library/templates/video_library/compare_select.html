@@ -1,0 +1,545 @@
+{% extends "base.html" %}
+
+{% block title %}
+Compare {{ athlete.get_full_name|default:athlete.username }} Videos
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .compare-select-shell {
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+
+    .compare-hero {
+        padding: 28px;
+        color: white;
+        border-radius: 24px;
+        background:
+            linear-gradient(
+                135deg,
+                rgba(17, 24, 39, 0.98),
+                rgba(30, 64, 175, 0.95),
+                rgba(79, 70, 229, 0.92)
+            );
+        box-shadow:
+            0 16px 45px
+            rgba(15, 23, 42, 0.16);
+    }
+
+    .filter-card,
+    .selection-card {
+        border: 0;
+        border-radius: 20px;
+        box-shadow:
+            0 8px 24px
+            rgba(15, 23, 42, 0.06);
+    }
+
+    .compare-video-card {
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+        border: 2px solid transparent;
+        border-radius: 20px;
+        background: white;
+        box-shadow:
+            0 8px 24px
+            rgba(15, 23, 42, 0.08);
+        transition:
+            border-color 0.2s ease,
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+    }
+
+    .compare-video-card:hover {
+        transform: translateY(-3px);
+        box-shadow:
+            0 14px 34px
+            rgba(15, 23, 42, 0.13);
+    }
+
+    .compare-video-card.selected {
+        border-color: #0d6efd;
+        box-shadow:
+            0 0 0 4px
+            rgba(13, 110, 253, 0.12);
+    }
+
+    .compare-video-preview {
+        width: 100%;
+        height: 230px;
+        object-fit: contain;
+        background: #0f172a;
+    }
+
+    .selection-checkbox {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        z-index: 3;
+        width: 24px;
+        height: 24px;
+    }
+
+    .selected-order {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        z-index: 3;
+        width: 34px;
+        height: 34px;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: white;
+        background: #0d6efd;
+        font-weight: 800;
+    }
+
+    .compare-video-card.selected .selected-order {
+        display: flex;
+    }
+
+    .sticky-selection {
+        position: sticky;
+        bottom: 20px;
+        z-index: 100;
+    }
+</style>
+
+
+<div class="container-fluid py-4">
+
+    <div class="compare-select-shell">
+
+        <section class="compare-hero mb-4">
+
+            <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-4">
+
+                <div>
+
+                    <a
+                        href="{% url 'video_library:athlete_timeline' athlete.id %}"
+                        class="text-white text-decoration-none opacity-75"
+                    >
+                        ← Athlete Timeline
+                    </a>
+
+                    <h1 class="display-6 fw-bold mt-3 mb-2">
+                        Compare Videos
+                    </h1>
+
+                    <p class="lead mb-0 opacity-75">
+                        Select two videos for
+                        {{ athlete.get_full_name|default:athlete.username }}.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section class="card filter-card mb-4">
+
+            <div class="card-body p-4">
+
+                <form method="get">
+
+                    <div class="row g-3 align-items-end">
+
+                        <div class="col-12 col-md-5">
+
+                            <label
+                                for="event-filter"
+                                class="form-label"
+                            >
+                                Event
+                            </label>
+
+                            <select
+                                name="event"
+                                id="event-filter"
+                                class="form-select"
+                            >
+
+                                <option value="">
+                                    All events
+                                </option>
+
+                                {% for value, label in event_choices %}
+
+                                    <option
+                                        value="{{ value }}"
+                                        {% if event_filter == value %}selected{% endif %}
+                                    >
+                                        {{ label }}
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="col-12 col-md-5">
+
+                            <label
+                                for="skill-filter"
+                                class="form-label"
+                            >
+                                Skill
+                            </label>
+
+                            <select
+                                name="skill"
+                                id="skill-filter"
+                                class="form-select"
+                            >
+
+                                <option value="">
+                                    All skills
+                                </option>
+
+                                {% for skill in skill_names %}
+
+                                    <option
+                                        value="{{ skill }}"
+                                        {% if skill_filter == skill %}selected{% endif %}
+                                    >
+                                        {{ skill }}
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="col-12 col-md-2">
+
+                            <div class="d-grid">
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary"
+                                >
+                                    Filter
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </section>
+
+
+        <form
+            method="get"
+            action="{% url 'video_library:video_compare' %}"
+            id="compare-selection-form"
+        >
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+
+                <h2 class="h5 mb-0">
+                    {{ result_count }}
+                    video{{ result_count|pluralize }}
+                </h2>
+
+                <span
+                    id="selection-count"
+                    class="badge text-bg-light border fs-6"
+                >
+                    0 of 2 selected
+                </span>
+
+            </div>
+
+
+            {% if videos %}
+
+                <div class="row g-4">
+
+                    {% for video in videos %}
+
+                        <div class="col-12 col-md-6 col-xl-4">
+
+                            <label
+                                class="compare-video-card d-block"
+                                data-video-card
+                            >
+
+                                <input
+                                    type="checkbox"
+                                    class="form-check-input selection-checkbox"
+                                    data-video-checkbox
+                                    value="{{ video.id }}"
+                                >
+
+                                <span class="selected-order"></span>
+
+                                <video
+                                    class="compare-video-preview"
+                                    preload="metadata"
+                                    muted
+                                    playsinline
+                                >
+                                    <source
+                                        src="{{ video.video_file.url }}"
+                                        type="{{ video.content_type|default:'video/mp4' }}"
+                                    >
+                                </video>
+
+
+                                <div class="p-4">
+
+                                    <div class="small text-muted mb-1">
+
+                                        {% if video.recorded_at %}
+                                            {{ video.recorded_at|date:"F j, Y" }}
+                                        {% else %}
+                                            Uploaded {{ video.uploaded_at|date:"F j, Y" }}
+                                        {% endif %}
+
+                                    </div>
+
+                                    <h3 class="h5 mb-1">
+                                        {{ video.title }}
+                                    </h3>
+
+                                    <p class="text-muted mb-0">
+
+                                        {{ video.get_event_display }}
+
+                                        {% if video.skill_name %}
+                                            · {{ video.skill_name }}
+                                        {% endif %}
+
+                                    </p>
+
+                                </div>
+
+                            </label>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <section class="card selection-card sticky-selection mt-4">
+
+                    <div class="card-body p-3">
+
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+
+                            <div>
+
+                                <strong>
+                                    Select exactly two videos
+                                </strong>
+
+                                <div class="small text-muted">
+                                    The selected order becomes Video 1 and Video 2.
+                                </div>
+
+                            </div>
+
+                            <button
+                                type="submit"
+                                id="compare-button"
+                                class="btn btn-primary"
+                                disabled
+                            >
+                                Compare Selected Videos
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            {% else %}
+
+                <section class="card selection-card">
+
+                    <div class="card-body text-center py-5">
+
+                        <div class="display-4 mb-3">
+                            🎥
+                        </div>
+
+                        <h2 class="h4">
+                            No videos available
+                        </h2>
+
+                        <p class="text-muted">
+                            Adjust the filters or upload more videos for this athlete.
+                        </p>
+
+                    </div>
+
+                </section>
+
+            {% endif %}
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<script>
+    document.addEventListener(
+        'DOMContentLoaded',
+        function () {
+            const form = document.getElementById(
+                'compare-selection-form'
+            );
+
+            const checkboxes = [
+                ...document.querySelectorAll(
+                    '[data-video-checkbox]'
+                ),
+            ];
+
+            const cards = [
+                ...document.querySelectorAll(
+                    '[data-video-card]'
+                ),
+            ];
+
+            const compareButton = document.getElementById(
+                'compare-button'
+            );
+
+            const selectionCount = document.getElementById(
+                'selection-count'
+            );
+
+            let selectedCheckboxes = [];
+
+
+            function updateSelection() {
+                selectedCheckboxes = checkboxes.filter(
+                    function (checkbox) {
+                        return checkbox.checked;
+                    }
+                );
+
+                checkboxes.forEach(
+                    function (checkbox) {
+                        const card = checkbox.closest(
+                            '[data-video-card]'
+                        );
+
+                        const orderMarker = card.querySelector(
+                            '.selected-order'
+                        );
+
+                        const selectedIndex = (
+                            selectedCheckboxes.indexOf(
+                                checkbox
+                            )
+                        );
+
+                        if (selectedIndex >= 0) {
+                            card.classList.add(
+                                'selected'
+                            );
+
+                            orderMarker.textContent = (
+                                selectedIndex + 1
+                            );
+                        } else {
+                            card.classList.remove(
+                                'selected'
+                            );
+
+                            orderMarker.textContent = '';
+                        }
+                    }
+                );
+
+                checkboxes.forEach(
+                    function (checkbox) {
+                        checkbox.disabled = (
+                            selectedCheckboxes.length >= 2
+                            && !checkbox.checked
+                        );
+                    }
+                );
+
+                selectionCount.textContent = (
+                    `${selectedCheckboxes.length} of 2 selected`
+                );
+
+                compareButton.disabled = (
+                    selectedCheckboxes.length !== 2
+                );
+            }
+
+
+            checkboxes.forEach(
+                function (checkbox) {
+                    checkbox.addEventListener(
+                        'change',
+                        updateSelection
+                    );
+                }
+            );
+
+
+            form.addEventListener(
+                'submit',
+                function (event) {
+                    event.preventDefault();
+
+                    if (selectedCheckboxes.length !== 2) {
+                        return;
+                    }
+
+                    const comparisonUrl = new URL(
+                        form.action,
+                        window.location.origin
+                    );
+
+                    comparisonUrl.searchParams.set(
+                        'video_1',
+                        selectedCheckboxes[0].value
+                    );
+
+                    comparisonUrl.searchParams.set(
+                        'video_2',
+                        selectedCheckboxes[1].value
+                    );
+
+                    window.location.href = (
+                        comparisonUrl.toString()
+                    );
+                }
+            );
+
+
+            updateSelection();
+        }
+    );
+</script>
+
+{% endblock %}

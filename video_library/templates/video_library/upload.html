@@ -1,0 +1,671 @@
+{% extends "base.html" %}
+
+{% block title %}
+Upload Videos
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .upload-shell {
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    .upload-card {
+        border: 0;
+        border-radius: 22px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.07);
+    }
+
+    .upload-hero {
+        padding: 28px;
+        color: white;
+        border-radius: 24px;
+        background:
+            linear-gradient(
+                135deg,
+                rgba(13, 110, 253, 0.96),
+                rgba(79, 70, 229, 0.94)
+            );
+    }
+
+    .video-drop-zone {
+        padding: 32px;
+        text-align: center;
+        border: 2px dashed #adb5bd;
+        border-radius: 18px;
+        background: #f8f9fa;
+        transition:
+            border-color 0.2s ease,
+            background 0.2s ease;
+    }
+
+    .video-drop-zone.drag-active {
+        border-color: #0d6efd;
+        background: #eef4ff;
+    }
+
+    .selected-file {
+        padding: 10px 12px;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        background: white;
+    }
+</style>
+
+
+<div class="container-fluid py-4">
+
+    <div class="upload-shell">
+
+        <div class="mb-4">
+
+            <a
+                href="{% url 'video_library:dashboard' %}"
+                class="text-decoration-none text-muted"
+            >
+                ← Video Library
+            </a>
+
+        </div>
+
+
+        <section class="upload-hero mb-4">
+
+            <div class="small opacity-75 mb-1">
+                NewSchool Gymnastics
+            </div>
+
+            <h1 class="h2 mb-2">
+                Upload Videos
+            </h1>
+
+            <p class="mb-0 opacity-75">
+                Move videos off your phone and organize them by
+                athlete, event, skill, and practice.
+            </p>
+
+        </section>
+
+
+        <form
+            method="post"
+            enctype="multipart/form-data"
+            novalidate
+        >
+
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+
+                <div class="alert alert-danger">
+
+                    {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+
+                </div>
+
+            {% endif %}
+
+
+            <section class="card upload-card mb-4">
+
+                <div class="card-header bg-white border-0 px-4 pt-4 pb-2">
+
+                    <h2 class="h4 mb-1">
+                        Select Videos
+                    </h2>
+
+                    <p class="text-muted mb-0">
+                        Upload multiple videos using the same athlete,
+                        event, and skill details.
+                    </p>
+
+                </div>
+
+                <div class="card-body px-4 pb-4">
+
+                    <div
+                        id="video-drop-zone"
+                        class="video-drop-zone"
+                    >
+
+                        <div class="display-6 mb-2">
+                            📹
+                        </div>
+
+                        <h3 class="h5">
+                            Select videos from your device
+                        </h3>
+
+                        <p class="text-muted">
+                            MP4, MOV, M4V, WEBM, or AVI.
+                            Maximum 500 MB per file.
+                        </p>
+
+                        {{ form.videos }}
+
+                    </div>
+
+                    {% for error in form.videos.errors %}
+                        <div class="text-danger small mt-2">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+
+
+                    <div
+                        id="selected-file-list"
+                        class="d-flex flex-column gap-2 mt-3"
+                    ></div>
+
+                </div>
+
+            </section>
+
+
+            <section class="card upload-card mb-4">
+
+                <div class="card-header bg-white border-0 px-4 pt-4 pb-2">
+
+                    <h2 class="h4 mb-1">
+                        Athlete and Practice
+                    </h2>
+
+                    <p class="text-muted mb-0">
+                        Connect the videos to the right athlete and session.
+                    </p>
+
+                </div>
+
+                <div class="card-body px-4 pb-4">
+
+                    <div class="row g-3">
+
+                        <div class="col-12">
+
+                            <label
+                                for="{{ form.title_prefix.id_for_label }}"
+                                class="form-label"
+                            >
+                                Title Prefix
+                            </label>
+
+                            {{ form.title_prefix }}
+
+                            <div class="form-text">
+                                Multiple uploads will be numbered automatically.
+                            </div>
+
+                            {% for error in form.title_prefix.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+
+                        <div class="col-12 col-md-6">
+
+                            <label
+                                for="{{ form.primary_athlete.id_for_label }}"
+                                class="form-label"
+                            >
+                                Primary Athlete
+                            </label>
+
+                            {{ form.primary_athlete }}
+
+                            {% for error in form.primary_athlete.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+
+                        <div class="col-12 col-md-6">
+
+                            <label
+                                for="{{ form.training_group.id_for_label }}"
+                                class="form-label"
+                            >
+                                Training Group
+                            </label>
+
+                            {{ form.training_group }}
+
+                            {% for error in form.training_group.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+
+                        <div class="col-12">
+
+                            <label class="form-label">
+                                Additional Athletes
+                            </label>
+
+                            <div class="row g-2">
+
+                                {% for checkbox in form.tagged_athletes %}
+
+                                    <div class="col-12 col-md-6">
+
+                                        <div class="form-check border rounded-3 p-3">
+
+                                            {{ checkbox.tag }}
+
+                                            <label
+                                                class="form-check-label ms-1"
+                                                for="{{ checkbox.id_for_label }}"
+                                            >
+                                                {{ checkbox.choice_label }}
+                                            </label>
+
+                                        </div>
+
+                                    </div>
+
+                                {% empty %}
+
+                                    <div class="col-12">
+                                        <p class="text-muted mb-0">
+                                            No active athlete accounts are available.
+                                        </p>
+                                    </div>
+
+                                {% endfor %}
+
+                            </div>
+
+                            {% for error in form.tagged_athletes.errors %}
+                                <div class="text-danger small mt-2">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+
+                        <div class="col-12">
+
+                            <label
+                                for="{{ form.practice_plan.id_for_label }}"
+                                class="form-label"
+                            >
+                                Practice
+                            </label>
+
+                            {{ form.practice_plan }}
+
+                            {% for error in form.practice_plan.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <section class="card upload-card mb-4">
+
+                <div class="card-header bg-white border-0 px-4 pt-4 pb-2">
+
+                    <h2 class="h4 mb-1">
+                        Video Details
+                    </h2>
+
+                </div>
+
+                <div class="card-body px-4 pb-4">
+
+                    <div class="row g-3">
+
+                        <div class="col-12 col-md-6">
+
+                            <label
+                                for="{{ form.event.id_for_label }}"
+                                class="form-label"
+                            >
+                                Event
+                            </label>
+
+                            {{ form.event }}
+
+                        </div>
+
+
+                        <div class="col-12 col-md-6">
+
+                            <label
+                                for="{{ form.skill_name.id_for_label }}"
+                                class="form-label"
+                            >
+                                Skill
+                            </label>
+
+                            {{ form.skill_name }}
+
+                        </div>
+
+
+                        <div class="col-12 col-md-6">
+
+                            <label
+                                for="{{ form.video_type.id_for_label }}"
+                                class="form-label"
+                            >
+                                Video Type
+                            </label>
+
+                            {{ form.video_type }}
+
+                        </div>
+
+
+                        <div class="col-12 col-md-6">
+
+                            <label
+                                for="{{ form.recorded_date.id_for_label }}"
+                                class="form-label"
+                            >
+                                Date Recorded
+                            </label>
+
+                            {{ form.recorded_date }}
+
+                        </div>
+
+
+                        <div class="col-12">
+
+                            <label
+                                for="{{ form.notes.id_for_label }}"
+                                class="form-label"
+                            >
+                                Coaching Notes
+                            </label>
+
+                            {{ form.notes }}
+
+                        </div>
+
+
+                        <div class="col-12">
+
+                            <label
+                                for="{{ form.tags.id_for_label }}"
+                                class="form-label"
+                            >
+                                Tags
+                            </label>
+
+                            {{ form.tags }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <section class="card upload-card mb-4">
+
+                <div class="card-header bg-white border-0 px-4 pt-4 pb-2">
+
+                    <h2 class="h4 mb-1">
+                        Sharing and Analysis
+                    </h2>
+
+                </div>
+
+                <div class="card-body px-4 pb-4">
+
+                    <div class="row g-3">
+
+                        <div class="col-12">
+
+                            <label
+                                for="{{ form.visibility.id_for_label }}"
+                                class="form-label"
+                            >
+                                Visibility
+                            </label>
+
+                            {{ form.visibility }}
+
+                        </div>
+
+
+                        <div class="col-12">
+
+                            <div class="form-check">
+
+                                {{ form.mark_as_favorite }}
+
+                                <label
+                                    for="{{ form.mark_as_favorite.id_for_label }}"
+                                    class="form-check-label"
+                                >
+                                    {{ form.mark_as_favorite.label }}
+                                </label>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-12">
+
+                            <div class="form-check">
+
+                                {{ form.request_ai_analysis }}
+
+                                <label
+                                    for="{{ form.request_ai_analysis.id_for_label }}"
+                                    class="form-check-label"
+                                >
+                                    {{ form.request_ai_analysis.label }}
+                                </label>
+
+                            </div>
+
+                            <div class="form-text">
+                                The video will be marked as queued. Actual AI processing
+                                will be connected in a later phase.
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <div class="d-flex flex-column flex-sm-row justify-content-end gap-2">
+
+                <a
+                    href="{% url 'video_library:dashboard' %}"
+                    class="btn btn-outline-secondary"
+                >
+                    Cancel
+                </a>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                    id="upload-submit-button"
+                >
+                    Upload Videos
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<script>
+    document.addEventListener(
+        'DOMContentLoaded',
+        function () {
+            const fileInput = document.getElementById(
+                '{{ form.videos.id_for_label }}'
+            );
+
+            const fileList = document.getElementById(
+                'selected-file-list'
+            );
+
+            const dropZone = document.getElementById(
+                'video-drop-zone'
+            );
+
+            const submitButton = document.getElementById(
+                'upload-submit-button'
+            );
+
+
+            function formatFileSize(bytes) {
+                const megabytes = (
+                    bytes
+                    / 1024
+                    / 1024
+                );
+
+                return `${megabytes.toFixed(1)} MB`;
+            }
+
+
+            function renderFiles() {
+                fileList.innerHTML = '';
+
+                if (!fileInput.files.length) {
+                    return;
+                }
+
+                [...fileInput.files].forEach(
+                    function (
+                        file,
+                        index
+                    ) {
+                        const item = document.createElement(
+                            'div'
+                        );
+
+                        item.className = (
+                            'selected-file '
+                            + 'd-flex '
+                            + 'justify-content-between '
+                            + 'align-items-center '
+                            + 'gap-3'
+                        );
+
+                        item.innerHTML = `
+                            <div>
+                                <strong>
+                                    ${index + 1}. ${file.name}
+                                </strong>
+
+                                <div class="small text-muted">
+                                    ${formatFileSize(file.size)}
+                                </div>
+                            </div>
+
+                            <span class="badge text-bg-light border">
+                                Ready
+                            </span>
+                        `;
+
+                        fileList.appendChild(
+                            item
+                        );
+                    }
+                );
+            }
+
+
+            fileInput.addEventListener(
+                'change',
+                renderFiles
+            );
+
+
+            [
+                'dragenter',
+                'dragover',
+            ].forEach(
+                function (eventName) {
+                    dropZone.addEventListener(
+                        eventName,
+                        function (event) {
+                            event.preventDefault();
+
+                            dropZone.classList.add(
+                                'drag-active'
+                            );
+                        }
+                    );
+                }
+            );
+
+
+            [
+                'dragleave',
+                'drop',
+            ].forEach(
+                function (eventName) {
+                    dropZone.addEventListener(
+                        eventName,
+                        function () {
+                            dropZone.classList.remove(
+                                'drag-active'
+                            );
+                        }
+                    );
+                }
+            );
+
+
+            document.querySelector(
+                'form'
+            ).addEventListener(
+                'submit',
+                function () {
+                    submitButton.disabled = true;
+
+                    submitButton.textContent = (
+                        'Uploading...'
+                    );
+                }
+            );
+
+
+            renderFiles();
+        }
+    );
+</script>
+
+{% endblock %}

@@ -1,0 +1,652 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ video.title }}
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .video-detail-shell {
+        max-width: 1500px;
+        margin: 0 auto;
+    }
+
+    .video-hero {
+        padding: 28px;
+        color: white;
+        border-radius: 24px;
+        background:
+            linear-gradient(
+                135deg,
+                rgba(17, 24, 39, 0.98),
+                rgba(30, 64, 175, 0.95),
+                rgba(79, 70, 229, 0.92)
+            );
+        box-shadow:
+            0 16px 45px
+            rgba(15, 23, 42, 0.16);
+    }
+
+    .video-player-card,
+    .detail-card {
+        overflow: hidden;
+        border: 0;
+        border-radius: 20px;
+        box-shadow:
+            0 8px 24px
+            rgba(15, 23, 42, 0.06);
+    }
+
+    .main-video {
+        width: 100%;
+        max-height: 720px;
+        background: #000;
+    }
+
+    .metadata-row {
+        padding: 12px 0;
+        border-bottom: 1px solid #eef2f7;
+    }
+
+    .metadata-row:last-child {
+        border-bottom: 0;
+    }
+
+    .metadata-label {
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+
+    .related-video-card {
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+        border-radius: 16px;
+        transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+    }
+
+    .related-video-card:hover {
+        transform: translateY(-3px);
+        box-shadow:
+            0 10px 26px
+            rgba(15, 23, 42, 0.1);
+    }
+
+    .related-video-preview {
+        width: 100%;
+        height: 160px;
+        object-fit: contain;
+        background: #0f172a;
+    }
+
+    .ai-status-card {
+        border: 1px solid #e9ecef;
+        border-radius: 16px;
+        background: #f8f9fa;
+    }
+
+    .tag-badge {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
+
+
+<div class="container-fluid py-4">
+
+    <div class="video-detail-shell">
+
+        <section class="video-hero mb-4">
+
+            <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-4">
+
+                <div>
+
+                    <a
+                        href="{% url 'video_library:video_list' %}"
+                        class="text-white text-decoration-none opacity-75"
+                    >
+                        ← All Videos
+                    </a>
+
+                    <div class="d-flex flex-wrap gap-2 mt-3 mb-2">
+
+                        <span class="badge bg-white text-primary">
+                            {{ video.get_event_display }}
+                        </span>
+
+                        <span class="badge bg-white bg-opacity-25">
+                            {{ video.get_video_type_display }}
+                        </span>
+
+                        {% if video.is_favorite %}
+                            <span class="badge bg-warning text-dark">
+                                ⭐ Favorite
+                            </span>
+                        {% endif %}
+
+                    </div>
+
+                    <h1 class="display-6 fw-bold mb-2">
+                        {{ video.title }}
+                    </h1>
+
+                    <p class="lead mb-0 opacity-75">
+
+                        {% if video.skill_name %}
+                            {{ video.skill_name }}
+                        {% else %}
+                            Gymnastics video
+                        {% endif %}
+
+                    </p>
+
+                </div>
+
+
+                <div class="d-flex flex-wrap gap-2">
+
+                    <form
+                        method="post"
+                        action="{% url 'video_library:toggle_favorite' video.id %}"
+                    >
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="btn {% if video.is_favorite %}btn-warning{% else %}btn-outline-light{% endif %}"
+                        >
+                            {% if video.is_favorite %}
+                                ⭐ Remove Favorite
+                            {% else %}
+                                ☆ Add to Favorites
+                            {% endif %}
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <div class="row g-4">
+
+            <main class="col-12 col-xl-8">
+
+                <section class="card video-player-card mb-4">
+
+                    <video
+                        controls
+                        preload="metadata"
+                        playsinline
+                        class="main-video"
+                    >
+                        <source
+                            src="{{ video.video_file.url }}"
+                            type="{{ video.content_type|default:'video/mp4' }}"
+                        >
+
+                        Your browser does not support video playback.
+                    </video>
+
+                </section>
+
+
+                {% if video.notes %}
+
+                    <section class="card detail-card mb-4">
+
+                        <div class="card-body p-4">
+
+                            <h2 class="h5 mb-3">
+                                Coaching Notes
+                            </h2>
+
+                            <p class="mb-0">
+                                {{ video.notes|linebreaksbr }}
+                            </p>
+
+                        </div>
+
+                    </section>
+
+                {% endif %}
+
+
+                {% if related_videos %}
+
+                    <section class="card detail-card">
+
+                        <div class="card-header bg-white border-0 px-4 pt-4 pb-2">
+
+                            <h2 class="h5 mb-1">
+                                Related Videos
+                            </h2>
+
+                            <p class="text-muted mb-0">
+                                More videos for the same athlete and event.
+                            </p>
+
+                        </div>
+
+                        <div class="card-body px-4 pb-4">
+
+                            <div class="row g-3">
+
+                                {% for related in related_videos %}
+
+                                    <div class="col-12 col-md-6">
+
+                                        <a
+                                            href="{% url 'video_library:video_detail' related.id %}"
+                                            class="text-decoration-none text-body"
+                                        >
+
+                                            <article class="related-video-card h-100">
+
+                                                <video
+                                                    class="related-video-preview"
+                                                    preload="metadata"
+                                                    muted
+                                                    playsinline
+                                                >
+                                                    <source
+                                                        src="{{ related.video_file.url }}"
+                                                        type="{{ related.content_type|default:'video/mp4' }}"
+                                                    >
+                                                </video>
+
+                                                <div class="p-3">
+
+                                                    <strong class="d-block text-truncate">
+                                                        {{ related.title }}
+                                                    </strong>
+
+                                                    <div class="small text-muted mt-1">
+
+                                                        {{ related.get_event_display }}
+
+                                                        {% if related.skill_name %}
+                                                            · {{ related.skill_name }}
+                                                        {% endif %}
+
+                                                    </div>
+
+                                                    <div class="small text-muted mt-2">
+
+                                                        {% if related.recorded_at %}
+                                                            {{ related.recorded_at|date:"M j, Y" }}
+                                                        {% else %}
+                                                            {{ related.uploaded_at|date:"M j, Y" }}
+                                                        {% endif %}
+
+                                                    </div>
+
+                                                </div>
+
+                                            </article>
+
+                                        </a>
+
+                                    </div>
+
+                                {% endfor %}
+
+                            </div>
+
+                        </div>
+
+                    </section>
+
+                {% endif %}
+
+            </main>
+
+
+            <aside class="col-12 col-xl-4">
+
+                <section class="card detail-card mb-4">
+
+                    <div class="card-body p-4">
+
+                        <h2 class="h5 mb-3">
+                            Video Information
+                        </h2>
+
+
+                        {% if video.primary_athlete %}
+
+                            <div class="metadata-row">
+
+                                <div class="metadata-label">
+                                    Primary Athlete
+                                </div>
+
+                                <strong>
+                                    {% if video.primary_athlete.get_full_name %}
+                                        {{ video.primary_athlete.get_full_name }}
+                                    {% else %}
+                                        {{ video.primary_athlete.username }}
+                                    {% endif %}
+                                </strong>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if video.tagged_athletes.all %}
+
+                            <div class="metadata-row">
+
+                                <div class="metadata-label">
+                                    Additional Athletes
+                                </div>
+
+                                {% for athlete in video.tagged_athletes.all %}
+
+                                    <div>
+                                        {% if athlete.get_full_name %}
+                                            {{ athlete.get_full_name }}
+                                        {% else %}
+                                            {{ athlete.username }}
+                                        {% endif %}
+                                    </div>
+
+                                {% endfor %}
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <div class="metadata-row">
+
+                            <div class="metadata-label">
+                                Event
+                            </div>
+
+                            <strong>
+                                {{ video.get_event_display }}
+                            </strong>
+
+                        </div>
+
+
+                        {% if video.skill_name %}
+
+                            <div class="metadata-row">
+
+                                <div class="metadata-label">
+                                    Skill
+                                </div>
+
+                                <strong>
+                                    {{ video.skill_name }}
+                                </strong>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <div class="metadata-row">
+
+                            <div class="metadata-label">
+                                Video Type
+                            </div>
+
+                            <strong>
+                                {{ video.get_video_type_display }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="metadata-row">
+
+                            <div class="metadata-label">
+                                Visibility
+                            </div>
+
+                            <strong>
+                                {{ video.get_visibility_display }}
+                            </strong>
+
+                        </div>
+
+
+                        {% if video.recorded_at %}
+
+                            <div class="metadata-row">
+
+                                <div class="metadata-label">
+                                    Recorded
+                                </div>
+
+                                <strong>
+                                    {{ video.recorded_at|date:"F j, Y" }}
+                                </strong>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <div class="metadata-row">
+
+                            <div class="metadata-label">
+                                Uploaded
+                            </div>
+
+                            <strong>
+                                {{ video.uploaded_at|date:"F j, Y g:i A" }}
+                            </strong>
+
+                        </div>
+
+
+                        {% if video.training_group %}
+
+                            <div class="metadata-row">
+
+                                <div class="metadata-label">
+                                    Training Group
+                                </div>
+
+                                <strong>
+                                    {{ video.training_group.name }}
+                                </strong>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if video.practice_plan %}
+
+                            <div class="metadata-row">
+
+                                <div class="metadata-label">
+                                    Practice
+                                </div>
+
+                                <a
+                                    href="{% url 'practice_planner:practice_builder' video.practice_plan.id %}"
+                                    class="text-decoration-none"
+                                >
+                                    {{ video.practice_plan.title }}
+                                </a>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if video.file_size_mb %}
+
+                            <div class="metadata-row">
+
+                                <div class="metadata-label">
+                                    File Size
+                                </div>
+
+                                <strong>
+                                    {{ video.file_size_mb }} MB
+                                </strong>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if video.formatted_duration %}
+
+                            <div class="metadata-row">
+
+                                <div class="metadata-label">
+                                    Duration
+                                </div>
+
+                                <strong>
+                                    {{ video.formatted_duration }}
+                                </strong>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if video.uploaded_by %}
+
+                            <div class="metadata-row">
+
+                                <div class="metadata-label">
+                                    Uploaded By
+                                </div>
+
+                                <strong>
+                               <a
+                                  href="{% url 'video_library:athlete_timeline' video.primary_athlete.id %}"
+                                  class="fw-semibold text-decoration-none"
+                                >
+                                  {% if video.primary_athlete.get_full_name %}
+                                  {{ video.primary_athlete.get_full_name }}
+                                  {% else %}
+                                  {{ video.primary_athlete.username }}
+                                  {% endif %}
+                               </a>
+                                </strong>
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </section>
+
+
+                <section class="card detail-card mb-4">
+
+                    <div class="card-body p-4">
+
+                        <h2 class="h5 mb-3">
+                            AI Analysis
+                        </h2>
+
+                        <div class="ai-status-card p-3">
+
+                            <div class="d-flex justify-content-between align-items-center gap-3">
+
+                                <div>
+
+                                    <div class="small text-muted">
+                                        Current Status
+                                    </div>
+
+                                    <strong>
+                                        {{ video.get_ai_status_display }}
+                                    </strong>
+
+                                </div>
+
+                                <span class="fs-4">
+                                    🤖
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        {% if video.ai_summary %}
+
+                            <div class="mt-3">
+
+                                <div class="small text-muted mb-1">
+                                    Summary
+                                </div>
+
+                                <p class="mb-0">
+                                    {{ video.ai_summary }}
+                                </p>
+
+                            </div>
+
+                        {% else %}
+
+                            <p class="text-muted mt-3 mb-0">
+                                No AI analysis results are available yet.
+                            </p>
+
+                        {% endif %}
+
+                    </div>
+
+                </section>
+
+
+                {% if video.tag_list %}
+
+                    <section class="card detail-card">
+
+                        <div class="card-body p-4">
+
+                            <h2 class="h5 mb-3">
+                                Tags
+                            </h2>
+
+                            <div class="d-flex flex-wrap gap-2">
+
+                                {% for tag in video.tag_list %}
+
+                                    <span class="badge text-bg-light border tag-badge">
+                                        {{ tag }}
+                                    </span>
+
+                                {% endfor %}
+
+                            </div>
+
+                        </div>
+
+                    </section>
+
+                {% endif %}
+
+            </aside>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

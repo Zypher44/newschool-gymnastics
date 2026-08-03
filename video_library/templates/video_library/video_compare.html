@@ -1,0 +1,784 @@
+{% extends "base.html" %}
+
+{% block title %}
+Video Comparison
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .comparison-shell {
+        max-width: 1700px;
+        margin: 0 auto;
+    }
+
+    .comparison-hero {
+        padding: 28px;
+        color: white;
+        border-radius: 24px;
+        background:
+            linear-gradient(
+                135deg,
+                rgba(17, 24, 39, 0.98),
+                rgba(30, 64, 175, 0.95),
+                rgba(79, 70, 229, 0.92)
+            );
+        box-shadow:
+            0 16px 45px
+            rgba(15, 23, 42, 0.16);
+    }
+
+    .comparison-card,
+    .control-card {
+        overflow: hidden;
+        border: 0;
+        border-radius: 20px;
+        box-shadow:
+            0 8px 24px
+            rgba(15, 23, 42, 0.07);
+    }
+
+    .comparison-video {
+        width: 100%;
+        height: min(65vh, 650px);
+        object-fit: contain;
+        background: #000;
+    }
+
+    .video-number {
+        width: 38px;
+        height: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        border-radius: 12px;
+        color: white;
+        background: #0d6efd;
+        font-weight: 800;
+    }
+
+    .comparison-range {
+        width: 100%;
+    }
+
+    .sync-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 11px;
+        border-radius: 999px;
+        color: #146c43;
+        background: #d1e7dd;
+        font-size: 0.85rem;
+        font-weight: 700;
+    }
+
+    @media (max-width: 1199px) {
+        .comparison-video {
+            height: 480px;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .comparison-video {
+            height: 330px;
+        }
+    }
+</style>
+
+
+<div class="container-fluid py-4">
+
+    <div class="comparison-shell">
+
+        <section class="comparison-hero mb-4">
+
+            <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-4">
+
+                <div>
+
+                    {% if shared_athlete %}
+
+                        <a
+                            href="{% url 'video_library:compare_select' shared_athlete.id %}"
+                            class="text-white text-decoration-none opacity-75"
+                        >
+                            ← Choose Different Videos
+                        </a>
+
+                    {% else %}
+
+                        <a
+                            href="{% url 'video_library:video_list' %}"
+                            class="text-white text-decoration-none opacity-75"
+                        >
+                            ← Video Library
+                        </a>
+
+                    {% endif %}
+
+                    <h1 class="display-6 fw-bold mt-3 mb-2">
+                        Side-by-Side Comparison
+                    </h1>
+
+                    <p class="lead mb-0 opacity-75">
+                        Review progress, timing, positions, and execution differences.
+                    </p>
+
+                </div>
+
+                <span class="sync-status">
+                    ● Synchronized controls enabled
+                </span>
+
+            </div>
+
+        </section>
+
+
+        <section class="row g-4 mb-4">
+
+            <div class="col-12 col-xl-6">
+
+                <article class="card comparison-card h-100">
+
+                    <div class="card-header bg-white border-0 p-4">
+
+                        <div class="d-flex align-items-start gap-3">
+
+                            <div class="video-number">
+                                1
+                            </div>
+
+                            <div>
+
+                                <h2 class="h5 mb-1">
+                                    {{ first_video.title }}
+                                </h2>
+
+                                <p class="text-muted mb-0">
+
+                                    {{ first_video.get_event_display }}
+
+                                    {% if first_video.skill_name %}
+                                        · {{ first_video.skill_name }}
+                                    {% endif %}
+
+                                    ·
+
+                                    {% if first_video.recorded_at %}
+                                        {{ first_video.recorded_at|date:"M j, Y" }}
+                                    {% else %}
+                                        {{ first_video.uploaded_at|date:"M j, Y" }}
+                                    {% endif %}
+
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <video
+                        id="comparison-video-1"
+                        class="comparison-video"
+                        preload="metadata"
+                        playsinline
+                    >
+                        <source
+                            src="{{ first_video.video_file.url }}"
+                            type="{{ first_video.content_type|default:'video/mp4' }}"
+                        >
+                    </video>
+
+                    <div class="card-footer bg-white border-0 p-4">
+
+                        <a
+                            href="{% url 'video_library:video_detail' first_video.id %}"
+                            class="btn btn-sm btn-outline-primary"
+                        >
+                            Open Video 1
+                        </a>
+
+                    </div>
+
+                </article>
+
+            </div>
+
+
+            <div class="col-12 col-xl-6">
+
+                <article class="card comparison-card h-100">
+
+                    <div class="card-header bg-white border-0 p-4">
+
+                        <div class="d-flex align-items-start gap-3">
+
+                            <div class="video-number">
+                                2
+                            </div>
+
+                            <div>
+
+                                <h2 class="h5 mb-1">
+                                    {{ second_video.title }}
+                                </h2>
+
+                                <p class="text-muted mb-0">
+
+                                    {{ second_video.get_event_display }}
+
+                                    {% if second_video.skill_name %}
+                                        · {{ second_video.skill_name }}
+                                    {% endif %}
+
+                                    ·
+
+                                    {% if second_video.recorded_at %}
+                                        {{ second_video.recorded_at|date:"M j, Y" }}
+                                    {% else %}
+                                        {{ second_video.uploaded_at|date:"M j, Y" }}
+                                    {% endif %}
+
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <video
+                        id="comparison-video-2"
+                        class="comparison-video"
+                        preload="metadata"
+                        playsinline
+                    >
+                        <source
+                            src="{{ second_video.video_file.url }}"
+                            type="{{ second_video.content_type|default:'video/mp4' }}"
+                        >
+                    </video>
+
+                    <div class="card-footer bg-white border-0 p-4">
+
+                        <a
+                            href="{% url 'video_library:video_detail' second_video.id %}"
+                            class="btn btn-sm btn-outline-primary"
+                        >
+                            Open Video 2
+                        </a>
+
+                    </div>
+
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <section class="card control-card">
+
+            <div class="card-body p-4">
+
+                <div class="row g-4 align-items-end">
+
+                    <div class="col-12 col-lg-5">
+
+                        <label
+                            for="comparison-timeline"
+                            class="form-label fw-semibold"
+                        >
+                            Comparison Timeline
+                        </label>
+
+                        <input
+                            type="range"
+                            id="comparison-timeline"
+                            class="form-range comparison-range"
+                            min="0"
+                            max="1000"
+                            value="0"
+                            step="1"
+                        >
+
+                        <div class="d-flex justify-content-between small text-muted">
+
+                            <span id="current-time-label">
+                                0:00
+                            </span>
+
+                            <span id="duration-label">
+                                0:00
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-12 col-md-6 col-lg-2">
+
+                        <label
+                            for="playback-speed"
+                            class="form-label fw-semibold"
+                        >
+                            Playback Speed
+                        </label>
+
+                        <select
+                            id="playback-speed"
+                            class="form-select"
+                        >
+                            <option value="0.25">
+                                0.25×
+                            </option>
+
+                            <option value="0.5">
+                                0.5×
+                            </option>
+
+                            <option value="0.75">
+                                0.75×
+                            </option>
+
+                            <option value="1" selected>
+                                1×
+                            </option>
+
+                            <option value="1.25">
+                                1.25×
+                            </option>
+
+                            <option value="1.5">
+                                1.5×
+                            </option>
+
+                            <option value="2">
+                                2×
+                            </option>
+                        </select>
+
+                    </div>
+
+
+                    <div class="col-12 col-md-6 col-lg-5">
+
+                        <div class="d-flex flex-wrap justify-content-lg-end gap-2">
+
+                            <button
+                                type="button"
+                                id="restart-button"
+                                class="btn btn-outline-secondary"
+                            >
+                                ↺ Restart
+                            </button>
+
+                            <button
+                                type="button"
+                                id="back-button"
+                                class="btn btn-outline-secondary"
+                            >
+                                −0.25 sec
+                            </button>
+
+                            <button
+                                type="button"
+                                id="play-pause-button"
+                                class="btn btn-primary"
+                            >
+                                ▶ Play Both
+                            </button>
+
+                            <button
+                                type="button"
+                                id="forward-button"
+                                class="btn btn-outline-secondary"
+                            >
+                                +0.25 sec
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</div>
+
+
+<script>
+    document.addEventListener(
+        'DOMContentLoaded',
+        function () {
+            const firstVideo = document.getElementById(
+                'comparison-video-1'
+            );
+
+            const secondVideo = document.getElementById(
+                'comparison-video-2'
+            );
+
+            const playPauseButton = document.getElementById(
+                'play-pause-button'
+            );
+
+            const restartButton = document.getElementById(
+                'restart-button'
+            );
+
+            const backButton = document.getElementById(
+                'back-button'
+            );
+
+            const forwardButton = document.getElementById(
+                'forward-button'
+            );
+
+            const playbackSpeed = document.getElementById(
+                'playback-speed'
+            );
+
+            const timeline = document.getElementById(
+                'comparison-timeline'
+            );
+
+            const currentTimeLabel = document.getElementById(
+                'current-time-label'
+            );
+
+            const durationLabel = document.getElementById(
+                'duration-label'
+            );
+
+            let isPlaying = false;
+            let isSeeking = false;
+
+
+            function formatTime(seconds) {
+                if (
+                    !Number.isFinite(seconds)
+                    || seconds < 0
+                ) {
+                    return '0:00';
+                }
+
+                const minutes = Math.floor(
+                    seconds / 60
+                );
+
+                const remainingSeconds = Math.floor(
+                    seconds % 60
+                );
+
+                return (
+                    `${minutes}:`
+                    + `${remainingSeconds}`
+                        .padStart(
+                            2,
+                            '0'
+                        )
+                );
+            }
+
+
+            function getComparisonDuration() {
+                const durations = [
+                    firstVideo.duration,
+                    secondVideo.duration,
+                ].filter(
+                    function (duration) {
+                        return Number.isFinite(
+                            duration
+                        );
+                    }
+                );
+
+                if (!durations.length) {
+                    return 0;
+                }
+
+                return Math.min(
+                    ...durations
+                );
+            }
+
+
+            function setBothTimes(timeValue) {
+                const comparisonDuration = (
+                    getComparisonDuration()
+                );
+
+                const safeTime = Math.max(
+                    0,
+                    Math.min(
+                        timeValue,
+                        comparisonDuration
+                    )
+                );
+
+                firstVideo.currentTime = Math.min(
+                    safeTime,
+                    firstVideo.duration || safeTime
+                );
+
+                secondVideo.currentTime = Math.min(
+                    safeTime,
+                    secondVideo.duration || safeTime
+                );
+
+                updateTimeline();
+            }
+
+
+            async function playBoth() {
+                try {
+                    await Promise.all([
+                        firstVideo.play(),
+                        secondVideo.play(),
+                    ]);
+
+                    isPlaying = true;
+
+                    playPauseButton.textContent = (
+                        '❚❚ Pause Both'
+                    );
+                } catch (error) {
+                    console.error(
+                        'Unable to play both videos.',
+                        error
+                    );
+                }
+            }
+
+
+            function pauseBoth() {
+                firstVideo.pause();
+                secondVideo.pause();
+
+                isPlaying = false;
+
+                playPauseButton.textContent = (
+                    '▶ Play Both'
+                );
+            }
+
+
+            function updateTimeline() {
+                if (isSeeking) {
+                    return;
+                }
+
+                const comparisonDuration = (
+                    getComparisonDuration()
+                );
+
+                if (!comparisonDuration) {
+                    return;
+                }
+
+                const currentTime = Math.min(
+                    firstVideo.currentTime,
+                    secondVideo.currentTime
+                );
+
+                const progress = (
+                    currentTime
+                    / comparisonDuration
+                    * 1000
+                );
+
+                timeline.value = progress;
+
+                currentTimeLabel.textContent = (
+                    formatTime(
+                        currentTime
+                    )
+                );
+
+                durationLabel.textContent = (
+                    formatTime(
+                        comparisonDuration
+                    )
+                );
+            }
+
+
+            function synchronizeVideos() {
+                if (!isPlaying) {
+                    return;
+                }
+
+                const timeDifference = Math.abs(
+                    firstVideo.currentTime
+                    - secondVideo.currentTime
+                );
+
+                if (timeDifference > 0.08) {
+                    secondVideo.currentTime = (
+                        firstVideo.currentTime
+                    );
+                }
+            }
+
+
+            playPauseButton.addEventListener(
+                'click',
+                function () {
+                    if (isPlaying) {
+                        pauseBoth();
+                    } else {
+                        playBoth();
+                    }
+                }
+            );
+
+
+            restartButton.addEventListener(
+                'click',
+                function () {
+                    pauseBoth();
+                    setBothTimes(0);
+                }
+            );
+
+
+            backButton.addEventListener(
+                'click',
+                function () {
+                    pauseBoth();
+
+                    setBothTimes(
+                        Math.min(
+                            firstVideo.currentTime,
+                            secondVideo.currentTime
+                        ) - 0.25
+                    );
+                }
+            );
+
+
+            forwardButton.addEventListener(
+                'click',
+                function () {
+                    pauseBoth();
+
+                    setBothTimes(
+                        Math.min(
+                            firstVideo.currentTime,
+                            secondVideo.currentTime
+                        ) + 0.25
+                    );
+                }
+            );
+
+
+            playbackSpeed.addEventListener(
+                'change',
+                function () {
+                    const speed = Number(
+                        playbackSpeed.value
+                    );
+
+                    firstVideo.playbackRate = speed;
+                    secondVideo.playbackRate = speed;
+                }
+            );
+
+
+            timeline.addEventListener(
+                'input',
+                function () {
+                    isSeeking = true;
+
+                    const comparisonDuration = (
+                        getComparisonDuration()
+                    );
+
+                    const newTime = (
+                        Number(
+                            timeline.value
+                        )
+                        / 1000
+                        * comparisonDuration
+                    );
+
+                    currentTimeLabel.textContent = (
+                        formatTime(
+                            newTime
+                        )
+                    );
+                }
+            );
+
+
+            timeline.addEventListener(
+                'change',
+                function () {
+                    const comparisonDuration = (
+                        getComparisonDuration()
+                    );
+
+                    const newTime = (
+                        Number(
+                            timeline.value
+                        )
+                        / 1000
+                        * comparisonDuration
+                    );
+
+                    setBothTimes(
+                        newTime
+                    );
+
+                    isSeeking = false;
+                }
+            );
+
+
+            firstVideo.addEventListener(
+                'timeupdate',
+                function () {
+                    synchronizeVideos();
+                    updateTimeline();
+                }
+            );
+
+
+            secondVideo.addEventListener(
+                'timeupdate',
+                updateTimeline
+            );
+
+
+            [
+                firstVideo,
+                secondVideo,
+            ].forEach(
+                function (video) {
+                    video.addEventListener(
+                        'loadedmetadata',
+                        updateTimeline
+                    );
+
+                    video.addEventListener(
+                        'ended',
+                        pauseBoth
+                    );
+                }
+            );
+        }
+    );
+</script>
+
+{% endblock %}

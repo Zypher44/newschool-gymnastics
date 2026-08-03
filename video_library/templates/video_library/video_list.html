@@ -1,0 +1,745 @@
+{% extends "base.html" %}
+
+{% block title %}
+Video Library
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .library-shell {
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+
+    .library-hero {
+        padding: 28px;
+        color: white;
+        border-radius: 24px;
+        background:
+            linear-gradient(
+                135deg,
+                rgba(17, 24, 39, 0.98),
+                rgba(30, 64, 175, 0.95),
+                rgba(79, 70, 229, 0.92)
+            );
+        box-shadow:
+            0 16px 45px
+            rgba(15, 23, 42, 0.16);
+    }
+
+    .filter-card,
+    .empty-card {
+        border: 0;
+        border-radius: 20px;
+        box-shadow:
+            0 8px 24px
+            rgba(15, 23, 42, 0.06);
+    }
+
+    .video-card {
+        overflow: hidden;
+        border: 0;
+        border-radius: 20px;
+        background: white;
+        box-shadow:
+            0 8px 24px
+            rgba(15, 23, 42, 0.08);
+        transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+    }
+
+    .video-card:hover {
+        transform: translateY(-4px);
+        box-shadow:
+            0 16px 38px
+            rgba(15, 23, 42, 0.14);
+    }
+
+    .video-preview-wrapper {
+        position: relative;
+        height: 235px;
+        overflow: hidden;
+        background: #0f172a;
+    }
+
+    .video-preview {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        background: #0f172a;
+    }
+
+    .video-preview-overlay {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        padding: 14px;
+        pointer-events: none;
+        background:
+            linear-gradient(
+                transparent,
+                rgba(0, 0, 0, 0.8)
+            );
+    }
+
+    .event-badge {
+        padding: 5px 10px;
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 700;
+        border-radius: 999px;
+        background:
+            rgba(13, 110, 253, 0.9);
+        backdrop-filter: blur(8px);
+    }
+
+    .favorite-button {
+        padding: 5px 9px;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        background: white;
+        font-size: 1.15rem;
+        line-height: 1;
+    }
+
+    .filter-summary {
+        padding: 10px 14px;
+        border-radius: 12px;
+        background: #f8f9fa;
+    }
+
+    .tag-badge {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    @media (max-width: 767px) {
+        .library-hero {
+            padding: 22px;
+        }
+
+        .video-preview-wrapper {
+            height: 260px;
+        }
+    }
+</style>
+
+
+<div class="container-fluid py-4">
+
+    <div class="library-shell">
+
+        <section class="library-hero mb-4">
+
+            <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-4">
+
+                <div>
+
+                    <a
+                        href="{% url 'video_library:dashboard' %}"
+                        class="text-white text-decoration-none opacity-75"
+                    >
+                        ← Video Dashboard
+                    </a>
+
+                    <h1 class="display-6 fw-bold mt-3 mb-2">
+                        Video Library
+                    </h1>
+
+                    <p class="lead mb-0 opacity-75">
+                        Search every athlete, skill, event, routine, and coaching clip.
+                    </p>
+
+                </div>
+
+
+                <a
+                    href="{% url 'video_library:upload' %}"
+                    class="btn btn-light text-primary fw-semibold"
+                >
+                    ＋ Upload Videos
+                </a>
+
+            </div>
+
+        </section>
+
+
+        <section class="card filter-card mb-4">
+
+            <div class="card-header bg-white border-0 px-4 pt-4 pb-2">
+
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+
+                    <div>
+
+                        <h2 class="h4 mb-1">
+                            Search and Filters
+                        </h2>
+
+                        <p class="text-muted mb-0">
+                            Find the exact video you need.
+                        </p>
+
+                    </div>
+
+                    <span class="badge text-bg-light border fs-6">
+                        {{ result_count }}
+                        video{{ result_count|pluralize }}
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="card-body px-4 pb-4">
+
+                <form method="get">
+
+                    <div class="row g-3">
+
+                        <div class="col-12 col-xl-4">
+
+                            <label
+                                for="video-search"
+                                class="form-label"
+                            >
+                                Search
+                            </label>
+
+                            <input
+                                type="search"
+                                name="search"
+                                id="video-search"
+                                class="form-control"
+                                value="{{ search_query }}"
+                                placeholder="Athlete, skill, title, tag, or note"
+                            >
+
+                        </div>
+
+
+                        <div class="col-12 col-md-6 col-xl-2">
+
+                            <label
+                                for="athlete-filter"
+                                class="form-label"
+                            >
+                                Athlete
+                            </label>
+
+                            <select
+                                name="athlete"
+                                id="athlete-filter"
+                                class="form-select"
+                            >
+
+                                <option value="">
+                                    All athletes
+                                </option>
+
+                                {% for athlete in athletes %}
+
+                                    <option
+                                        value="{{ athlete.id }}"
+                                        {% if athlete_filter == athlete.id|stringformat:"s" %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        {% if athlete.get_full_name %}
+                                            {{ athlete.get_full_name }}
+                                        {% else %}
+                                            {{ athlete.username }}
+                                        {% endif %}
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="col-12 col-md-6 col-xl-2">
+
+                            <label
+                                for="event-filter"
+                                class="form-label"
+                            >
+                                Event
+                            </label>
+
+                            <select
+                                name="event"
+                                id="event-filter"
+                                class="form-select"
+                            >
+
+                                <option value="">
+                                    All events
+                                </option>
+
+                                {% for value, label in event_choices %}
+
+                                    <option
+                                        value="{{ value }}"
+                                        {% if event_filter == value %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        {{ label }}
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="col-12 col-md-6 col-xl-2">
+
+                            <label
+                                for="video-type-filter"
+                                class="form-label"
+                            >
+                                Video Type
+                            </label>
+
+                            <select
+                                name="video_type"
+                                id="video-type-filter"
+                                class="form-select"
+                            >
+
+                                <option value="">
+                                    All types
+                                </option>
+
+                                {% for value, label in video_type_choices %}
+
+                                    <option
+                                        value="{{ value }}"
+                                        {% if type_filter == value %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        {{ label }}
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="col-12 col-md-6 col-xl-2">
+
+                            <label
+                                for="favorites-filter"
+                                class="form-label"
+                            >
+                                Favorites
+                            </label>
+
+                            <select
+                                name="favorites"
+                                id="favorites-filter"
+                                class="form-select"
+                            >
+
+                                <option value="">
+                                    All videos
+                                </option>
+
+                                <option
+                                    value="yes"
+                                    {% if favorite_filter == 'yes' %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Favorites only
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="col-12 col-md-6">
+
+                            <label
+                                for="date-from"
+                                class="form-label"
+                            >
+                                Recorded From
+                            </label>
+
+                            <input
+                                type="date"
+                                name="date_from"
+                                id="date-from"
+                                class="form-control"
+                                value="{{ date_from }}"
+                            >
+
+                        </div>
+
+
+                        <div class="col-12 col-md-6">
+
+                            <label
+                                for="date-to"
+                                class="form-label"
+                            >
+                                Recorded To
+                            </label>
+
+                            <input
+                                type="date"
+                                name="date_to"
+                                id="date-to"
+                                class="form-control"
+                                value="{{ date_to }}"
+                            >
+
+                        </div>
+
+
+                        <div class="col-12">
+
+                            <div class="d-flex flex-column flex-sm-row justify-content-end gap-2">
+
+                                <a
+                                    href="{% url 'video_library:video_list' %}"
+                                    class="btn btn-outline-secondary"
+                                >
+                                    Clear Filters
+                                </a>
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary"
+                                >
+                                    Search Videos
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </section>
+
+
+        {% if search_query or athlete_filter or event_filter or type_filter or favorite_filter or date_from or date_to %}
+
+            <div class="filter-summary mb-4">
+
+                <div class="d-flex flex-wrap align-items-center gap-2">
+
+                    <strong class="small">
+                        Active filters:
+                    </strong>
+
+                    {% if search_query %}
+                        <span class="badge text-bg-light border">
+                            Search: {{ search_query }}
+                        </span>
+                    {% endif %}
+
+                    {% if athlete_filter %}
+                        <span class="badge text-bg-light border">
+                            Athlete selected
+                        </span>
+                    {% endif %}
+
+                    {% if event_filter %}
+                        <span class="badge text-bg-light border">
+                            Event: {{ event_filter|title }}
+                        </span>
+                    {% endif %}
+
+                    {% if type_filter %}
+                        <span class="badge text-bg-light border">
+                            Type: {{ type_filter|title }}
+                        </span>
+                    {% endif %}
+
+                    {% if favorite_filter == 'yes' %}
+                        <span class="badge text-bg-warning">
+                            Favorites
+                        </span>
+                    {% endif %}
+
+                    {% if date_from %}
+                        <span class="badge text-bg-light border">
+                            From: {{ date_from }}
+                        </span>
+                    {% endif %}
+
+                    {% if date_to %}
+                        <span class="badge text-bg-light border">
+                            To: {{ date_to }}
+                        </span>
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        {% endif %}
+
+
+        {% if videos %}
+
+            <div class="row g-4">
+
+                {% for video in videos %}
+
+                    <div class="col-12 col-md-6 col-xl-4">
+
+                        <article class="video-card h-100">
+
+                            <a
+                                href="{% url 'video_library:video_detail' video.id %}"
+                                class="text-decoration-none"
+                            >
+
+                                <div class="video-preview-wrapper">
+
+                                    <video
+                                        class="video-preview"
+                                        preload="metadata"
+                                        muted
+                                        playsinline
+                                    >
+                                        <source
+                                            src="{{ video.video_file.url }}"
+                                            type="{{ video.content_type|default:'video/mp4' }}"
+                                        >
+                                    </video>
+
+                                    <div class="video-preview-overlay">
+
+                                        <span class="event-badge">
+                                            {{ video.get_event_display }}
+                                        </span>
+
+                                        {% if video.is_favorite %}
+
+                                            <span class="text-warning fs-5">
+                                                ★
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+
+                            </a>
+
+
+                            <div class="card-body p-4">
+
+                                <div class="d-flex justify-content-between align-items-start gap-3">
+
+                                    <div class="min-w-0">
+
+                                        <h2 class="h5 text-truncate mb-1">
+                                            {{ video.title }}
+                                        </h2>
+
+                                        <p class="small text-muted mb-2">
+
+                                            {{ video.get_video_type_display }}
+
+                                            {% if video.skill_name %}
+                                                · {{ video.skill_name }}
+                                            {% endif %}
+
+                                        </p>
+
+                                    </div>
+
+
+                                    <form
+                                        method="post"
+                                        action="{% url 'video_library:toggle_favorite' video.id %}"
+                                    >
+                                        {% csrf_token %}
+
+                                        <input
+                                            type="hidden"
+                                            name="next"
+                                            value="{{ request.get_full_path }}"
+                                        >
+
+                                        <button
+                                            type="submit"
+                                            class="favorite-button"
+                                            title="Toggle favorite"
+                                            aria-label="Toggle favorite"
+                                        >
+                                            {% if video.is_favorite %}
+                                                ⭐
+                                            {% else %}
+                                                ☆
+                                            {% endif %}
+                                        </button>
+
+                                    </form>
+
+                                </div>
+
+
+                                {% if video.primary_athlete %}
+
+                                    <div class="small mb-1">
+
+                                        <strong>
+                                           Athlete:
+                                        </strong>
+
+                                        <a
+                                            href="{% url 'video_library:athlete_timeline' video.primary_athlete.id %}"
+                                            class="text-decoration-none"
+                                        >
+                                            {% if video.primary_athlete.get_full_name %}
+                                                {{ video.primary_athlete.get_full_name }}
+                                            {% else %}
+                                                {{ video.primary_athlete.username }}
+                                            {% endif %}
+                                        </a>
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                {% if video.training_group %}
+
+                                    <div class="small text-muted mb-1">
+                                        {{ video.training_group.name }}
+                                    </div>
+
+                                {% endif %}
+
+
+                                <div class="small text-muted">
+
+                                    {% if video.recorded_at %}
+
+                                        Recorded
+                                        {{ video.recorded_at|date:"M j, Y" }}
+
+                                    {% else %}
+
+                                        Uploaded
+                                        {{ video.uploaded_at|date:"M j, Y" }}
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                {% if video.tag_list %}
+
+                                    <div class="d-flex flex-wrap gap-1 mt-3">
+
+                                        {% for tag in video.tag_list %}
+
+                                            <span class="badge text-bg-light border tag-badge">
+                                                {{ tag }}
+                                            </span>
+
+                                        {% endfor %}
+
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <div class="card-footer bg-white border-0 px-4 pb-4 pt-0">
+
+                                <a
+                                    href="{% url 'video_library:video_detail' video.id %}"
+                                    class="btn btn-outline-primary w-100"
+                                >
+                                    Open Video
+                                </a>
+
+                            </div>
+
+                        </article>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <section class="card empty-card">
+
+                <div class="card-body text-center py-5">
+
+                    <div class="display-4 mb-3">
+                        🔍
+                    </div>
+
+                    <h2 class="h4">
+                        No videos found
+                    </h2>
+
+                    <p class="text-muted mx-auto" style="max-width: 560px;">
+                        Adjust the filters or upload another gymnastics video.
+                    </p>
+
+                    <div class="d-flex flex-column flex-sm-row justify-content-center gap-2">
+
+                        <a
+                            href="{% url 'video_library:video_list' %}"
+                            class="btn btn-outline-secondary"
+                        >
+                            Clear Filters
+                        </a>
+
+                        <a
+                            href="{% url 'video_library:upload' %}"
+                            class="btn btn-primary"
+                        >
+                            Upload Videos
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}
