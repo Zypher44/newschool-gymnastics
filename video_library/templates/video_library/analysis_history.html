@@ -1,0 +1,415 @@
+{% extends "base.html" %}
+
+{% block title %}
+Analysis History | {{ video.title }}
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .history-shell {
+        max-width: 1350px;
+        margin: 0 auto;
+    }
+
+    .history-hero {
+        padding: 28px;
+        color: white;
+        border-radius: 24px;
+        background:
+            linear-gradient(
+                135deg,
+                rgba(17, 24, 39, 0.98),
+                rgba(30, 64, 175, 0.95),
+                rgba(79, 70, 229, 0.92)
+            );
+    }
+
+    .analysis-history-card {
+        border: 0;
+        border-radius: 20px;
+        box-shadow:
+            0 8px 24px
+            rgba(15, 23, 42, 0.07);
+    }
+
+    .history-timeline {
+        position: relative;
+        padding-left: 32px;
+    }
+
+    .history-timeline::before {
+        content: "";
+        position: absolute;
+        top: 8px;
+        bottom: 8px;
+        left: 10px;
+        width: 3px;
+        border-radius: 999px;
+        background: #dbeafe;
+    }
+
+    .history-item {
+        position: relative;
+        margin-bottom: 22px;
+    }
+
+    .history-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .history-item::before {
+        content: "";
+        position: absolute;
+        top: 22px;
+        left: -28px;
+        width: 15px;
+        height: 15px;
+        border: 3px solid white;
+        border-radius: 50%;
+        background: #0d6efd;
+        box-shadow: 0 0 0 2px #bfdbfe;
+    }
+</style>
+
+
+<div class="container-fluid py-4">
+
+    <div class="history-shell">
+
+        <section class="history-hero mb-4">
+
+            <a
+                href="{% url 'video_library:video_detail' video.id %}"
+                class="text-white text-decoration-none opacity-75"
+            >
+                ← Back to Video
+            </a>
+
+            <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-4 mt-3">
+
+                <div>
+
+                    <h1 class="display-6 fw-bold mb-2">
+                        Analysis History
+                    </h1>
+
+                    <p class="lead mb-0 opacity-75">
+                        {{ video.title }}
+                        ·
+                        {{ analysis_count }}
+                        analysis{{ analysis_count|pluralize:"es" }}
+                    </p>
+
+                </div>
+
+
+                {% if not active_analysis %}
+
+                    <form
+                        method="post"
+                        action="{% url 'video_library:rerun_analysis' video.id %}"
+                    >
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="btn btn-light text-primary fw-semibold"
+                        >
+                            Run New Analysis
+                        </button>
+
+                    </form>
+
+                {% else %}
+
+                    <a
+                        href="{% url 'video_library:video_detail' video.id %}"
+                        class="btn btn-warning"
+                    >
+                        Analysis in Progress
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        {% if analyses %}
+
+            <div class="history-timeline">
+
+                {% for analysis in analyses %}
+
+                    <article class="history-item">
+
+                        <section class="card analysis-history-card">
+
+                            <div class="card-body p-4">
+
+                                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
+
+                                    <div>
+
+                                        <div class="d-flex flex-wrap gap-2 mb-2">
+
+                                            {% if analysis.status == 'completed' %}
+
+                                                <span class="badge text-bg-success">
+                                                    Completed
+                                                </span>
+
+                                            {% elif analysis.status == 'failed' %}
+
+                                                <span class="badge text-bg-danger">
+                                                    Failed
+                                                </span>
+
+                                            {% elif analysis.status == 'cancelled' %}
+
+                                                <span class="badge text-bg-secondary">
+                                                    Cancelled
+                                                </span>
+
+                                            {% else %}
+
+                                                <span class="badge text-bg-warning">
+                                                    {{ analysis.get_status_display }}
+                                                </span>
+
+                                            {% endif %}
+
+
+                                            <span class="badge text-bg-light border">
+                                                Version
+                                                {{ analysis.analysis_version }}
+                                            </span>
+
+                                            <span class="badge text-bg-light border">
+                                                {{ analysis.get_analysis_source_display }}
+                                            </span>
+
+
+                                            {% if analysis.review_status == 'approved' %}
+
+                                                <span class="badge text-bg-success">
+                                                    Coach Approved
+                                                </span>
+
+                                            {% elif analysis.review_status == 'partial' %}
+
+                                                <span class="badge text-bg-warning">
+                                                    Partially Correct
+                                                </span>
+
+                                            {% elif analysis.review_status == 'rejected' %}
+
+                                                <span class="badge text-bg-danger">
+                                                    Rejected
+                                                </span>
+
+                                            {% else %}
+
+                                                <span class="badge text-bg-secondary">
+                                                    Review Pending
+                                                </span>
+
+                                            {% endif %}
+
+                                        </div>
+
+
+                                        <h2 class="h5 mb-1">
+
+                                            {% if analysis.detected_skill %}
+                                                {{ analysis.detected_skill }}
+                                            {% elif analysis.requested_skill %}
+                                                {{ analysis.requested_skill }}
+                                            {% else %}
+                                                Gymnastics Analysis
+                                            {% endif %}
+
+                                        </h2>
+
+
+                                        <div class="small text-muted">
+                                            Requested
+                                            {{ analysis.created_at|date:"F j, Y g:i A" }}
+
+                                            {% if analysis.requested_by %}
+                                                by
+                                                {% if analysis.requested_by.get_full_name %}
+                                                    {{ analysis.requested_by.get_full_name }}
+                                                {% else %}
+                                                    {{ analysis.requested_by.username }}
+                                                {% endif %}
+                                            {% endif %}
+                                        </div>
+
+
+                                        {% if analysis.summary %}
+
+                                            <p class="mt-3 mb-0">
+                                                {{ analysis.summary|truncatechars:260 }}
+                                            </p>
+
+                                        {% endif %}
+
+                                    </div>
+
+
+                                    <div class="text-lg-end">
+
+                                        <div class="small text-muted mb-1">
+                                            Progress
+                                        </div>
+
+                                        <div class="h4 mb-2">
+                                            {{ analysis.progress_percentage }}%
+                                        </div>
+
+                                        <a
+                                            href="{% url 'video_library:analysis_detail' analysis.id %}"
+                                            class="btn btn-outline-primary"
+                                        >
+                                            Open Analysis
+                                        </a>
+
+                                    </div>
+
+                                </div>
+
+
+                                {% if analysis.status == 'completed' %}
+
+                                    <hr>
+
+                                    <div class="row g-3">
+
+                                        <div class="col-6 col-md-3">
+
+                                            <div class="small text-muted">
+                                                Timeline Moments
+                                            </div>
+
+                                            <strong>
+                                                {{ analysis.moments.count }}
+                                            </strong>
+
+                                        </div>
+
+
+                                        <div class="col-6 col-md-3">
+
+                                            <div class="small text-muted">
+                                                Confidence
+                                            </div>
+
+                                            <strong>
+                                                {% if analysis.confidence_percentage %}
+                                                    {{ analysis.confidence_percentage }}%
+                                                {% else %}
+                                                    —
+                                                {% endif %}
+                                            </strong>
+
+                                        </div>
+
+
+                                        <div class="col-6 col-md-3">
+
+                                            <div class="small text-muted">
+                                                Processing Time
+                                            </div>
+
+                                            <strong>
+                                                {% if analysis.processing_seconds %}
+                                                    {{ analysis.processing_seconds }} sec
+                                                {% else %}
+                                                    —
+                                                {% endif %}
+                                            </strong>
+
+                                        </div>
+
+
+                                        <div class="col-6 col-md-3">
+
+                                            <div class="small text-muted">
+                                                Reviewed By
+                                            </div>
+
+                                            <strong>
+                                                {% if analysis.reviewed_by %}
+                                                    {% if analysis.reviewed_by.get_full_name %}
+                                                        {{ analysis.reviewed_by.get_full_name }}
+                                                    {% else %}
+                                                        {{ analysis.reviewed_by.username }}
+                                                    {% endif %}
+                                                {% else %}
+                                                    —
+                                                {% endif %}
+                                            </strong>
+
+                                        </div>
+
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+                        </section>
+
+                    </article>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <section class="card analysis-history-card">
+
+                <div class="card-body text-center py-5">
+
+                    <div class="display-4 mb-3">
+                        🤖
+                    </div>
+
+                    <h2 class="h4">
+                        No analyses yet
+                    </h2>
+
+                    <p class="text-muted">
+                        Run the first analysis for this video.
+                    </p>
+
+                    <form
+                        method="post"
+                        action="{% url 'video_library:rerun_analysis' video.id %}"
+                    >
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                        >
+                            Analyze Video
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </section>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

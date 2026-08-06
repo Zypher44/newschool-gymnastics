@@ -81,9 +81,13 @@
         background: #0f172a;
     }
 
-    .ai-status-card {
+    .analysis-moment-card {
         border: 1px solid #e9ecef;
         border-radius: 16px;
+        background: white;
+    }
+
+    .analysis-moment-button:hover {
         background: #f8f9fa;
     }
 
@@ -92,10 +96,35 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
+
+    .review-badge {
+        white-space: nowrap;
+    }
+
+    .analysis-action-bar {
+        padding: 12px;
+        border: 1px solid #e9ecef;
+        border-radius: 14px;
+        background: #f8f9fa;
+    }
+
+    @media (max-width: 767px) {
+        .video-hero {
+            padding: 22px;
+        }
+
+        .related-video-preview {
+            height: 220px;
+        }
+    }
 </style>
 
 
 <div class="container-fluid py-4">
+
+    <form class="d-none">
+        {% csrf_token %}
+    </form>
 
     <div class="video-detail-shell">
 
@@ -123,9 +152,11 @@
                         </span>
 
                         {% if video.is_favorite %}
+
                             <span class="badge bg-warning text-dark">
                                 ⭐ Favorite
                             </span>
+
                         {% endif %}
 
                     </div>
@@ -196,6 +227,249 @@
                     </video>
 
                 </section>
+
+
+                {% if latest_analysis and latest_analysis.status == 'completed' %}
+
+                    <section class="card detail-card mb-4">
+
+                        <div class="card-header bg-white border-0 px-4 pt-4 pb-2">
+
+                            <h2 class="h5 mb-1">
+                                Analysis Timeline
+                            </h2>
+
+                            <p class="text-muted mb-0">
+                                Review each observation and tell the system whether it is correct.
+                            </p>
+
+                        </div>
+
+                        <div class="card-body px-4 pb-4">
+
+                            <div class="d-flex flex-column gap-3">
+
+                                {% for item in analysis_moment_items %}
+
+                                    <article class="analysis-moment-card p-3">
+
+                                        <button
+                                            type="button"
+                                            class="btn text-start p-0 border-0 w-100 analysis-moment-button"
+                                            data-timestamp="{{ item.moment.timestamp_seconds }}"
+                                        >
+
+                                            <div class="d-flex justify-content-between align-items-start gap-3">
+
+                                                <div>
+
+                                                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+
+                                                        <strong>
+                                                            {{ item.moment.label }}
+                                                        </strong>
+
+                                                        {% if item.moment.severity == 'positive' %}
+
+                                                            <span class="badge text-bg-success">
+                                                                Positive
+                                                            </span>
+
+                                                        {% elif item.moment.severity == 'warning' %}
+
+                                                            <span class="badge text-bg-warning">
+                                                                Review
+                                                            </span>
+
+                                                        {% elif item.moment.severity == 'critical' %}
+
+                                                            <span class="badge text-bg-danger">
+                                                                Concern
+                                                            </span>
+
+                                                        {% else %}
+
+                                                            <span class="badge text-bg-light border">
+                                                                Information
+                                                            </span>
+
+                                                        {% endif %}
+
+                                                    </div>
+
+                                                    <div class="small text-muted">
+                                                        {{ item.moment.description }}
+                                                    </div>
+
+                                                </div>
+
+                                                <span class="badge text-bg-light border">
+                                                    {{ item.moment.timestamp_seconds }}s
+                                                </span>
+
+                                            </div>
+
+                                        </button>
+
+
+                                        {% if item.moment.measurements %}
+
+                                            <div class="small mt-3">
+
+                                                <strong>
+                                                    Demonstration measurements:
+                                                </strong>
+
+                                                <div class="d-flex flex-wrap gap-1 mt-1">
+
+                                                    {% for name, value in item.moment.measurements.items %}
+
+                                                        <span class="badge text-bg-light border">
+                                                            {{ name|title }}:
+                                                            {{ value }}
+                                                        </span>
+
+                                                    {% endfor %}
+
+                                                </div>
+
+                                            </div>
+
+                                        {% endif %}
+
+
+                                        <hr>
+
+
+                                        <form
+                                            method="post"
+                                            action="{% url 'video_library:review_analysis_moment' item.moment.id %}"
+                                        >
+
+                                            {% csrf_token %}
+
+                                            <div class="row g-2 align-items-end">
+
+                                                <div class="col-12 col-lg-4">
+
+                                                    <label
+                                                        for="rating-{{ item.moment.id }}"
+                                                        class="form-label small fw-semibold"
+                                                    >
+                                                        Accuracy
+                                                    </label>
+
+                                                    <select
+                                                        name="rating"
+                                                        id="rating-{{ item.moment.id }}"
+                                                        class="form-select"
+                                                        required
+                                                    >
+
+                                                        <option value="">
+                                                            Choose rating
+                                                        </option>
+
+                                                        <option
+                                                            value="correct"
+                                                            {% if item.feedback and item.feedback.rating == 'correct' %}
+                                                                selected
+                                                            {% endif %}
+                                                        >
+                                                            Correct
+                                                        </option>
+
+                                                        <option
+                                                            value="partial"
+                                                            {% if item.feedback and item.feedback.rating == 'partial' %}
+                                                                selected
+                                                            {% endif %}
+                                                        >
+                                                            Partially correct
+                                                        </option>
+
+                                                        <option
+                                                            value="incorrect"
+                                                            {% if item.feedback and item.feedback.rating == 'incorrect' %}
+                                                                selected
+                                                            {% endif %}
+                                                        >
+                                                            Incorrect
+                                                        </option>
+
+                                                    </select>
+
+                                                </div>
+
+
+                                                <div class="col-12 col-lg-6">
+
+                                                    <label
+                                                        for="comment-{{ item.moment.id }}"
+                                                        class="form-label small fw-semibold"
+                                                    >
+                                                        Comment
+                                                    </label>
+
+                                                    <input
+                                                        type="text"
+                                                        name="comment"
+                                                        id="comment-{{ item.moment.id }}"
+                                                        class="form-control"
+                                                        value="{% if item.feedback %}{{ item.feedback.comment }}{% endif %}"
+                                                        placeholder="Optional correction or coaching context"
+                                                    >
+
+                                                </div>
+
+
+                                                <div class="col-12 col-lg-2">
+
+                                                    <button
+                                                        type="submit"
+                                                        class="btn btn-outline-primary w-100"
+                                                    >
+                                                        Save
+                                                    </button>
+
+                                                </div>
+
+                                            </div>
+
+                                        </form>
+
+
+                                        {% if item.feedback %}
+
+                                            <div class="small text-muted mt-2">
+
+                                                Your current rating:
+
+                                                <strong>
+                                                    {{ item.feedback.get_rating_display }}
+                                                </strong>
+
+                                            </div>
+
+                                        {% endif %}
+
+                                    </article>
+
+                                {% empty %}
+
+                                    <p class="text-muted mb-0">
+                                        This analysis has no timeline observations.
+                                    </p>
+
+                                {% endfor %}
+
+                            </div>
+
+                        </div>
+
+                    </section>
+
+                {% endif %}
 
 
                 {% if video.notes %}
@@ -315,6 +589,439 @@
 
                     <div class="card-body p-4">
 
+                        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+
+                            <div>
+
+                                <h2 class="h5 mb-1">
+                                    AI Analysis
+                                </h2>
+
+                                <p class="small text-muted mb-0">
+                                    AI-generated results require coach review.
+                                </p>
+
+                            </div>
+
+                            <span class="fs-4">
+                                🤖
+                            </span>
+
+                        </div>
+
+
+                        {% if analysis_count %}
+
+                            <div class="analysis-action-bar mb-3">
+
+                                <div class="d-flex flex-wrap gap-2">
+
+                                    <a
+                                        href="{% url 'video_library:analysis_history' video.id %}"
+                                        class="btn btn-sm btn-outline-primary"
+                                    >
+                                        View History
+
+                                        <span class="badge text-bg-light border ms-1">
+                                            {{ analysis_count }}
+                                        </span>
+                                    </a>
+
+
+                                    {% if latest_analysis and latest_analysis.is_finished %}
+
+                                        <form
+                                            method="post"
+                                            action="{% url 'video_library:rerun_analysis' video.id %}"
+                                        >
+                                            {% csrf_token %}
+
+                                            <button
+                                                type="submit"
+                                                class="btn btn-sm btn-outline-secondary"
+                                            >
+                                                Run New Analysis
+                                            </button>
+
+                                        </form>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if latest_analysis %}
+
+                            <div
+                                id="analysis-panel"
+                                data-analysis-id="{{ latest_analysis.id }}"
+                                data-status-url="{% url 'video_library:analysis_status' latest_analysis.id %}"
+                                data-process-url="{% url 'video_library:process_mock_analysis' latest_analysis.id %}"
+                                data-is-finished="{% if latest_analysis.is_finished %}true{% else %}false{% endif %}"
+                            >
+
+                                <div class="mb-3">
+
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+
+                                        <strong id="analysis-status-label">
+                                            {{ latest_analysis.get_status_display }}
+                                        </strong>
+
+                                        <span id="analysis-progress-label">
+                                            {{ latest_analysis.progress_percentage }}%
+                                        </span>
+
+                                    </div>
+
+                                    <div class="progress">
+
+                                        <div
+                                            id="analysis-progress-bar"
+                                            class="progress-bar"
+                                            role="progressbar"
+                                            style="width: {{ latest_analysis.progress_percentage }}%;"
+                                            aria-valuenow="{{ latest_analysis.progress_percentage }}"
+                                            aria-valuemin="0"
+                                            aria-valuemax="100"
+                                        ></div>
+
+                                    </div>
+
+                                    <div
+                                        id="analysis-current-step"
+                                        class="small text-muted mt-2"
+                                    >
+                                        {{ latest_analysis.current_step|default:"Waiting to begin" }}
+                                    </div>
+
+
+                                    <a
+                                        href="{% url 'video_library:analysis_detail' latest_analysis.id %}"
+                                        class="btn btn-sm btn-outline-primary mt-3"
+                                    >
+                                        Open Full Analysis
+                                    </a>
+
+                                </div>
+
+
+                                {% if latest_analysis.status == 'completed' %}
+
+                                    <div class="alert alert-warning small">
+
+                                        These are demonstration results.
+                                        No real AI or pose measurement has
+                                        analyzed this video yet.
+
+                                    </div>
+
+
+                                    <div class="mb-3">
+
+                                        <div class="small text-muted">
+                                            Detected Skill
+                                        </div>
+
+                                        <strong>
+                                            {{ latest_analysis.detected_skill }}
+                                        </strong>
+
+                                        {% if latest_analysis.confidence_percentage %}
+
+                                            <span class="badge text-bg-light border ms-1">
+                                                {{ latest_analysis.confidence_percentage }}%
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+
+                                    <p>
+                                        {{ latest_analysis.summary }}
+                                    </p>
+
+
+                                    {% if latest_analysis.strengths %}
+
+                                        <div class="mb-3">
+
+                                            <h3 class="h6">
+                                                Strengths
+                                            </h3>
+
+                                            <ul class="mb-0">
+
+                                                {% for strength in latest_analysis.strengths %}
+                                                    <li>{{ strength }}</li>
+                                                {% endfor %}
+
+                                            </ul>
+
+                                        </div>
+
+                                    {% endif %}
+
+
+                                    {% if latest_analysis.improvements %}
+
+                                        <div>
+
+                                            <h3 class="h6">
+                                                Review Areas
+                                            </h3>
+
+                                            <ul class="mb-0">
+
+                                                {% for improvement in latest_analysis.improvements %}
+                                                    <li>{{ improvement }}</li>
+                                                {% endfor %}
+
+                                            </ul>
+
+                                        </div>
+
+                                    {% endif %}
+
+
+                                    {% if latest_analysis.measurements %}
+
+                                        <div class="mt-3">
+
+                                            <h3 class="h6">
+                                                Demonstration Measurements
+                                            </h3>
+
+                                            <div class="d-flex flex-wrap gap-1">
+
+                                                {% for name, value in latest_analysis.measurements.items %}
+
+                                                    <span class="badge text-bg-light border">
+                                                        {{ name|title }}:
+                                                        {{ value }}
+                                                    </span>
+
+                                                {% endfor %}
+
+                                            </div>
+
+                                        </div>
+
+                                    {% endif %}
+
+                                {% elif latest_analysis.status == 'failed' %}
+
+                                    <div class="alert alert-danger mb-0">
+                                        {{ latest_analysis.error_message }}
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+                        {% else %}
+
+                            <p class="text-muted">
+                                No analysis has been requested for this video.
+                            </p>
+
+                            <form
+                                method="post"
+                                action="{% url 'video_library:request_analysis' video.id %}"
+                            >
+                                {% csrf_token %}
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary w-100"
+                                >
+                                    🤖 Analyze Video
+                                </button>
+
+                            </form>
+
+                        {% endif %}
+
+                    </div>
+
+                </section>
+
+
+                {% if latest_analysis and latest_analysis.status == 'completed' %}
+
+                    <section class="card detail-card mb-4">
+
+                        <div class="card-body p-4">
+
+                            <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+
+                                <div>
+
+                                    <h2 class="h5 mb-1">
+                                        Coach Verification
+                                    </h2>
+
+                                    <p class="small text-muted mb-0">
+                                        Confirm whether the analysis is useful and accurate.
+                                    </p>
+
+                                </div>
+
+
+                                {% if latest_analysis.review_status == 'approved' %}
+
+                                    <span class="badge text-bg-success review-badge">
+                                        Approved
+                                    </span>
+
+                                {% elif latest_analysis.review_status == 'partial' %}
+
+                                    <span class="badge text-bg-warning review-badge">
+                                        Partially Correct
+                                    </span>
+
+                                {% elif latest_analysis.review_status == 'rejected' %}
+
+                                    <span class="badge text-bg-danger review-badge">
+                                        Rejected
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge text-bg-secondary review-badge">
+                                        Pending Review
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <form
+                                method="post"
+                                action="{% url 'video_library:review_analysis' latest_analysis.id %}"
+                            >
+                                {% csrf_token %}
+
+                                <div class="mb-3">
+
+                                    <label
+                                        for="review-status"
+                                        class="form-label fw-semibold"
+                                    >
+                                        Review Decision
+                                    </label>
+
+                                    <select
+                                        name="review_status"
+                                        id="review-status"
+                                        class="form-select"
+                                        required
+                                    >
+
+                                        <option value="">
+                                            Choose a decision
+                                        </option>
+
+                                        <option
+                                            value="approved"
+                                            {% if latest_analysis.review_status == 'approved' %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            Correct and useful
+                                        </option>
+
+                                        <option
+                                            value="partial"
+                                            {% if latest_analysis.review_status == 'partial' %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            Partially correct
+                                        </option>
+
+                                        <option
+                                            value="rejected"
+                                            {% if latest_analysis.review_status == 'rejected' %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            Incorrect or not useful
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+
+                                <div class="mb-3">
+
+                                    <label
+                                        for="coach-review-notes"
+                                        class="form-label fw-semibold"
+                                    >
+                                        Coach Notes
+                                    </label>
+
+                                    <textarea
+                                        name="coach_review_notes"
+                                        id="coach-review-notes"
+                                        class="form-control"
+                                        rows="4"
+                                        placeholder="Explain what was accurate, incomplete, or incorrect."
+                                    >{{ latest_analysis.coach_review_notes }}</textarea>
+
+                                </div>
+
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary w-100"
+                                >
+                                    Save Coach Review
+                                </button>
+
+                            </form>
+
+
+                            {% if latest_analysis.reviewed_by %}
+
+                                <div class="small text-muted mt-3">
+
+                                    Reviewed by
+
+                                    {% if latest_analysis.reviewed_by.get_full_name %}
+                                        {{ latest_analysis.reviewed_by.get_full_name }}
+                                    {% else %}
+                                        {{ latest_analysis.reviewed_by.username }}
+                                    {% endif %}
+
+                                    {% if latest_analysis.reviewed_at %}
+                                        on
+                                        {{ latest_analysis.reviewed_at|date:"M j, Y g:i A" }}
+                                    {% endif %}
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </section>
+
+                {% endif %}
+
+
+                <section class="card detail-card mb-4">
+
+                    <div class="card-body p-4">
+
                         <h2 class="h5 mb-3">
                             Video Information
                         </h2>
@@ -328,13 +1035,16 @@
                                     Primary Athlete
                                 </div>
 
-                                <strong>
+                                <a
+                                    href="{% url 'video_library:athlete_timeline' video.primary_athlete.id %}"
+                                    class="fw-semibold text-decoration-none"
+                                >
                                     {% if video.primary_athlete.get_full_name %}
                                         {{ video.primary_athlete.get_full_name }}
                                     {% else %}
                                         {{ video.primary_athlete.username }}
                                     {% endif %}
-                                </strong>
+                                </a>
 
                             </div>
 
@@ -352,11 +1062,18 @@
                                 {% for athlete in video.tagged_athletes.all %}
 
                                     <div>
-                                        {% if athlete.get_full_name %}
-                                            {{ athlete.get_full_name }}
-                                        {% else %}
-                                            {{ athlete.username }}
-                                        {% endif %}
+
+                                        <a
+                                            href="{% url 'video_library:athlete_timeline' athlete.id %}"
+                                            class="text-decoration-none"
+                                        >
+                                            {% if athlete.get_full_name %}
+                                                {{ athlete.get_full_name }}
+                                            {% else %}
+                                                {{ athlete.username }}
+                                            {% endif %}
+                                        </a>
+
                                     </div>
 
                                 {% endfor %}
@@ -532,79 +1249,14 @@
                                 </div>
 
                                 <strong>
-                               <a
-                                  href="{% url 'video_library:athlete_timeline' video.primary_athlete.id %}"
-                                  class="fw-semibold text-decoration-none"
-                                >
-                                  {% if video.primary_athlete.get_full_name %}
-                                  {{ video.primary_athlete.get_full_name }}
-                                  {% else %}
-                                  {{ video.primary_athlete.username }}
-                                  {% endif %}
-                               </a>
+                                    {% if video.uploaded_by.get_full_name %}
+                                        {{ video.uploaded_by.get_full_name }}
+                                    {% else %}
+                                        {{ video.uploaded_by.username }}
+                                    {% endif %}
                                 </strong>
 
                             </div>
-
-                        {% endif %}
-
-                    </div>
-
-                </section>
-
-
-                <section class="card detail-card mb-4">
-
-                    <div class="card-body p-4">
-
-                        <h2 class="h5 mb-3">
-                            AI Analysis
-                        </h2>
-
-                        <div class="ai-status-card p-3">
-
-                            <div class="d-flex justify-content-between align-items-center gap-3">
-
-                                <div>
-
-                                    <div class="small text-muted">
-                                        Current Status
-                                    </div>
-
-                                    <strong>
-                                        {{ video.get_ai_status_display }}
-                                    </strong>
-
-                                </div>
-
-                                <span class="fs-4">
-                                    🤖
-                                </span>
-
-                            </div>
-
-                        </div>
-
-
-                        {% if video.ai_summary %}
-
-                            <div class="mt-3">
-
-                                <div class="small text-muted mb-1">
-                                    Summary
-                                </div>
-
-                                <p class="mb-0">
-                                    {{ video.ai_summary }}
-                                </p>
-
-                            </div>
-
-                        {% else %}
-
-                            <p class="text-muted mt-3 mb-0">
-                                No AI analysis results are available yet.
-                            </p>
 
                         {% endif %}
 
@@ -648,5 +1300,153 @@
     </div>
 
 </div>
+
+
+<script>
+    document.addEventListener(
+        'DOMContentLoaded',
+        function () {
+            const videoPlayer = document.querySelector(
+                '.main-video'
+            );
+
+            document.querySelectorAll(
+                '.analysis-moment-button'
+            ).forEach(
+                function (button) {
+                    button.addEventListener(
+                        'click',
+                        function () {
+                            const timestamp = Number(
+                                button.dataset.timestamp
+                            );
+
+                            if (!videoPlayer) {
+                                return;
+                            }
+
+                            videoPlayer.currentTime = timestamp;
+
+                            videoPlayer.play();
+                        }
+                    );
+                }
+            );
+
+
+            const panel = document.getElementById(
+                'analysis-panel'
+            );
+
+            if (!panel) {
+                return;
+            }
+
+            if (
+                panel.dataset.isFinished
+                === 'true'
+            ) {
+                return;
+            }
+
+            const progressBar = document.getElementById(
+                'analysis-progress-bar'
+            );
+
+            const progressLabel = document.getElementById(
+                'analysis-progress-label'
+            );
+
+            const statusLabel = document.getElementById(
+                'analysis-status-label'
+            );
+
+            const currentStep = document.getElementById(
+                'analysis-current-step'
+            );
+
+            const csrfToken = document.querySelector(
+                '[name=csrfmiddlewaretoken]'
+            );
+
+
+            async function advanceAnalysis() {
+                try {
+                    const response = await fetch(
+                        panel.dataset.processUrl,
+                        {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': (
+                                    csrfToken
+                                    ? csrfToken.value
+                                    : ''
+                                ),
+                                'X-Requested-With': (
+                                    'XMLHttpRequest'
+                                ),
+                            },
+                        }
+                    );
+
+                    if (!response.ok) {
+                        throw new Error(
+                            'Unable to update analysis.'
+                        );
+                    }
+
+                    const data = await response.json();
+
+                    progressBar.style.width = (
+                        `${data.progress_percentage}%`
+                    );
+
+                    progressBar.setAttribute(
+                        'aria-valuenow',
+                        data.progress_percentage
+                    );
+
+                    progressLabel.textContent = (
+                        `${data.progress_percentage}%`
+                    );
+
+                    statusLabel.textContent = (
+                        data.status_display
+                        || data.status
+                    );
+
+                    currentStep.textContent = (
+                        data.current_step
+                    );
+
+                    if (data.is_finished) {
+                        window.location.reload();
+                        return;
+                    }
+
+                    window.setTimeout(
+                        advanceAnalysis,
+                        1200
+                    );
+
+                } catch (error) {
+                    console.error(
+                        error
+                    );
+
+                    currentStep.textContent = (
+                        'Unable to update analysis status.'
+                    );
+                }
+            }
+
+
+            window.setTimeout(
+                advanceAnalysis,
+                800
+            );
+        }
+    );
+</script>
 
 {% endblock %}

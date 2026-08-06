@@ -1,0 +1,486 @@
+{% extends "base.html" %}
+
+{% block title %}
+Analysis | {{ video.title }}
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .analysis-shell {
+        max-width: 1450px;
+        margin: 0 auto;
+    }
+
+    .analysis-hero {
+        padding: 28px;
+        color: white;
+        border-radius: 24px;
+        background:
+            linear-gradient(
+                135deg,
+                rgba(17, 24, 39, 0.98),
+                rgba(30, 64, 175, 0.95),
+                rgba(79, 70, 229, 0.92)
+            );
+    }
+
+    .analysis-card {
+        border: 0;
+        border-radius: 20px;
+        box-shadow:
+            0 8px 24px
+            rgba(15, 23, 42, 0.07);
+    }
+
+    .analysis-video {
+        width: 100%;
+        max-height: 700px;
+        background: #000;
+    }
+
+    .moment-card {
+        border: 1px solid #e9ecef;
+        border-radius: 15px;
+    }
+</style>
+
+
+<div class="container-fluid py-4">
+
+    <div class="analysis-shell">
+
+        <section class="analysis-hero mb-4">
+
+            <a
+                href="{% url 'video_library:analysis_history' video.id %}"
+                class="text-white text-decoration-none opacity-75"
+            >
+                ← Analysis History
+            </a>
+
+            <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-4 mt-3">
+
+                <div>
+
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+
+                        <span class="badge bg-white text-primary">
+                            Version {{ analysis.analysis_version }}
+                        </span>
+
+                        <span class="badge bg-white bg-opacity-25">
+                            {{ analysis.get_analysis_source_display }}
+                        </span>
+
+                        <span class="badge bg-white bg-opacity-25">
+                            {{ analysis.get_status_display }}
+                        </span>
+
+                    </div>
+
+                    <h1 class="display-6 fw-bold mb-2">
+
+                        {% if analysis.detected_skill %}
+                            {{ analysis.detected_skill }}
+                        {% elif analysis.requested_skill %}
+                            {{ analysis.requested_skill }}
+                        {% else %}
+                            Video Analysis
+                        {% endif %}
+
+                    </h1>
+
+                    <p class="lead mb-0 opacity-75">
+                        {{ video.title }}
+                        ·
+                        {{ analysis.created_at|date:"F j, Y g:i A" }}
+                    </p>
+
+                </div>
+
+
+                <div class="d-flex flex-wrap gap-2">
+
+                    {% if previous_analysis %}
+
+                        <a
+                            href="{% url 'video_library:analysis_detail' previous_analysis.id %}"
+                            class="btn btn-outline-light"
+                        >
+                            ← Older
+                        </a>
+
+                    {% endif %}
+
+                    {% if next_analysis %}
+
+                        <a
+                            href="{% url 'video_library:analysis_detail' next_analysis.id %}"
+                            class="btn btn-outline-light"
+                        >
+                            Newer →
+                        </a>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <div class="row g-4">
+
+            <main class="col-12 col-xl-8">
+
+                <section class="card analysis-card mb-4">
+
+                    <video
+                        controls
+                        preload="metadata"
+                        playsinline
+                        class="analysis-video"
+                    >
+                        <source
+                            src="{{ video.video_file.url }}"
+                            type="{{ video.content_type|default:'video/mp4' }}"
+                        >
+                    </video>
+
+                </section>
+
+
+                {% if analysis.status == 'completed' %}
+
+                    <section class="card analysis-card">
+
+                        <div class="card-header bg-white border-0 px-4 pt-4 pb-2">
+
+                            <h2 class="h5 mb-1">
+                                Analysis Moments
+                            </h2>
+
+                            <p class="text-muted mb-0">
+                                Click an observation to jump to its timestamp.
+                            </p>
+
+                        </div>
+
+                        <div class="card-body px-4 pb-4">
+
+                            <div class="d-flex flex-column gap-3">
+
+                                {% for item in analysis_moment_items %}
+
+                                    <article class="moment-card p-3">
+
+                                        <button
+                                            type="button"
+                                            class="btn border-0 p-0 text-start w-100 analysis-moment-button"
+                                            data-timestamp="{{ item.moment.timestamp_seconds }}"
+                                        >
+
+                                            <div class="d-flex justify-content-between gap-3">
+
+                                                <div>
+
+                                                    <strong>
+                                                        {{ item.moment.label }}
+                                                    </strong>
+
+                                                    <div class="small text-muted">
+                                                        {{ item.moment.description }}
+                                                    </div>
+
+                                                </div>
+
+                                                <span class="badge text-bg-light border">
+                                                    {{ item.moment.timestamp_seconds }}s
+                                                </span>
+
+                                            </div>
+
+                                        </button>
+
+
+                                        {% if item.feedback %}
+
+                                            <div class="small mt-3">
+
+                                                Your rating:
+
+                                                <strong>
+                                                    {{ item.feedback.get_rating_display }}
+                                                </strong>
+
+                                                {% if item.feedback.comment %}
+                                                    · {{ item.feedback.comment }}
+                                                {% endif %}
+
+                                            </div>
+
+                                        {% endif %}
+
+                                    </article>
+
+                                {% empty %}
+
+                                    <p class="text-muted mb-0">
+                                        No moments were saved for this analysis.
+                                    </p>
+
+                                {% endfor %}
+
+                            </div>
+
+                        </div>
+
+                    </section>
+
+                {% endif %}
+
+            </main>
+
+
+            <aside class="col-12 col-xl-4">
+
+                <section class="card analysis-card mb-4">
+
+                    <div class="card-body p-4">
+
+                        <h2 class="h5 mb-3">
+                            Analysis Summary
+                        </h2>
+
+
+                        <div class="mb-3">
+
+                            <div class="small text-muted">
+                                Status
+                            </div>
+
+                            <strong>
+                                {{ analysis.get_status_display }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="mb-3">
+
+                            <div class="small text-muted">
+                                Progress
+                            </div>
+
+                            <strong>
+                                {{ analysis.progress_percentage }}%
+                            </strong>
+
+                        </div>
+
+
+                        <div class="mb-3">
+
+                            <div class="small text-muted">
+                                Pipeline Version
+                            </div>
+
+                            <strong>
+                                {{ analysis.analysis_version }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="mb-3">
+
+                            <div class="small text-muted">
+                                Analysis Source
+                            </div>
+
+                            <strong>
+                                {{ analysis.get_analysis_source_display }}
+                            </strong>
+
+                        </div>
+
+
+                        {% if analysis.confidence_percentage %}
+
+                            <div class="mb-3">
+
+                                <div class="small text-muted">
+                                    Skill Confidence
+                                </div>
+
+                                <strong>
+                                    {{ analysis.confidence_percentage }}%
+                                </strong>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if analysis.processing_seconds %}
+
+                            <div>
+
+                                <div class="small text-muted">
+                                    Processing Time
+                                </div>
+
+                                <strong>
+                                    {{ analysis.processing_seconds }} seconds
+                                </strong>
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </section>
+
+
+                {% if analysis.summary %}
+
+                    <section class="card analysis-card mb-4">
+
+                        <div class="card-body p-4">
+
+                            <h2 class="h5">
+                                Summary
+                            </h2>
+
+                            <p class="mb-0">
+                                {{ analysis.summary }}
+                            </p>
+
+                        </div>
+
+                    </section>
+
+                {% endif %}
+
+
+                {% if analysis.reviewed_by %}
+
+                    <section class="card analysis-card mb-4">
+
+                        <div class="card-body p-4">
+
+                            <h2 class="h5 mb-3">
+                                Coach Review
+                            </h2>
+
+                            <div class="mb-3">
+
+                                <div class="small text-muted">
+                                    Decision
+                                </div>
+
+                                <strong>
+                                    {{ analysis.get_review_status_display }}
+                                </strong>
+
+                            </div>
+
+                            <div class="mb-3">
+
+                                <div class="small text-muted">
+                                    Reviewed By
+                                </div>
+
+                                <strong>
+                                    {% if analysis.reviewed_by.get_full_name %}
+                                        {{ analysis.reviewed_by.get_full_name }}
+                                    {% else %}
+                                        {{ analysis.reviewed_by.username }}
+                                    {% endif %}
+                                </strong>
+
+                            </div>
+
+                            {% if analysis.coach_review_notes %}
+
+                                <div>
+
+                                    <div class="small text-muted">
+                                        Notes
+                                    </div>
+
+                                    <p class="mb-0">
+                                        {{ analysis.coach_review_notes }}
+                                    </p>
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </section>
+
+                {% endif %}
+
+
+                <form
+                    method="post"
+                    action="{% url 'video_library:rerun_analysis' video.id %}"
+                >
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary w-100"
+                    >
+                        Run New Analysis
+                    </button>
+
+                </form>
+
+            </aside>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+    document.addEventListener(
+        'DOMContentLoaded',
+        function () {
+            const videoPlayer = document.querySelector(
+                '.analysis-video'
+            );
+
+            document.querySelectorAll(
+                '.analysis-moment-button'
+            ).forEach(
+                function (button) {
+                    button.addEventListener(
+                        'click',
+                        function () {
+                            if (!videoPlayer) {
+                                return;
+                            }
+
+                            videoPlayer.currentTime = Number(
+                                button.dataset.timestamp
+                            );
+
+                            videoPlayer.play();
+                        }
+                    );
+                }
+            );
+        }
+    );
+</script>
+
+{% endblock %}

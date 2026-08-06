@@ -1,10 +1,12 @@
-from pathlib import Path
 
+from pathlib import Path
+from .ai import VideoAnalysisProcessor
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import (
     get_object_or_404,
     redirect,
@@ -12,13 +14,13 @@ from django.shortcuts import (
 )
 from django.utils import timezone
 from django.views.decorators.http import require_POST
-
-from .forms import VideoUploadForm
-from .models import Video
-
-
 User = get_user_model()
-
+from .models import (
+    Video,
+    VideoAnalysis,
+    VideoAnalysisFeedback,
+    VideoAnalysisMoment,
+)
 
 COACH_ROLES = [
     'coach',
@@ -363,16 +365,864 @@ def video_detail(
         '-uploaded_at',
     )[:6]
 
+    latest_analysis = (
+        video.analyses
+        .select_related(
+            'reviewed_by',
+            'requested_by',
+        )
+        .prefetch_related(
+            'moments',
+            'feedback_entries',
+        )
+        .order_by(
+            '-created_at',
+        )
+        .first()
+    )
+
+    analysis_moment_items = []
+
+    if latest_analysis:
+        coach_feedback = {
+            feedback.moment_id: feedback
+            for feedback in (
+                latest_analysis.feedback_entries
+                .filter(
+                    coach=request.user,
+                    moment__isnull=False,
+                )
+                .select_related(
+                    'moment',
+                )
+            )
+        }
+
+        analysis_moment_items = [
+            {
+                'moment': moment,
+                'feedback': coach_feedback.get(
+                    moment.id
+                ),
+            }
+            for moment in latest_analysis.moments.all()
+        ]
+    analysis_count = (
+        video.analyses.count()
+    )
     context = {
         'video': video,
         'related_videos': related_videos,
+        'latest_analysis': latest_analysis,
+        'analysis_moment_items': analysis_moment_items,
+        'analysis_count': analysis_count,
     }
+
+
 
     return render(
         request,
         'video_library/video_detail.html',
         context,
     )
+
+@login_required
+@require_POST
+def review_video_analysis(
+    request,
+    analysis_id,
+):
+    if not user_is_coach(
+        request.user
+    ):
+        messages.error(
+            request,
+            (
+                'You do not have permission to '
+                'review this analysis.'
+            ),
+        )
+
+        return redirect(
+            'role_redirect'
+        )
+
+    analysis = get_object_or_404(
+        VideoAnalysis.objects
+        .select_related(
+            'video',
+        ),
+        id=analysis_id,
+    )
+
+    can_access = (
+        get_accessible_videos(
+            request.user
+        )
+        .filter(
+            id=analysis.video_id,
+        )
+        .exists()
+    )
+
+    if not can_access:
+        messages.error(
+            request,
+            (
+                'You do not have permission to '
+                'review this analysis.'
+            ),
+        )
+
+        return redirect(
+            'video_library:video_list'
+        )
+
+    if (
+        analysis.status
+        != VideoAnalysis.STATUS_COMPLETED
+    ):
+        messages.error(
+            request,
+            (
+                'Only completed analyses can '
+                'be reviewed.'
+            ),
+        )
+
+        return redirect(
+            'video_library:video_detail',
+            video_id=analysis.video_id,
+        )
+
+    review_status = request.POST.get(
+        'review_status',
+        '',
+    ).strip()
+
+    review_notes = request.POST.get(
+        'coach_review_notes',
+        '',
+    ).strip()
+
+    allowed_statuses = {
+        VideoAnalysis.REVIEW_APPROVED,
+        VideoAnalysis.REVIEW_PARTIAL,
+        VideoAnalysis.REVIEW_REJECTED,
+    }
+
+    if review_status not in allowed_statuses:
+        messages.error(
+            request,
+            'Choose a valid review decision.',
+        )
+
+        return redirect(
+            'video_library:video_detail',
+            video_id=analysis.video_id,
+        )
+
+    analysis.review_status = review_status
+    analysis.coach_review_notes = review_notes
+    analysis.reviewed_by = request.user
+    analysis.reviewed_at = timezone.now()
+
+    analysis.save(
+        update_fields=[
+            'review_status',
+            'coach_review_notes',
+            'reviewed_by',
+            'reviewed_at',
+            'updated_at',
+        ],
+    )
+
+    messages.success(
+        request,
+        (
+            'Your analysis review was saved.'
+        ),
+    )
+
+    return redirect(
+        'video_library:video_detail',
+        video_id=analysis.video_id,
+    )
+@login_required
+@require_POST
+def review_analysis_moment(
+    request,
+    moment_id,
+):
+    if not user_is_coach(
+        request.user
+    ):
+        messages.error(
+            request,
+            (
+                'You do not have permission to '
+                'review this observation.'
+            ),
+        )
+
+        return redirect(
+            'role_redirect'
+        )
+
+    moment = get_object_or_404(
+        VideoAnalysisMoment.objects
+        .select_related(
+            'analysis__video',
+        ),
+        id=moment_id,
+    )
+
+    analysis = moment.analysis
+
+    can_access = (
+        get_accessible_videos(
+            request.user
+        )
+        .filter(
+            id=analysis.video_id,
+        )
+        .exists()
+    )
+
+    if not can_access:
+        messages.error(
+            request,
+            (
+                'You do not have permission to '
+                'review this observation.'
+            ),
+        )
+
+        return redirect(
+            'video_library:video_list'
+        )
+
+    if (
+        analysis.status
+        != VideoAnalysis.STATUS_COMPLETED
+    ):
+        messages.error(
+            request,
+            (
+                'Only completed analyses can '
+                'receive feedback.'
+            ),
+        )
+
+        return redirect(
+            'video_library:video_detail',
+            video_id=analysis.video_id,
+        )
+
+    rating = request.POST.get(
+        'rating',
+        '',
+    ).strip()
+
+    comment = request.POST.get(
+        'comment',
+        '',
+    ).strip()
+
+    allowed_ratings = {
+        VideoAnalysisFeedback.RATING_CORRECT,
+        VideoAnalysisFeedback.RATING_PARTIAL,
+        VideoAnalysisFeedback.RATING_INCORRECT,
+    }
+
+    if rating not in allowed_ratings:
+        messages.error(
+            request,
+            'Choose a valid feedback rating.',
+        )
+
+        return redirect(
+            'video_library:video_detail',
+            video_id=analysis.video_id,
+        )
+
+    VideoAnalysisFeedback.objects.update_or_create(
+        analysis=analysis,
+        moment=moment,
+        coach=request.user,
+        defaults={
+            'rating': rating,
+            'comment': comment,
+        },
+    )
+
+    messages.success(
+        request,
+        (
+            f'Feedback for "{moment.label}" '
+            f'was saved.'
+        ),
+    )
+
+    return redirect(
+        'video_library:video_detail',
+        video_id=analysis.video_id,
+    )
+
+@login_required
+@require_POST
+def request_video_analysis(
+    request,
+    video_id,
+):
+    if not user_is_coach(
+        request.user
+    ):
+        messages.error(
+            request,
+            (
+                'You do not have permission to '
+                'analyze this video.'
+            ),
+        )
+
+        return redirect(
+            'role_redirect'
+        )
+
+    video = get_object_or_404(
+        get_accessible_videos(
+            request.user
+        ),
+        id=video_id,
+    )
+
+    active_analysis = (
+        video.analyses
+        .filter(
+            status__in=[
+                VideoAnalysis.STATUS_QUEUED,
+                VideoAnalysis.STATUS_PREPARING,
+                VideoAnalysis.STATUS_PROCESSING,
+                (
+                    VideoAnalysis
+                    .STATUS_GENERATING_RESULTS
+                ),
+            ],
+        )
+        .order_by(
+            '-created_at',
+        )
+        .first()
+    )
+
+    if active_analysis:
+        messages.info(
+            request,
+            (
+                'This video already has an analysis '
+                'in progress.'
+            ),
+        )
+
+        return redirect(
+            'video_library:video_detail',
+            video_id=video.id,
+        )
+
+    analysis = VideoAnalysis.objects.create(
+        video=video,
+        requested_by=request.user,
+        status=VideoAnalysis.STATUS_QUEUED,
+        progress_percentage=0,
+        current_step='Waiting to begin',
+        analysis_source=VideoAnalysis.SOURCE_MOCK,
+        analysis_version='0.1.0',
+        requested_skill=video.skill_name,
+    )
+
+    video.ai_status = Video.AI_QUEUED
+
+    video.save(
+        update_fields=[
+            'ai_status',
+            'updated_at',
+        ],
+    )
+
+    messages.success(
+        request,
+        (
+            'Video analysis was added to the queue.'
+        ),
+    )
+
+    return redirect(
+        'video_library:video_detail',
+        video_id=video.id,
+    )
+
+
+@login_required
+def video_analysis_status(
+    request,
+    analysis_id,
+):
+    if not user_is_coach(
+        request.user
+    ):
+        return JsonResponse(
+            {
+                'error': 'Permission denied.',
+            },
+            status=403,
+        )
+
+    analysis = get_object_or_404(
+        VideoAnalysis.objects
+        .select_related(
+            'video',
+        ),
+        id=analysis_id,
+    )
+
+    accessible_video = (
+        get_accessible_videos(
+            request.user
+        )
+        .filter(
+            id=analysis.video_id,
+        )
+        .exists()
+    )
+
+    if not accessible_video:
+        return JsonResponse(
+            {
+                'error': 'Permission denied.',
+            },
+            status=403,
+        )
+
+    return JsonResponse({
+        'analysis_id': analysis.id,
+        'status': analysis.status,
+        'status_display': (
+            analysis.get_status_display()
+        ),
+        'progress_percentage': (
+            analysis.progress_percentage
+        ),
+        'current_step': analysis.current_step,
+        'is_finished': analysis.is_finished,
+        'detail_url': (
+            request.build_absolute_uri(
+                redirect(
+                    'video_library:video_detail',
+                    video_id=analysis.video_id,
+                ).url
+            )
+        ),
+    })
+
+
+@login_required
+def video_analysis_history(
+    request,
+    video_id,
+):
+    if not user_is_coach(
+        request.user
+    ):
+        messages.error(
+            request,
+            (
+                'You do not have permission to '
+                'view analysis history.'
+            ),
+        )
+
+        return redirect(
+            'role_redirect'
+        )
+
+    video = get_object_or_404(
+        get_accessible_videos(
+            request.user
+        ),
+        id=video_id,
+    )
+
+    analyses = (
+        video.analyses
+        .select_related(
+            'requested_by',
+            'reviewed_by',
+        )
+        .prefetch_related(
+            'moments',
+            'feedback_entries',
+        )
+        .order_by(
+            '-created_at',
+        )
+    )
+
+    active_analysis = analyses.filter(
+        status__in=[
+            VideoAnalysis.STATUS_QUEUED,
+            VideoAnalysis.STATUS_PREPARING,
+            VideoAnalysis.STATUS_PROCESSING,
+            (
+                VideoAnalysis
+                .STATUS_GENERATING_RESULTS
+            ),
+        ],
+    ).first()
+
+    context = {
+        'video': video,
+        'analyses': analyses,
+        'analysis_count': analyses.count(),
+        'active_analysis': active_analysis,
+    }
+
+    return render(
+        request,
+        'video_library/analysis_history.html',
+        context,
+    )
+@login_required
+def video_analysis_detail(
+    request,
+    analysis_id,
+):
+    if not user_is_coach(
+        request.user
+    ):
+        messages.error(
+            request,
+            (
+                'You do not have permission to '
+                'view this analysis.'
+            ),
+        )
+
+        return redirect(
+            'role_redirect'
+        )
+
+    analysis = get_object_or_404(
+        VideoAnalysis.objects
+        .select_related(
+            'video',
+            'requested_by',
+            'reviewed_by',
+        )
+        .prefetch_related(
+            'moments',
+            'feedback_entries',
+        ),
+        id=analysis_id,
+    )
+
+    can_access = (
+        get_accessible_videos(
+            request.user
+        )
+        .filter(
+            id=analysis.video_id,
+        )
+        .exists()
+    )
+
+    if not can_access:
+        messages.error(
+            request,
+            (
+                'You do not have permission to '
+                'view this analysis.'
+            ),
+        )
+
+        return redirect(
+            'video_library:video_list'
+        )
+
+    coach_feedback = {
+        feedback.moment_id: feedback
+        for feedback in (
+            analysis.feedback_entries
+            .filter(
+                coach=request.user,
+                moment__isnull=False,
+            )
+            .select_related(
+                'moment',
+            )
+        )
+    }
+
+    analysis_moment_items = [
+        {
+            'moment': moment,
+            'feedback': coach_feedback.get(
+                moment.id
+            ),
+        }
+        for moment in analysis.moments.all()
+    ]
+
+    previous_analysis = (
+        analysis.video.analyses
+        .filter(
+            created_at__lt=analysis.created_at,
+        )
+        .order_by(
+            '-created_at',
+        )
+        .first()
+    )
+
+    next_analysis = (
+        analysis.video.analyses
+        .filter(
+            created_at__gt=analysis.created_at,
+        )
+        .order_by(
+            'created_at',
+        )
+        .first()
+    )
+
+    context = {
+        'video': analysis.video,
+        'analysis': analysis,
+        'analysis_moment_items': (
+            analysis_moment_items
+        ),
+        'previous_analysis': previous_analysis,
+        'next_analysis': next_analysis,
+    }
+
+    return render(
+        request,
+        'video_library/analysis_detail.html',
+        context,
+    )
+@login_required
+@require_POST
+def rerun_video_analysis(
+    request,
+    video_id,
+):
+    if not user_is_coach(
+        request.user
+    ):
+        messages.error(
+            request,
+            (
+                'You do not have permission to '
+                'analyze this video.'
+            ),
+        )
+
+        return redirect(
+            'role_redirect'
+        )
+
+    video = get_object_or_404(
+        get_accessible_videos(
+            request.user
+        ),
+        id=video_id,
+    )
+
+    active_analysis = (
+        video.analyses
+        .filter(
+            status__in=[
+                VideoAnalysis.STATUS_QUEUED,
+                VideoAnalysis.STATUS_PREPARING,
+                VideoAnalysis.STATUS_PROCESSING,
+                (
+                    VideoAnalysis
+                    .STATUS_GENERATING_RESULTS
+                ),
+            ],
+        )
+        .order_by(
+            '-created_at',
+        )
+        .first()
+    )
+
+    if active_analysis:
+        messages.info(
+            request,
+            (
+                'This video already has an analysis '
+                'in progress.'
+            ),
+        )
+
+        return redirect(
+            'video_library:analysis_detail',
+            analysis_id=active_analysis.id,
+        )
+
+    latest_analysis = (
+        video.analyses
+        .order_by(
+            '-created_at',
+        )
+        .first()
+    )
+
+    requested_skill = (
+        video.skill_name.strip()
+    )
+
+    if (
+        not requested_skill
+        and latest_analysis
+    ):
+        requested_skill = (
+            latest_analysis.requested_skill
+            or latest_analysis.detected_skill
+        )
+
+    analysis = VideoAnalysis.objects.create(
+        video=video,
+        requested_by=request.user,
+        status=VideoAnalysis.STATUS_QUEUED,
+        progress_percentage=0,
+        current_step='Waiting to begin',
+        analysis_source=(
+            VideoAnalysis.SOURCE_MOCK
+        ),
+        analysis_version='0.1.0',
+        requested_skill=requested_skill,
+    )
+
+    video.ai_status = Video.AI_QUEUED
+
+    video.save(
+        update_fields=[
+            'ai_status',
+            'updated_at',
+        ],
+    )
+
+    messages.success(
+        request,
+        (
+            'A new analysis was created. '
+            'Previous results and coach reviews '
+            'were preserved.'
+        ),
+    )
+
+    return redirect(
+        'video_library:video_detail',
+        video_id=video.id,
+    )
+
+
+@login_required
+@require_POST
+@login_required
+@require_POST
+def process_mock_analysis(
+    request,
+    analysis_id,
+):
+    if not user_is_coach(
+        request.user
+    ):
+        return JsonResponse(
+            {
+                'error': 'Permission denied.',
+            },
+            status=403,
+        )
+
+    analysis = get_object_or_404(
+        VideoAnalysis.objects
+        .select_related(
+            'video',
+        ),
+        id=analysis_id,
+    )
+
+    accessible_video = (
+        get_accessible_videos(
+            request.user
+        )
+        .filter(
+            id=analysis.video_id,
+        )
+        .exists()
+    )
+
+    if not accessible_video:
+        return JsonResponse(
+            {
+                'error': 'Permission denied.',
+            },
+            status=403,
+        )
+
+    if analysis.is_finished:
+        return JsonResponse({
+            'status': analysis.status,
+            'status_display': (
+                analysis.get_status_display()
+            ),
+            'progress_percentage': (
+                analysis.progress_percentage
+            ),
+            'current_step': analysis.current_step,
+            'is_finished': True,
+        })
+
+    try:
+        processor = VideoAnalysisProcessor()
+
+        processor.process(
+            analysis=analysis,
+        )
+
+    except Exception as error:
+        return JsonResponse(
+            {
+                'status': analysis.status,
+                'status_display': (
+                    analysis.get_status_display()
+                ),
+                'progress_percentage': (
+                    analysis.progress_percentage
+                ),
+                'current_step': analysis.current_step,
+                'is_finished': True,
+                'error': str(error),
+            },
+            status=500,
+        )
+
+    analysis.refresh_from_db()
+
+    return JsonResponse({
+        'status': analysis.status,
+        'status_display': (
+            analysis.get_status_display()
+        ),
+        'progress_percentage': (
+            analysis.progress_percentage
+        ),
+        'current_step': analysis.current_step,
+        'is_finished': analysis.is_finished,
+    })
 @login_required
 def athlete_video_compare_select(
     request,
