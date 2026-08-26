@@ -75,9 +75,54 @@ urlpatterns = [
     ),
 
     path(
+        '<int:video_id>/process-video/',
+        views.process_video_metadata,
+        name='process_video_metadata',
+    ),
+
+    path(
+        '<int:video_id>/extract-frames/',
+        views.extract_video_analysis_frames,
+        name='extract_analysis_frames',
+    ),
+
+    path(
+        '<int:video_id>/detect-pose/',
+        views.detect_video_pose,
+        name='detect_video_pose',
+    ),
+
+    path(
+        '<int:video_id>/generate-pose-overlays/',
+        views.generate_pose_overlays,
+        name='generate_pose_overlays',
+    ),
+
+    path(
+        'analysis/<int:first_analysis_id>/compare/',
+        views.start_analysis_comparison,
+        name='start_analysis_comparison',
+    ),
+
+
+    path(
+        'analysis/compare/<int:first_analysis_id>/<int:second_analysis_id>/',
+        views.compare_video_analyses,
+        name='compare_analyses',
+    ),
+
+
+
+    path(
         '<int:video_id>/',
         views.video_detail,
         name='video_detail',
+    ),
+
+    path(
+        'athlete/<int:athlete_id>/compare/',
+        views.athlete_video_compare_select,
+        name='athlete_video_compare_select',
     ),
 
     path(
@@ -102,5 +147,52 @@ urlpatterns = [
         '<int:video_id>/favorite/',
         views.toggle_video_favorite,
         name='toggle_favorite',
+    ),
+
+    path(
+        'technique-profiles/',
+        views.technique_profile_list,
+        name='technique_profile_list',
+    ),
+
+    path(
+        'technique-profiles/new/',
+        views.technique_profile_create,
+        name='technique_profile_create',
+    ),
+
+    path(
+        'technique-profiles/<int:profile_id>/edit/',
+        views.technique_profile_edit,
+        name='technique_profile_edit',
+    ),
+
+    path(
+        'athlete/<int:athlete_id>/progress/',
+        views.athlete_skill_progress,
+        name='athlete_skill_progress',
+    ),
+
+    path(
+        'athlete/<int:athlete_id>/timeline/',
+        views.athlete_video_timeline,
+        name='athlete_video_timeline',
+    ),
+    path(
+        'video/<int:video_id>/personal-best/',
+        views.toggle_personal_best,
+        name='toggle_personal_best',
+    ),
+
+    path(
+        'video/<int:video_id>/reference-attempt/',
+        views.toggle_reference_attempt,
+        name='toggle_reference_attempt',
+    ),
+
+    path(
+        'video/<int:video_id>/coaching-example/',
+        views.toggle_coaching_example,
+        name='toggle_coaching_example',
     ),
 ]

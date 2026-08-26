@@ -8,10 +8,83 @@ from practice_planner.models import (
     TrainingGroup,
 )
 
-from .models import Video
-
+from .models import (
+    TechniqueProfile,
+    Video,
+)
 
 User = get_user_model()
+
+class TechniqueProfileForm(
+    forms.ModelForm
+):
+
+    class Meta:
+
+        model = TechniqueProfile
+
+        fields = [
+            'skill_name',
+            'strictness',
+            'straight_legs',
+            'body_line',
+            'shoulder_position',
+            'straight_arms',
+            'landing_control',
+            'takeoff_position',
+            'tuck_position',
+            'is_active',
+        ]
+
+        widgets = {
+
+            'skill_name': (
+                forms.TextInput(
+                    attrs={
+                        'class': 'form-control',
+                        'placeholder': (
+                            'Example: Cast Handstand'
+                        ),
+                    }
+                )
+            ),
+
+            'strictness': (
+                forms.RadioSelect()
+            ),
+        }
+
+
+    def __init__(
+        self,
+        *args,
+        **kwargs,
+    ):
+        super().__init__(
+            *args,
+            **kwargs,
+        )
+
+        checkbox_fields = [
+            'straight_legs',
+            'body_line',
+            'shoulder_position',
+            'straight_arms',
+            'landing_control',
+            'takeoff_position',
+            'tuck_position',
+            'is_active',
+        ]
+
+        for field_name in checkbox_fields:
+
+            self.fields[
+                field_name
+            ].widget.attrs.update({
+                'class': (
+                    'form-check-input'
+                ),
+            })
 
 
 class MultipleVideoInput(

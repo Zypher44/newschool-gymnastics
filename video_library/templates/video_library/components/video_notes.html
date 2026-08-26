@@ -1,0 +1,19 @@
+{% if video.notes %}
+
+    <section class="card detail-card mb-4">
+
+        <div class="card-body p-4">
+
+            <h2 class="h5 mb-3">
+                Coaching Notes
+            </h2>
+
+            <p class="mb-0">
+                {{ video.notes|linebreaksbr }}
+            </p>
+
+        </div>
+
+    </section>
+
+{% endif %}

@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}
+Technique Profile
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-4" style="max-width: 900px;">
+
+    <div class="mb-4">
+
+        <a
+            href="{% url 'video_library:technique_profile_list' %}"
+            class="text-decoration-none"
+        >
+            ← Technique Profiles
+        </a>
+
+        <h1 class="h3 mt-3 mb-1">
+
+            {% if profile %}
+                Edit Technique Profile
+            {% else %}
+                New Technique Profile
+            {% endif %}
+
+        </h1>
+
+        <p class="text-muted mb-0">
+            Tell the system what your coaches care about.
+            You do not need to enter biomechanical angles.
+        </p>
+
+    </div>
+
+
+    <form method="post">
+
+        {% csrf_token %}
+
+
+        <section class="card border-0 shadow-sm mb-4">
+
+            <div class="card-body p-4">
+
+                <h2 class="h5 mb-3">
+                    Skill
+                </h2>
+
+                <label class="form-label fw-semibold">
+                    Skill Name
+                </label>
+
+                {{ form.skill_name }}
+
+            </div>
+
+        </section>
+
+
+        <section class="card border-0 shadow-sm mb-4">
+
+            <div class="card-body p-4">
+
+                <h2 class="h5 mb-1">
+                    What matters most?
+                </h2>
+
+                <p class="text-muted small mb-4">
+                    Select the technical qualities your program
+                    wants the analysis to emphasize.
+                </p>
+
+
+                {% for field in form %}
+
+                    {% if field.name == 'straight_legs' or field.name == 'body_line' or field.name == 'shoulder_position' or field.name == 'straight_arms' or field.name == 'landing_control' or field.name == 'takeoff_position' or field.name == 'tuck_position' %}
+
+                        <div class="form-check border rounded-3 p-3 ps-5 mb-2">
+
+                            {{ field }}
+
+                            <label
+                                class="form-check-label fw-semibold"
+                                for="{{ field.id_for_label }}"
+                            >
+                                {{ field.label }}
+                            </label>
+
+                        </div>
+
+                    {% endif %}
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+
+        <section class="card border-0 shadow-sm mb-4">
+
+            <div class="card-body p-4">
+
+                <h2 class="h5 mb-1">
+                    Analysis Standard
+                </h2>
+
+                <p class="small text-muted mb-3">
+                    How closely should the system evaluate
+                    your selected priorities?
+                </p>
+
+
+                <div class="mb-3">
+
+                    {{ form.strictness }}
+
+                </div>
+
+
+                <div class="row g-2 small">
+
+                    <div class="col-12 col-md-4">
+
+                        <div class="border rounded-3 p-3 h-100">
+
+                            <strong>
+                                Developmental
+                            </strong>
+
+                            <div class="text-muted mt-1">
+                                More forgiving for athletes
+                                learning the skill.
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-12 col-md-4">
+
+                        <div class="border rounded-3 p-3 h-100">
+
+                            <strong>
+                                Standard
+                            </strong>
+
+                            <div class="text-muted mt-1">
+                                Balanced coaching analysis.
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-12 col-md-4">
+
+                        <div class="border rounded-3 p-3 h-100">
+
+                            <strong>
+                                High Performance
+                            </strong>
+
+                            <div class="text-muted mt-1">
+                                More sensitive to smaller
+                                technical differences.
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section class="card border-0 shadow-sm mb-4">
+
+            <div class="card-body p-4">
+
+                <div class="form-check">
+
+                    {{ form.is_active }}
+
+                    <label
+                        class="form-check-label fw-semibold"
+                        for="{{ form.is_active.id_for_label }}"
+                    >
+                        Use this profile in AI comparisons
+                    </label>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        {% if form.errors %}
+
+            <div class="alert alert-danger">
+
+                {{ form.errors }}
+
+            </div>
+
+        {% endif %}
+
+
+        <button
+            type="submit"
+            class="btn btn-primary btn-lg"
+        >
+            Save Technique Profile
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,115 @@
+{% if latest_analysis and latest_analysis.status == 'completed' %}
+
+    <section class="card detail-card mb-4">
+
+        <div class="card-body p-4">
+
+            <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+
+                <div>
+
+                    <h2 class="h5 mb-1">
+                        Attempt Comparison
+                    </h2>
+
+                    <p class="small text-muted mb-0">
+                        Compare this attempt against another
+                        analyzed attempt from the same athlete
+                        and skill.
+                    </p>
+
+                </div>
+
+                <span class="fs-4">
+                    ↔️
+                </span>
+
+            </div>
+
+
+            {% if comparison_candidates %}
+
+                <form
+                    method="post"
+                    action="{% url 'video_library:start_analysis_comparison' latest_analysis.id %}"
+                >
+                    {% csrf_token %}
+
+
+                    <div class="mb-3">
+
+                        <label
+                            for="second-analysis-id"
+                            class="form-label fw-semibold"
+                        >
+                            Compare With
+                        </label>
+
+
+                        <select
+                            name="second_analysis_id"
+                            id="second-analysis-id"
+                            class="form-select"
+                            required
+                        >
+
+                            <option value="">
+                                Choose another attempt
+                            </option>
+
+
+                            {% for candidate in comparison_candidates %}
+
+                                <option
+                                    value="{{ candidate.id }}"
+                                >
+
+                                    {{ candidate.video.title }}
+
+                                    {% if candidate.video.recorded_at %}
+                                        —
+                                        {{ candidate.video.recorded_at|date:"M j, Y" }}
+                                    {% else %}
+                                        —
+                                        {{ candidate.created_at|date:"M j, Y" }}
+                                    {% endif %}
+
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary w-100"
+                    >
+                        ↔ Compare Attempts
+                    </button>
+
+                </form>
+
+
+            {% else %}
+
+                <div class="border rounded-3 p-3 bg-light">
+
+                    <div class="small text-muted">
+
+                        No other completed attempts are available
+                        for this athlete and skill yet.
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+
+{% endif %}

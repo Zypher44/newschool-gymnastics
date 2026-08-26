@@ -1,0 +1,315 @@
+<section class="card detail-card mb-4">
+
+    <div class="card-body p-4">
+
+        <h2 class="h5 mb-3">
+            Video Information
+        </h2>
+
+
+        <form
+            method="post"
+            action="{% url 'video_library:process_video_metadata' video.id %}"
+            class="mb-4"
+        >
+            {% csrf_token %}
+
+            <button
+                type="submit"
+                class="btn btn-outline-primary w-100"
+            >
+                🎥 Process Video Metadata
+            </button>
+
+        </form>
+
+
+        {% if video.primary_athlete %}
+
+            <div class="metadata-row">
+
+                <div class="metadata-label">
+                    Primary Athlete
+                </div>
+
+                <a
+                    href="{% url 'video_library:athlete_timeline' video.primary_athlete.id %}"
+                    class="fw-semibold text-decoration-none"
+                >
+                    {% if video.primary_athlete.get_full_name %}
+                        {{ video.primary_athlete.get_full_name }}
+                    {% else %}
+                        {{ video.primary_athlete.username }}
+                    {% endif %}
+                </a>
+
+            </div>
+
+        {% endif %}
+
+
+        {% if video.tagged_athletes.all %}
+
+            <div class="metadata-row">
+
+                <div class="metadata-label">
+                    Additional Athletes
+                </div>
+
+                {% for athlete in video.tagged_athletes.all %}
+
+                    <div>
+
+                        <a
+                            href="{% url 'video_library:athlete_timeline' athlete.id %}"
+                            class="text-decoration-none"
+                        >
+                            {% if athlete.get_full_name %}
+                                {{ athlete.get_full_name }}
+                            {% else %}
+                                {{ athlete.username }}
+                            {% endif %}
+                        </a>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+
+        <div class="metadata-row">
+
+            <div class="metadata-label">
+                Event
+            </div>
+
+            <strong>
+                {{ video.get_event_display }}
+            </strong>
+
+        </div>
+
+
+        {% if video.skill_name %}
+
+            <div class="metadata-row">
+
+                <div class="metadata-label">
+                    Skill
+                </div>
+
+                <strong>
+                    {{ video.skill_name }}
+                </strong>
+
+            </div>
+
+        {% endif %}
+
+
+        <div class="metadata-row">
+
+            <div class="metadata-label">
+                Video Type
+            </div>
+
+            <strong>
+                {{ video.get_video_type_display }}
+            </strong>
+
+        </div>
+
+
+        <div class="metadata-row">
+
+            <div class="metadata-label">
+                Visibility
+            </div>
+
+            <strong>
+                {{ video.get_visibility_display }}
+            </strong>
+
+        </div>
+
+
+        {% if video.recorded_at %}
+
+            <div class="metadata-row">
+
+                <div class="metadata-label">
+                    Recorded
+                </div>
+
+                <strong>
+                    {{ video.recorded_at|date:"F j, Y" }}
+                </strong>
+
+            </div>
+
+        {% endif %}
+
+
+        <div class="metadata-row">
+
+            <div class="metadata-label">
+                Uploaded
+            </div>
+
+            <strong>
+                {{ video.uploaded_at|date:"F j, Y g:i A" }}
+            </strong>
+
+        </div>
+
+
+        {% if video.formatted_duration %}
+
+            <div class="metadata-row">
+
+                <div class="metadata-label">
+                    Duration
+                </div>
+
+                <strong>
+                    {{ video.formatted_duration }}
+                </strong>
+
+            </div>
+
+        {% endif %}
+
+
+        {% if video.video_fps %}
+
+            <div class="metadata-row">
+
+                <div class="metadata-label">
+                    Frame Rate
+                </div>
+
+                <strong>
+                    {{ video.video_fps }} FPS
+                </strong>
+
+            </div>
+
+        {% endif %}
+
+
+        {% if video.frame_count %}
+
+            <div class="metadata-row">
+
+                <div class="metadata-label">
+                    Frame Count
+                </div>
+
+                <strong>
+                    {{ video.frame_count }}
+                </strong>
+
+            </div>
+
+        {% endif %}
+
+
+        {% if video.video_width and video.video_height %}
+
+            <div class="metadata-row">
+
+                <div class="metadata-label">
+                    Resolution
+                </div>
+
+                <strong>
+                    {{ video.video_width }}
+                    ×
+                    {{ video.video_height }}
+                </strong>
+
+            </div>
+
+        {% endif %}
+
+
+        {% if video.file_size_mb %}
+
+            <div class="metadata-row">
+
+                <div class="metadata-label">
+                    File Size
+                </div>
+
+                <strong>
+                    {{ video.file_size_mb }} MB
+                </strong>
+
+            </div>
+
+        {% endif %}
+
+
+        {% if video.training_group %}
+
+            <div class="metadata-row">
+
+                <div class="metadata-label">
+                    Training Group
+                </div>
+
+                <strong>
+                    {{ video.training_group.name }}
+                </strong>
+
+            </div>
+
+        {% endif %}
+
+
+        {% if video.practice_plan %}
+
+            <div class="metadata-row">
+
+                <div class="metadata-label">
+                    Practice
+                </div>
+
+                <a
+                    href="{% url 'practice_planner:practice_builder' video.practice_plan.id %}"
+                    class="text-decoration-none"
+                >
+                    {{ video.practice_plan.title }}
+                </a>
+
+            </div>
+
+        {% endif %}
+
+
+        {% if video.uploaded_by %}
+
+            <div class="metadata-row">
+
+                <div class="metadata-label">
+                    Uploaded By
+                </div>
+
+                <strong>
+                    {% if video.uploaded_by.get_full_name %}
+                        {{ video.uploaded_by.get_full_name }}
+                    {% else %}
+                        {{ video.uploaded_by.username }}
+                    {% endif %}
+                </strong>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</section>

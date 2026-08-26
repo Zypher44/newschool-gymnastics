@@ -1,0 +1,1144 @@
+{% if latest_analysis and latest_analysis.status == 'completed' %}
+
+    <section class="card detail-card mb-4">
+
+        <div class="card-header bg-white border-0 px-4 pt-4 pb-2">
+
+            <h2 class="h5 mb-1">
+                Analysis Timeline
+            </h2>
+
+            <p class="text-muted mb-0">
+                Review movement phases, key frames, frame-to-frame motion,
+                pose detection, gymnastics measurements, supporting evidence,
+                and coach feedback.
+            </p>
+
+        </div>
+
+
+        <div class="card-body px-4 pb-4">
+
+            <div class="d-flex flex-column gap-3">
+
+                {% for item in analysis_moment_items %}
+
+                    <article class="analysis-moment-card p-3">
+
+                        <div
+                            class="analysis-moment-layout {% if item.moment.frame_image or item.moment.annotated_frame_image %}has-image{% endif %}"
+                        >
+
+                            {% if item.moment.frame_image %}
+
+                                <div class="analysis-frame-container">
+
+                                    {% if item.moment.annotated_frame_image %}
+
+                                        <div
+                                            class="btn-group btn-group-sm mb-2"
+                                            role="group"
+                                        >
+
+                                            <button
+                                                type="button"
+                                                class="btn btn-outline-secondary frame-toggle active"
+                                                data-target="original-{{ item.moment.id }}"
+                                            >
+                                                Original
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                class="btn btn-outline-secondary frame-toggle"
+                                                data-target="overlay-{{ item.moment.id }}"
+                                            >
+                                                Pose Overlay
+                                            </button>
+
+                                        </div>
+
+                                    {% endif %}
+
+
+                                    <button
+                                        type="button"
+                                        class="btn p-0 border-0 analysis-moment-image-wrapper analysis-moment-button"
+                                        data-timestamp="{{ item.moment.timestamp_seconds }}"
+                                        title="Jump video to this frame"
+                                    >
+
+                                        <img
+                                            id="original-{{ item.moment.id }}"
+                                            src="{{ item.moment.frame_image.url }}?v={{ item.moment.updated_at|date:'U' }}"
+                                            class="analysis-moment-image frame-version"
+                                            alt="Original frame for {{ item.moment.label }}"
+                                        >
+
+
+                                        {% if item.moment.annotated_frame_image %}
+
+                                            <img
+                                                id="overlay-{{ item.moment.id }}"
+                                                src="{{ item.moment.annotated_frame_image.url }}?v={{ item.moment.updated_at|date:'U' }}"
+                                                class="analysis-moment-image frame-version d-none"
+                                                alt="Pose overlay for {{ item.moment.label }}"
+                                            >
+
+                                        {% endif %}
+
+                                    </button>
+
+                                </div>
+
+
+                            {% elif item.moment.annotated_frame_image %}
+
+                                <div class="analysis-frame-container">
+
+                                    <button
+                                        type="button"
+                                        class="btn p-0 border-0 analysis-moment-image-wrapper analysis-moment-button"
+                                        data-timestamp="{{ item.moment.timestamp_seconds }}"
+                                        title="Jump video to this frame"
+                                    >
+
+                                        <img
+                                            src="{{ item.moment.annotated_frame_image.url }}?v={{ item.moment.updated_at|date:'U' }}"
+                                            class="analysis-moment-image"
+                                            alt="Pose overlay for {{ item.moment.label }}"
+                                        >
+
+                                    </button>
+
+                                </div>
+
+                            {% endif %}
+
+
+                            <div class="analysis-moment-content">
+
+                                <button
+                                    type="button"
+                                    class="btn text-start p-0 border-0 w-100 analysis-moment-button"
+                                    data-timestamp="{{ item.moment.timestamp_seconds }}"
+                                >
+
+                                    <div class="d-flex justify-content-between align-items-start gap-3">
+
+                                        <div>
+
+                                            <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+
+                                                <strong>
+                                                    {{ item.moment.label }}
+                                                </strong>
+
+
+                                                {% if item.moment.severity == 'positive' %}
+
+                                                    <span class="badge text-bg-success">
+                                                        Positive
+                                                    </span>
+
+                                                {% elif item.moment.severity == 'warning' %}
+
+                                                    <span class="badge text-bg-warning">
+                                                        Review
+                                                    </span>
+
+                                                {% elif item.moment.severity == 'critical' %}
+
+                                                    <span class="badge text-bg-danger">
+                                                        Concern
+                                                    </span>
+
+                                                {% else %}
+
+                                                    <span class="badge text-bg-light border">
+                                                        Information
+                                                    </span>
+
+                                                {% endif %}
+
+                                            </div>
+
+
+                                            {% if item.moment.description %}
+
+                                                <div class="small text-muted">
+                                                    {{ item.moment.description }}
+                                                </div>
+
+                                            {% endif %}
+
+                                        </div>
+
+
+                                        <span class="badge text-bg-light border">
+                                            {{ item.moment.timestamp_seconds }}s
+                                        </span>
+
+                                    </div>
+
+                                </button>
+
+
+                                {% if item.moment.measurements.skill_phase %}
+
+                                    <div class="d-flex flex-wrap gap-2 mt-3">
+
+                                        <span class="badge text-bg-primary">
+                                            Phase:
+                                            {{ item.moment.measurements.skill_phase|title }}
+                                        </span>
+
+
+                                        {% if item.moment.measurements.is_key_frame %}
+
+                                            <span class="badge text-bg-warning">
+                                                ⭐ Key Frame
+                                            </span>
+
+                                        {% endif %}
+
+
+                                        {% if item.moment.measurements.skill_phase_confidence != None %}
+
+                                            <span class="badge text-bg-light border">
+                                                Phase confidence:
+                                                {{ item.moment.measurements.skill_phase_confidence }}
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                {% elif item.moment.measurements.is_key_frame %}
+
+                                    <div class="mt-3">
+
+                                        <span class="badge text-bg-warning">
+                                            ⭐ Key Frame
+                                        </span>
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                {% if item.moment.measurements.skill_phase_reason %}
+
+                                    <div class="small text-muted mt-2">
+                                        {{ item.moment.measurements.skill_phase_reason }}
+                                    </div>
+
+                                {% endif %}
+
+
+                                {% if item.moment.measurements.motion_metrics %}
+
+                                    {% with motion=item.moment.measurements.motion_metrics %}
+
+                                        {% if motion.has_previous_frame %}
+
+                                            <details class="mt-3">
+
+                                                <summary class="small fw-semibold">
+                                                    Movement Between Frames
+                                                </summary>
+
+                                                <div class="border rounded-3 p-3 mt-2">
+
+                                                    <div class="small mb-2">
+
+                                                        Movement score:
+
+                                                        <strong>
+                                                            {{ motion.movement_score }}
+                                                        </strong>
+
+                                                    </div>
+
+
+                                                    <div class="row g-2">
+
+                                                        {% if motion.hip_angle_change != None %}
+
+                                                            <div class="col-12 col-md-6">
+
+                                                                <div class="border rounded-3 p-2">
+
+                                                                    <div class="small text-muted">
+                                                                        Hip Angle Change
+                                                                    </div>
+
+                                                                    <strong>
+                                                                        {{ motion.hip_angle_change }}°
+                                                                    </strong>
+
+                                                                </div>
+
+                                                            </div>
+
+                                                        {% endif %}
+
+
+                                                        {% if motion.knee_angle_change != None %}
+
+                                                            <div class="col-12 col-md-6">
+
+                                                                <div class="border rounded-3 p-2">
+
+                                                                    <div class="small text-muted">
+                                                                        Knee Angle Change
+                                                                    </div>
+
+                                                                    <strong>
+                                                                        {{ motion.knee_angle_change }}°
+                                                                    </strong>
+
+                                                                </div>
+
+                                                            </div>
+
+                                                        {% endif %}
+
+
+                                                        {% if motion.shoulder_angle_change != None %}
+
+                                                            <div class="col-12 col-md-6">
+
+                                                                <div class="border rounded-3 p-2">
+
+                                                                    <div class="small text-muted">
+                                                                        Shoulder Angle Change
+                                                                    </div>
+
+                                                                    <strong>
+                                                                        {{ motion.shoulder_angle_change }}°
+                                                                    </strong>
+
+                                                                </div>
+
+                                                            </div>
+
+                                                        {% endif %}
+
+
+                                                        {% if motion.torso_orientation_change != None %}
+
+                                                            <div class="col-12 col-md-6">
+
+                                                                <div class="border rounded-3 p-2">
+
+                                                                    <div class="small text-muted">
+                                                                        Torso Orientation Change
+                                                                    </div>
+
+                                                                    <strong>
+                                                                        {{ motion.torso_orientation_change }}°
+                                                                    </strong>
+
+                                                                </div>
+
+                                                            </div>
+
+                                                        {% endif %}
+
+                                                    </div>
+
+                                                </div>
+
+                                            </details>
+
+                                        {% endif %}
+
+                                    {% endwith %}
+
+                                {% endif %}
+
+
+                                {% if item.moment.measurements.analysis_quality %}
+
+                                    {% with quality=item.moment.measurements.analysis_quality %}
+
+                                        <div class="d-flex flex-wrap gap-2 mt-3">
+
+                                            {% if quality.usable %}
+
+                                                <span class="badge text-bg-success">
+                                                    Analysis Quality: Usable
+                                                </span>
+
+                                            {% else %}
+
+                                                <span class="badge text-bg-warning">
+                                                    Analysis Quality: Review Recommended
+                                                </span>
+
+                                            {% endif %}
+
+
+                                            <span class="badge text-bg-light border">
+                                                Pose visibility:
+                                                {{ quality.pose_visibility }}
+                                            </span>
+
+
+                                            <span class="badge text-bg-light border">
+                                                Phase confidence:
+                                                {{ quality.phase_confidence }}
+                                            </span>
+
+                                        </div>
+
+                                    {% endwith %}
+
+                                {% endif %}
+
+
+                                {% if item.moment.measurements.frame_quality_score != None %}
+
+                                    <div class="d-flex flex-wrap gap-2 mt-2">
+
+                                        <span class="badge text-bg-light border">
+                                            Frame Score:
+                                            {{ item.moment.measurements.frame_quality_score }}
+                                        </span>
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                {% if item.moment.measurements.frame_quality_reasons %}
+
+                                    <details class="mt-2">
+
+                                        <summary class="small text-muted">
+                                            Why this frame received its score
+                                        </summary>
+
+                                        <ul class="small text-muted mt-2 mb-0">
+
+                                            {% for reason in item.moment.measurements.frame_quality_reasons %}
+
+                                                <li>
+                                                    {{ reason }}
+                                                </li>
+
+                                            {% endfor %}
+
+                                        </ul>
+
+                                    </details>
+
+                                {% endif %}
+
+
+                                {% if item.moment.measurements.skill_specific %}
+
+                                    <div class="border rounded-3 p-3 mt-3 bg-light">
+
+                                        <div class="d-flex flex-wrap gap-2 mb-2">
+
+                                            <span class="badge text-bg-primary">
+                                                Skill-Specific Observation
+                                            </span>
+
+
+                                            {% if item.moment.measurements.rule_version %}
+
+                                                <span class="badge text-bg-light border">
+                                                    Rule:
+                                                    {{ item.moment.measurements.rule_version }}
+                                                </span>
+
+                                            {% endif %}
+
+
+                                            {% if item.moment.measurements.observation_confidence != None %}
+
+                                                <span class="badge text-bg-light border">
+                                                    Confidence:
+                                                    {{ item.moment.measurements.observation_confidence }}
+                                                </span>
+
+                                            {% endif %}
+
+                                        </div>
+
+
+                                        {% if item.moment.measurements.evidence %}
+
+                                            <div class="small fw-semibold mb-2">
+                                                Supporting Evidence
+                                            </div>
+
+                                            <div class="d-flex flex-wrap gap-1">
+
+                                                {% for name, value in item.moment.measurements.evidence.items %}
+
+                                                    <span class="badge text-bg-white border">
+                                                        {{ name|title }}:
+                                                        {{ value }}
+                                                    </span>
+
+                                                {% endfor %}
+
+                                            </div>
+
+                                        {% endif %}
+
+
+                                        {% if item.moment.measurements.source_frame_number %}
+
+                                            <div class="small text-muted mt-2">
+
+                                                Source:
+                                                Frame
+                                                {{ item.moment.measurements.source_frame_number }}
+
+                                                {% if item.moment.measurements.source_timestamp_seconds != None %}
+                                                    ·
+                                                    {{ item.moment.measurements.source_timestamp_seconds }}s
+                                                {% endif %}
+
+                                            </div>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                {% if item.moment.measurements.pose_overlay_generated %}
+
+                                    <div class="mt-3">
+
+                                        <span class="badge text-bg-dark">
+                                            🧍 Pose Overlay Generated
+                                        </span>
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                {% if item.moment.measurements.pose_engine %}
+
+                                    <div class="mt-3">
+
+                                        {% if item.moment.measurements.pose_detected %}
+
+                                            <div class="d-flex flex-wrap gap-2">
+
+                                                <span class="badge text-bg-success">
+                                                    🦴 Pose Detected
+                                                </span>
+
+                                                <span class="badge text-bg-light border">
+                                                    {{ item.moment.measurements.pose_landmark_count }}
+                                                    landmarks
+                                                </span>
+
+                                                <span class="badge text-bg-light border">
+                                                    MediaPipe
+                                                </span>
+
+                                            </div>
+
+                                        {% else %}
+
+                                            <span class="badge text-bg-danger">
+                                                No Pose Detected
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                {% if item.moment.measurements.frame_number %}
+
+                                    <div class="small mt-3">
+
+                                        <strong>
+                                            Video Frame:
+                                        </strong>
+
+                                        <span class="badge text-bg-light border">
+                                            #{{ item.moment.measurements.frame_number }}
+                                        </span>
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                {% if item.moment.measurements.pose_angles %}
+
+                                    <div class="mt-3">
+
+                                        <div class="small fw-semibold mb-2">
+                                            Real Joint Angles
+                                        </div>
+
+                                        <div class="row g-2">
+
+                                            {% for name, value in item.moment.measurements.pose_angles.items %}
+
+                                                <div class="col-6 col-md-4">
+
+                                                    <div class="border rounded-3 p-2 h-100">
+
+                                                        <div class="small text-muted">
+                                                            {{ name|title }}
+                                                        </div>
+
+                                                        <div class="fw-bold fs-5">
+                                                            {{ value }}°
+                                                        </div>
+
+                                                    </div>
+
+                                                </div>
+
+                                            {% endfor %}
+
+                                        </div>
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                {% if item.moment.measurements.gymnastics_measurements %}
+
+                                    {% with gm=item.moment.measurements.gymnastics_measurements %}
+
+                                        <div class="mt-4">
+
+                                            <h4 class="h6 mb-3">
+                                                Gymnastics Measurements
+                                            </h4>
+
+
+                                            <div class="row g-2">
+
+                                                {% if gm.knee_extension %}
+
+                                                    <div class="col-12 col-md-6">
+
+                                                        <div class="border rounded-3 p-3 h-100">
+
+                                                            <div class="small text-muted">
+                                                                Knee Extension
+                                                            </div>
+
+                                                            <div class="fw-semibold fs-5">
+                                                                {{ gm.knee_extension.average_angle }}°
+                                                            </div>
+
+                                                            <div class="small text-muted mt-1">
+                                                                Left:
+                                                                {{ gm.knee_extension.left_angle }}°
+                                                                ·
+                                                                Right:
+                                                                {{ gm.knee_extension.right_angle }}°
+                                                            </div>
+
+
+                                                            {% if gm.knee_extension.symmetry_difference != None %}
+
+                                                                <div class="small mt-1">
+
+                                                                    Symmetry difference:
+
+                                                                    <strong>
+                                                                        {{ gm.knee_extension.symmetry_difference }}°
+                                                                    </strong>
+
+                                                                </div>
+
+                                                            {% endif %}
+
+                                                        </div>
+
+                                                    </div>
+
+                                                {% endif %}
+
+
+                                                {% if gm.elbow_extension %}
+
+                                                    <div class="col-12 col-md-6">
+
+                                                        <div class="border rounded-3 p-3 h-100">
+
+                                                            <div class="small text-muted">
+                                                                Elbow Extension
+                                                            </div>
+
+                                                            <div class="fw-semibold fs-5">
+                                                                {{ gm.elbow_extension.average_angle }}°
+                                                            </div>
+
+                                                            <div class="small text-muted mt-1">
+                                                                Left:
+                                                                {{ gm.elbow_extension.left_angle }}°
+                                                                ·
+                                                                Right:
+                                                                {{ gm.elbow_extension.right_angle }}°
+                                                            </div>
+
+
+                                                            {% if gm.elbow_extension.symmetry_difference != None %}
+
+                                                                <div class="small mt-1">
+
+                                                                    Symmetry difference:
+
+                                                                    <strong>
+                                                                        {{ gm.elbow_extension.symmetry_difference }}°
+                                                                    </strong>
+
+                                                                </div>
+
+                                                            {% endif %}
+
+                                                        </div>
+
+                                                    </div>
+
+                                                {% endif %}
+
+
+                                                {% if gm.hip_position %}
+
+                                                    <div class="col-12 col-md-6">
+
+                                                        <div class="border rounded-3 p-3 h-100">
+
+                                                            <div class="small text-muted">
+                                                                Hip Position
+                                                            </div>
+
+                                                            <div class="fw-semibold fs-5">
+                                                                {{ gm.hip_position.average_angle }}°
+                                                            </div>
+
+
+                                                            <div class="small text-muted mt-1">
+                                                                Left:
+                                                                {{ gm.hip_position.left_angle }}°
+                                                                ·
+                                                                Right:
+                                                                {{ gm.hip_position.right_angle }}°
+                                                            </div>
+
+
+                                                            {% if gm.hip_position.symmetry_difference != None %}
+
+                                                                <div class="small mt-1">
+
+                                                                    Left / right difference:
+
+                                                                    <strong>
+                                                                        {{ gm.hip_position.symmetry_difference }}°
+                                                                    </strong>
+
+                                                                </div>
+
+                                                            {% endif %}
+
+                                                        </div>
+
+                                                    </div>
+
+                                                {% endif %}
+
+
+                                                {% if gm.shoulder_position %}
+
+                                                    <div class="col-12 col-md-6">
+
+                                                        <div class="border rounded-3 p-3 h-100">
+
+                                                            <div class="small text-muted">
+                                                                Shoulder Position
+                                                            </div>
+
+                                                            <div class="fw-semibold fs-5">
+                                                                {{ gm.shoulder_position.average_angle }}°
+                                                            </div>
+
+
+                                                            <div class="small text-muted mt-1">
+                                                                Left:
+                                                                {{ gm.shoulder_position.left_angle }}°
+                                                                ·
+                                                                Right:
+                                                                {{ gm.shoulder_position.right_angle }}°
+                                                            </div>
+
+
+                                                            {% if gm.shoulder_position.symmetry_difference != None %}
+
+                                                                <div class="small mt-1">
+
+                                                                    Left / right difference:
+
+                                                                    <strong>
+                                                                        {{ gm.shoulder_position.symmetry_difference }}°
+                                                                    </strong>
+
+                                                                </div>
+
+                                                            {% endif %}
+
+                                                        </div>
+
+                                                    </div>
+
+                                                {% endif %}
+
+                                            </div>
+
+
+                                            <details class="mt-3">
+
+                                                <summary class="small fw-semibold">
+                                                    Orientation & Detection Details
+                                                </summary>
+
+                                                <div class="border rounded-3 p-3 mt-2">
+
+                                                    {% if gm.left_torso_orientation != None %}
+
+                                                        <div class="small mb-1">
+                                                            Left torso orientation:
+                                                            <strong>
+                                                                {{ gm.left_torso_orientation }}°
+                                                            </strong>
+                                                        </div>
+
+                                                    {% endif %}
+
+
+                                                    {% if gm.right_torso_orientation != None %}
+
+                                                        <div class="small mb-1">
+                                                            Right torso orientation:
+                                                            <strong>
+                                                                {{ gm.right_torso_orientation }}°
+                                                            </strong>
+                                                        </div>
+
+                                                    {% endif %}
+
+
+                                                    {% if gm.left_leg_orientation != None %}
+
+                                                        <div class="small mb-1">
+                                                            Left leg orientation:
+                                                            <strong>
+                                                                {{ gm.left_leg_orientation }}°
+                                                            </strong>
+                                                        </div>
+
+                                                    {% endif %}
+
+
+                                                    {% if gm.right_leg_orientation != None %}
+
+                                                        <div class="small mb-1">
+                                                            Right leg orientation:
+                                                            <strong>
+                                                                {{ gm.right_leg_orientation }}°
+                                                            </strong>
+                                                        </div>
+
+                                                    {% endif %}
+
+
+                                                    {% if gm.shoulder_line %}
+
+                                                        <div class="small mb-1">
+                                                            Shoulder-line orientation:
+                                                            <strong>
+                                                                {{ gm.shoulder_line.orientation_degrees }}°
+                                                            </strong>
+                                                        </div>
+
+                                                    {% endif %}
+
+
+                                                    {% if gm.hip_line %}
+
+                                                        <div class="small mb-1">
+                                                            Hip-line orientation:
+                                                            <strong>
+                                                                {{ gm.hip_line.orientation_degrees }}°
+                                                            </strong>
+                                                        </div>
+
+                                                    {% endif %}
+
+
+                                                    {% if gm.average_landmark_visibility != None %}
+
+                                                        <div class="small">
+                                                            Average landmark visibility:
+                                                            <strong>
+                                                                {{ gm.average_landmark_visibility }}
+                                                            </strong>
+                                                        </div>
+
+                                                    {% endif %}
+
+                                                </div>
+
+                                            </details>
+
+                                        </div>
+
+                                    {% endwith %}
+
+                                {% endif %}
+
+
+                                {% if item.moment.measurements.pose_landmarks %}
+
+                                    <details class="mt-3">
+
+                                        <summary class="small fw-semibold">
+                                            Detected Body Landmarks
+                                        </summary>
+
+                                        <div class="row g-2 mt-1">
+
+                                            {% for name, landmark in item.moment.measurements.pose_landmarks.items %}
+
+                                                <div class="col-12 col-md-6 col-xl-4">
+
+                                                    <div class="border rounded-3 p-2 h-100">
+
+                                                        <div class="small fw-semibold">
+                                                            {{ name|title }}
+                                                        </div>
+
+                                                        <div class="small text-muted">
+                                                            X:
+                                                            {{ landmark.x }}
+                                                        </div>
+
+                                                        <div class="small text-muted">
+                                                            Y:
+                                                            {{ landmark.y }}
+                                                        </div>
+
+                                                        <div class="small text-muted">
+                                                            Z:
+                                                            {{ landmark.z }}
+                                                        </div>
+
+
+                                                        {% if landmark.visibility != None %}
+
+                                                            <div class="small text-muted">
+                                                                Visibility:
+                                                                {{ landmark.visibility }}
+                                                            </div>
+
+                                                        {% endif %}
+
+                                                    </div>
+
+                                                </div>
+
+                                            {% endfor %}
+
+                                        </div>
+
+                                    </details>
+
+                                {% endif %}
+
+
+                                {% if item.moment.measurements %}
+
+                                    <div class="small mt-3">
+
+                                        <strong>
+                                            Additional Measurements:
+                                        </strong>
+
+                                        <div class="d-flex flex-wrap gap-1 mt-1">
+
+                                            {% for name, value in item.moment.measurements.items %}
+
+                                            {% if name != 'pose_landmarks' and name != 'pose_angles' and name != 'gymnastics_measurements' and name != 'analysis_quality' and name != 'pose_engine' and name != 'pose_detected' and name != 'pose_landmark_count' and name != 'pose_overlay_generated' and name != 'pose_overlay_filename' and name != 'frame_number' and name != 'skill_phase' and name != 'skill_phase_confidence' and name != 'skill_phase_reason' and name != 'skill_specific' and name != 'skill_name' and name != 'observation_code' and name != 'observation_measurements' and name != 'evidence' and name != 'observation_confidence' and name != 'rule_version' and name != 'source_frame_moment_id' and name != 'source_frame_number' and name != 'source_timestamp_seconds' and name != 'frame_quality_score' and name != 'frame_quality_reasons' and name != 'is_key_frame' and name != 'key_frame_reason' and name != 'motion_metrics' %}
+                                                    <span class="badge text-bg-light border">
+                                                        {{ name|title }}:
+                                                        {{ value }}
+                                                    </span>
+
+                                                {% endif %}
+
+                                            {% endfor %}
+
+                                        </div>
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                <hr>
+
+
+                                <form
+                                    method="post"
+                                    action="{% url 'video_library:review_analysis_moment' item.moment.id %}"
+                                >
+                                    {% csrf_token %}
+
+                                    <div class="row g-2 align-items-end">
+
+                                        <div class="col-12 col-lg-4">
+
+                                            <label
+                                                for="rating-{{ item.moment.id }}"
+                                                class="form-label small fw-semibold"
+                                            >
+                                                Accuracy
+                                            </label>
+
+                                            <select
+                                                name="rating"
+                                                id="rating-{{ item.moment.id }}"
+                                                class="form-select"
+                                                required
+                                            >
+
+                                                <option value="">
+                                                    Choose rating
+                                                </option>
+
+                                                <option
+                                                    value="correct"
+                                                    {% if item.feedback and item.feedback.rating == 'correct' %}
+                                                        selected
+                                                    {% endif %}
+                                                >
+                                                    Correct
+                                                </option>
+
+                                                <option
+                                                    value="partial"
+                                                    {% if item.feedback and item.feedback.rating == 'partial' %}
+                                                        selected
+                                                    {% endif %}
+                                                >
+                                                    Partially correct
+                                                </option>
+
+                                                <option
+                                                    value="incorrect"
+                                                    {% if item.feedback and item.feedback.rating == 'incorrect' %}
+                                                        selected
+                                                    {% endif %}
+                                                >
+                                                    Incorrect
+                                                </option>
+
+                                            </select>
+
+                                        </div>
+
+
+                                        <div class="col-12 col-lg-6">
+
+                                            <label
+                                                for="comment-{{ item.moment.id }}"
+                                                class="form-label small fw-semibold"
+                                            >
+                                                Comment
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                name="comment"
+                                                id="comment-{{ item.moment.id }}"
+                                                class="form-control"
+                                                value="{% if item.feedback %}{{ item.feedback.comment }}{% endif %}"
+                                                placeholder="Optional correction or coaching context"
+                                            >
+
+                                        </div>
+
+
+                                        <div class="col-12 col-lg-2">
+
+                                            <button
+                                                type="submit"
+                                                class="btn btn-outline-primary w-100"
+                                            >
+                                                Save
+                                            </button>
+
+                                        </div>
+
+                                    </div>
+
+                                </form>
+
+
+                                {% if item.feedback %}
+
+                                    <div class="small text-muted mt-2">
+
+                                        Current rating:
+
+                                        <strong>
+                                            {{ item.feedback.get_rating_display }}
+                                        </strong>
+
+                                        {% if item.feedback.comment %}
+                                            · {{ item.feedback.comment }}
+                                        {% endif %}
+
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+                {% empty %}
+
+                    <div class="text-center py-4">
+
+                        <p class="text-muted mb-0">
+                            This analysis has no timeline observations yet.
+                        </p>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </section>
+
+{% endif %}

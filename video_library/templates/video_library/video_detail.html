@@ -12,7 +12,7 @@
         margin: 0 auto;
     }
 
-    .video-hero {
+    .detail-hero {
         padding: 28px;
         color: white;
         border-radius: 24px;
@@ -28,9 +28,7 @@
             rgba(15, 23, 42, 0.16);
     }
 
-    .video-player-card,
     .detail-card {
-        overflow: hidden;
         border: 0;
         border-radius: 20px;
         box-shadow:
@@ -38,83 +36,92 @@
             rgba(15, 23, 42, 0.06);
     }
 
-    .main-video {
+    .video-player {
         width: 100%;
-        max-height: 720px;
+        max-height: 650px;
+        object-fit: contain;
         background: #000;
+        border-radius: 16px;
     }
 
-    .metadata-row {
-        padding: 12px 0;
+    .video-thumbnail-large {
+        display: block;
+        width: 100%;
+        max-height: 500px;
+        object-fit: contain;
+        background: #0f172a;
+        border-radius: 16px;
+    }
+
+    .info-row {
+        padding: 10px 0;
         border-bottom: 1px solid #eef2f7;
     }
 
-    .metadata-row:last-child {
+    .info-row:last-child {
         border-bottom: 0;
     }
 
-    .metadata-label {
-        color: #6c757d;
-        font-size: 0.85rem;
+    .reference-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 700;
     }
 
-    .related-video-card {
-        overflow: hidden;
-        border: 1px solid #e9ecef;
-        border-radius: 16px;
-        transition:
-            transform 0.2s ease,
-            box-shadow 0.2s ease;
+    .reference-badge-best {
+        color: #664d03;
+        background: #fff3cd;
     }
 
-    .related-video-card:hover {
-        transform: translateY(-3px);
-        box-shadow:
-            0 10px 26px
-            rgba(15, 23, 42, 0.1);
+    .reference-badge-reference {
+        color: #084298;
+        background: #cfe2ff;
     }
 
-    .related-video-preview {
-        width: 100%;
-        height: 160px;
-        object-fit: contain;
-        background: #0f172a;
+    .reference-badge-example {
+        color: #146c43;
+        background: #d1e7dd;
     }
 
-    .analysis-moment-card {
-        border: 1px solid #e9ecef;
-        border-radius: 16px;
-        background: white;
-    }
-
-    .analysis-moment-button:hover {
-        background: #f8f9fa;
-    }
-
-    .tag-badge {
-        max-width: 100%;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .review-badge {
-        white-space: nowrap;
-    }
-
-    .analysis-action-bar {
-        padding: 12px;
+    .analysis-card {
+        padding: 16px;
         border: 1px solid #e9ecef;
         border-radius: 14px;
-        background: #f8f9fa;
+        background: #fff;
+    }
+
+    .moment-card {
+        padding: 14px;
+        border: 1px solid #e9ecef;
+        border-radius: 14px;
+        background: #fff;
+    }
+
+    .moment-frame {
+        width: 100%;
+        max-height: 260px;
+        object-fit: contain;
+        background: #0f172a;
+        border-radius: 10px;
+    }
+
+    .action-grid {
+        display: grid;
+        grid-template-columns:
+            repeat(
+                auto-fit,
+                minmax(180px, 1fr)
+            );
+        gap: 10px;
     }
 
     @media (max-width: 767px) {
-        .video-hero {
+        .detail-hero {
             padding: 22px;
-        }
-
-        .related-video-preview {
-            height: 220px;
         }
     }
 </style>
@@ -122,38 +129,47 @@
 
 <div class="container-fluid py-4">
 
-    <form class="d-none">
-        {% csrf_token %}
-    </form>
-
     <div class="video-detail-shell">
 
-        <section class="video-hero mb-4">
+        <!-- =====================================================
+             HERO
+             ===================================================== -->
 
-            <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-4">
+        <section class="detail-hero mb-4">
+
+            <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3">
 
                 <div>
 
-                    <a
-                        href="{% url 'video_library:video_list' %}"
-                        class="text-white text-decoration-none opacity-75"
-                    >
-                        ← All Videos
-                    </a>
+                    <div class="small text-uppercase fw-semibold opacity-75 mb-2">
+                        Video Detail
+                    </div>
 
-                    <div class="d-flex flex-wrap gap-2 mt-3 mb-2">
+                    <h1 class="h2 fw-bold mb-2">
+                        {{ video.title }}
+                    </h1>
 
-                        <span class="badge bg-white text-primary">
-                            {{ video.get_event_display }}
-                        </span>
+                    <div class="d-flex flex-wrap gap-2">
 
-                        <span class="badge bg-white bg-opacity-25">
-                            {{ video.get_video_type_display }}
-                        </span>
+                        {% if video.skill_name %}
+
+                            <span class="badge text-bg-light">
+                                {{ video.skill_name }}
+                            </span>
+
+                        {% endif %}
+
+                        {% if video.event %}
+
+                            <span class="badge text-bg-light">
+                                {{ video.get_event_display }}
+                            </span>
+
+                        {% endif %}
 
                         {% if video.is_favorite %}
 
-                            <span class="badge bg-warning text-dark">
+                            <span class="badge text-bg-warning">
                                 ⭐ Favorite
                             </span>
 
@@ -161,43 +177,28 @@
 
                     </div>
 
-                    <h1 class="display-6 fw-bold mb-2">
-                        {{ video.title }}
-                    </h1>
-
-                    <p class="lead mb-0 opacity-75">
-
-                        {% if video.skill_name %}
-                            {{ video.skill_name }}
-                        {% else %}
-                            Gymnastics video
-                        {% endif %}
-
-                    </p>
-
                 </div>
 
 
                 <div class="d-flex flex-wrap gap-2">
 
-                    <form
-                        method="post"
-                        action="{% url 'video_library:toggle_favorite' video.id %}"
+                    <a
+                        href="{% url 'video_library:dashboard' %}"
+                        class="btn btn-outline-light"
                     >
-                        {% csrf_token %}
+                        ← Video Library
+                    </a>
 
-                        <button
-                            type="submit"
-                            class="btn {% if video.is_favorite %}btn-warning{% else %}btn-outline-light{% endif %}"
+                    {% if video.primary_athlete %}
+
+                        <a
+                            href="{% url 'video_library:athlete_video_timeline' video.primary_athlete.id %}"
+                            class="btn btn-outline-light"
                         >
-                            {% if video.is_favorite %}
-                                ⭐ Remove Favorite
-                            {% else %}
-                                ☆ Add to Favorites
-                            {% endif %}
-                        </button>
+                            📈 Athlete Timeline
+                        </a>
 
-                    </form>
+                    {% endif %}
 
                 </div>
 
@@ -206,641 +207,188 @@
         </section>
 
 
+        <!-- =====================================================
+             MAIN CONTENT
+             ===================================================== -->
+
         <div class="row g-4">
 
-            <main class="col-12 col-xl-8">
+            <!-- LEFT -->
 
-                <section class="card video-player-card mb-4">
+            <div class="col-12 col-xl-8">
 
-                    <video
-                        controls
-                        preload="metadata"
-                        playsinline
-                        class="main-video"
-                    >
-                        <source
-                            src="{{ video.video_file.url }}"
-                            type="{{ video.content_type|default:'video/mp4' }}"
-                        >
-
-                        Your browser does not support video playback.
-                    </video>
-
-                </section>
-
-
-                {% if latest_analysis and latest_analysis.status == 'completed' %}
-
-                    <section class="card detail-card mb-4">
-
-                        <div class="card-header bg-white border-0 px-4 pt-4 pb-2">
-
-                            <h2 class="h5 mb-1">
-                                Analysis Timeline
-                            </h2>
-
-                            <p class="text-muted mb-0">
-                                Review each observation and tell the system whether it is correct.
-                            </p>
-
-                        </div>
-
-                        <div class="card-body px-4 pb-4">
-
-                            <div class="d-flex flex-column gap-3">
-
-                                {% for item in analysis_moment_items %}
-
-                                    <article class="analysis-moment-card p-3">
-
-                                        <button
-                                            type="button"
-                                            class="btn text-start p-0 border-0 w-100 analysis-moment-button"
-                                            data-timestamp="{{ item.moment.timestamp_seconds }}"
-                                        >
-
-                                            <div class="d-flex justify-content-between align-items-start gap-3">
-
-                                                <div>
-
-                                                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-
-                                                        <strong>
-                                                            {{ item.moment.label }}
-                                                        </strong>
-
-                                                        {% if item.moment.severity == 'positive' %}
-
-                                                            <span class="badge text-bg-success">
-                                                                Positive
-                                                            </span>
-
-                                                        {% elif item.moment.severity == 'warning' %}
-
-                                                            <span class="badge text-bg-warning">
-                                                                Review
-                                                            </span>
-
-                                                        {% elif item.moment.severity == 'critical' %}
-
-                                                            <span class="badge text-bg-danger">
-                                                                Concern
-                                                            </span>
-
-                                                        {% else %}
-
-                                                            <span class="badge text-bg-light border">
-                                                                Information
-                                                            </span>
-
-                                                        {% endif %}
-
-                                                    </div>
-
-                                                    <div class="small text-muted">
-                                                        {{ item.moment.description }}
-                                                    </div>
-
-                                                </div>
-
-                                                <span class="badge text-bg-light border">
-                                                    {{ item.moment.timestamp_seconds }}s
-                                                </span>
-
-                                            </div>
-
-                                        </button>
-
-
-                                        {% if item.moment.measurements %}
-
-                                            <div class="small mt-3">
-
-                                                <strong>
-                                                    Demonstration measurements:
-                                                </strong>
-
-                                                <div class="d-flex flex-wrap gap-1 mt-1">
-
-                                                    {% for name, value in item.moment.measurements.items %}
-
-                                                        <span class="badge text-bg-light border">
-                                                            {{ name|title }}:
-                                                            {{ value }}
-                                                        </span>
-
-                                                    {% endfor %}
-
-                                                </div>
-
-                                            </div>
-
-                                        {% endif %}
-
-
-                                        <hr>
-
-
-                                        <form
-                                            method="post"
-                                            action="{% url 'video_library:review_analysis_moment' item.moment.id %}"
-                                        >
-
-                                            {% csrf_token %}
-
-                                            <div class="row g-2 align-items-end">
-
-                                                <div class="col-12 col-lg-4">
-
-                                                    <label
-                                                        for="rating-{{ item.moment.id }}"
-                                                        class="form-label small fw-semibold"
-                                                    >
-                                                        Accuracy
-                                                    </label>
-
-                                                    <select
-                                                        name="rating"
-                                                        id="rating-{{ item.moment.id }}"
-                                                        class="form-select"
-                                                        required
-                                                    >
-
-                                                        <option value="">
-                                                            Choose rating
-                                                        </option>
-
-                                                        <option
-                                                            value="correct"
-                                                            {% if item.feedback and item.feedback.rating == 'correct' %}
-                                                                selected
-                                                            {% endif %}
-                                                        >
-                                                            Correct
-                                                        </option>
-
-                                                        <option
-                                                            value="partial"
-                                                            {% if item.feedback and item.feedback.rating == 'partial' %}
-                                                                selected
-                                                            {% endif %}
-                                                        >
-                                                            Partially correct
-                                                        </option>
-
-                                                        <option
-                                                            value="incorrect"
-                                                            {% if item.feedback and item.feedback.rating == 'incorrect' %}
-                                                                selected
-                                                            {% endif %}
-                                                        >
-                                                            Incorrect
-                                                        </option>
-
-                                                    </select>
-
-                                                </div>
-
-
-                                                <div class="col-12 col-lg-6">
-
-                                                    <label
-                                                        for="comment-{{ item.moment.id }}"
-                                                        class="form-label small fw-semibold"
-                                                    >
-                                                        Comment
-                                                    </label>
-
-                                                    <input
-                                                        type="text"
-                                                        name="comment"
-                                                        id="comment-{{ item.moment.id }}"
-                                                        class="form-control"
-                                                        value="{% if item.feedback %}{{ item.feedback.comment }}{% endif %}"
-                                                        placeholder="Optional correction or coaching context"
-                                                    >
-
-                                                </div>
-
-
-                                                <div class="col-12 col-lg-2">
-
-                                                    <button
-                                                        type="submit"
-                                                        class="btn btn-outline-primary w-100"
-                                                    >
-                                                        Save
-                                                    </button>
-
-                                                </div>
-
-                                            </div>
-
-                                        </form>
-
-
-                                        {% if item.feedback %}
-
-                                            <div class="small text-muted mt-2">
-
-                                                Your current rating:
-
-                                                <strong>
-                                                    {{ item.feedback.get_rating_display }}
-                                                </strong>
-
-                                            </div>
-
-                                        {% endif %}
-
-                                    </article>
-
-                                {% empty %}
-
-                                    <p class="text-muted mb-0">
-                                        This analysis has no timeline observations.
-                                    </p>
-
-                                {% endfor %}
-
-                            </div>
-
-                        </div>
-
-                    </section>
-
-                {% endif %}
-
-
-                {% if video.notes %}
-
-                    <section class="card detail-card mb-4">
-
-                        <div class="card-body p-4">
-
-                            <h2 class="h5 mb-3">
-                                Coaching Notes
-                            </h2>
-
-                            <p class="mb-0">
-                                {{ video.notes|linebreaksbr }}
-                            </p>
-
-                        </div>
-
-                    </section>
-
-                {% endif %}
-
-
-                {% if related_videos %}
-
-                    <section class="card detail-card">
-
-                        <div class="card-header bg-white border-0 px-4 pt-4 pb-2">
-
-                            <h2 class="h5 mb-1">
-                                Related Videos
-                            </h2>
-
-                            <p class="text-muted mb-0">
-                                More videos for the same athlete and event.
-                            </p>
-
-                        </div>
-
-                        <div class="card-body px-4 pb-4">
-
-                            <div class="row g-3">
-
-                                {% for related in related_videos %}
-
-                                    <div class="col-12 col-md-6">
-
-                                        <a
-                                            href="{% url 'video_library:video_detail' related.id %}"
-                                            class="text-decoration-none text-body"
-                                        >
-
-                                            <article class="related-video-card h-100">
-
-                                                <video
-                                                    class="related-video-preview"
-                                                    preload="metadata"
-                                                    muted
-                                                    playsinline
-                                                >
-                                                    <source
-                                                        src="{{ related.video_file.url }}"
-                                                        type="{{ related.content_type|default:'video/mp4' }}"
-                                                    >
-                                                </video>
-
-                                                <div class="p-3">
-
-                                                    <strong class="d-block text-truncate">
-                                                        {{ related.title }}
-                                                    </strong>
-
-                                                    <div class="small text-muted mt-1">
-
-                                                        {{ related.get_event_display }}
-
-                                                        {% if related.skill_name %}
-                                                            · {{ related.skill_name }}
-                                                        {% endif %}
-
-                                                    </div>
-
-                                                    <div class="small text-muted mt-2">
-
-                                                        {% if related.recorded_at %}
-                                                            {{ related.recorded_at|date:"M j, Y" }}
-                                                        {% else %}
-                                                            {{ related.uploaded_at|date:"M j, Y" }}
-                                                        {% endif %}
-
-                                                    </div>
-
-                                                </div>
-
-                                            </article>
-
-                                        </a>
-
-                                    </div>
-
-                                {% endfor %}
-
-                            </div>
-
-                        </div>
-
-                    </section>
-
-                {% endif %}
-
-            </main>
-
-
-            <aside class="col-12 col-xl-4">
+                <!-- VIDEO -->
 
                 <section class="card detail-card mb-4">
 
                     <div class="card-body p-4">
 
-                        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                        <video
+                            class="video-player"
+                            controls
+                            preload="metadata"
+                            playsinline
+                            {% if video.thumbnail %}
+                                poster="{{ video.thumbnail.url }}"
+                            {% endif %}
+                        >
+
+                            <source
+                                src="{{ video.video_file.url }}"
+                            >
+
+                            Your browser does not support video playback.
+
+                        </video>
+
+                    </div>
+
+                </section>
+
+
+                <!-- ANALYSIS -->
+
+                <section class="card detail-card mb-4">
+
+                    <div class="card-header bg-white border-0 p-4 pb-2">
+
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
 
                             <div>
 
-                                <h2 class="h5 mb-1">
+                                <h2 class="h4 mb-1">
                                     AI Analysis
                                 </h2>
 
                                 <p class="small text-muted mb-0">
-                                    AI-generated results require coach review.
+                                    Review the latest computer-vision results.
                                 </p>
 
                             </div>
 
-                            <span class="fs-4">
-                                🤖
+                            <span class="badge text-bg-light border">
+                                {{ analysis_count }}
+                                analysis{{ analysis_count|pluralize }}
                             </span>
 
                         </div>
 
-
-                        {% if analysis_count %}
-
-                            <div class="analysis-action-bar mb-3">
-
-                                <div class="d-flex flex-wrap gap-2">
-
-                                    <a
-                                        href="{% url 'video_library:analysis_history' video.id %}"
-                                        class="btn btn-sm btn-outline-primary"
-                                    >
-                                        View History
-
-                                        <span class="badge text-bg-light border ms-1">
-                                            {{ analysis_count }}
-                                        </span>
-                                    </a>
+                    </div>
 
 
-                                    {% if latest_analysis and latest_analysis.is_finished %}
-
-                                        <form
-                                            method="post"
-                                            action="{% url 'video_library:rerun_analysis' video.id %}"
-                                        >
-                                            {% csrf_token %}
-
-                                            <button
-                                                type="submit"
-                                                class="btn btn-sm btn-outline-secondary"
-                                            >
-                                                Run New Analysis
-                                            </button>
-
-                                        </form>
-
-                                    {% endif %}
-
-                                </div>
-
-                            </div>
-
-                        {% endif %}
-
+                    <div class="card-body p-4">
 
                         {% if latest_analysis %}
 
-                            <div
-                                id="analysis-panel"
-                                data-analysis-id="{{ latest_analysis.id }}"
-                                data-status-url="{% url 'video_library:analysis_status' latest_analysis.id %}"
-                                data-process-url="{% url 'video_library:process_mock_analysis' latest_analysis.id %}"
-                                data-is-finished="{% if latest_analysis.is_finished %}true{% else %}false{% endif %}"
-                            >
+                            <div class="analysis-card">
 
-                                <div class="mb-3">
+                                <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
 
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
 
-                                        <strong id="analysis-status-label">
+                                        <div class="small text-muted mb-1">
+                                            Status
+                                        </div>
+
+                                        <strong>
                                             {{ latest_analysis.get_status_display }}
                                         </strong>
 
-                                        <span id="analysis-progress-label">
-                                            {{ latest_analysis.progress_percentage }}%
-                                        </span>
+                                    </div>
+
+                                    <div>
+
+                                        <div class="small text-muted mb-1">
+                                            Skill
+                                        </div>
+
+                                        <strong>
+                                            {{ latest_analysis.detected_skill|default:latest_analysis.requested_skill|default:video.skill_name }}
+                                        </strong>
 
                                     </div>
 
-                                    <div class="progress">
+                                    <div>
 
-                                        <div
-                                            id="analysis-progress-bar"
-                                            class="progress-bar"
-                                            role="progressbar"
-                                            style="width: {{ latest_analysis.progress_percentage }}%;"
-                                            aria-valuenow="{{ latest_analysis.progress_percentage }}"
-                                            aria-valuemin="0"
-                                            aria-valuemax="100"
-                                        ></div>
+                                        <div class="small text-muted mb-1">
+                                            Review
+                                        </div>
+
+                                        <strong>
+                                            {{ latest_analysis.get_review_status_display }}
+                                        </strong>
 
                                     </div>
-
-                                    <div
-                                        id="analysis-current-step"
-                                        class="small text-muted mt-2"
-                                    >
-                                        {{ latest_analysis.current_step|default:"Waiting to begin" }}
-                                    </div>
-
-
-                                    <a
-                                        href="{% url 'video_library:analysis_detail' latest_analysis.id %}"
-                                        class="btn btn-sm btn-outline-primary mt-3"
-                                    >
-                                        Open Full Analysis
-                                    </a>
 
                                 </div>
 
 
-                                {% if latest_analysis.status == 'completed' %}
+                                {% if latest_analysis.current_step %}
 
-                                    <div class="alert alert-warning small">
-
-                                        These are demonstration results.
-                                        No real AI or pose measurement has
-                                        analyzed this video yet.
-
-                                    </div>
-
-
-                                    <div class="mb-3">
-
-                                        <div class="small text-muted">
-                                            Detected Skill
-                                        </div>
-
-                                        <strong>
-                                            {{ latest_analysis.detected_skill }}
-                                        </strong>
-
-                                        {% if latest_analysis.confidence_percentage %}
-
-                                            <span class="badge text-bg-light border ms-1">
-                                                {{ latest_analysis.confidence_percentage }}%
-                                            </span>
-
-                                        {% endif %}
-
-                                    </div>
-
-
-                                    <p>
-                                        {{ latest_analysis.summary }}
-                                    </p>
-
-
-                                    {% if latest_analysis.strengths %}
-
-                                        <div class="mb-3">
-
-                                            <h3 class="h6">
-                                                Strengths
-                                            </h3>
-
-                                            <ul class="mb-0">
-
-                                                {% for strength in latest_analysis.strengths %}
-                                                    <li>{{ strength }}</li>
-                                                {% endfor %}
-
-                                            </ul>
-
-                                        </div>
-
-                                    {% endif %}
-
-
-                                    {% if latest_analysis.improvements %}
-
-                                        <div>
-
-                                            <h3 class="h6">
-                                                Review Areas
-                                            </h3>
-
-                                            <ul class="mb-0">
-
-                                                {% for improvement in latest_analysis.improvements %}
-                                                    <li>{{ improvement }}</li>
-                                                {% endfor %}
-
-                                            </ul>
-
-                                        </div>
-
-                                    {% endif %}
-
-
-                                    {% if latest_analysis.measurements %}
-
-                                        <div class="mt-3">
-
-                                            <h3 class="h6">
-                                                Demonstration Measurements
-                                            </h3>
-
-                                            <div class="d-flex flex-wrap gap-1">
-
-                                                {% for name, value in latest_analysis.measurements.items %}
-
-                                                    <span class="badge text-bg-light border">
-                                                        {{ name|title }}:
-                                                        {{ value }}
-                                                    </span>
-
-                                                {% endfor %}
-
-                                            </div>
-
-                                        </div>
-
-                                    {% endif %}
-
-                                {% elif latest_analysis.status == 'failed' %}
-
-                                    <div class="alert alert-danger mb-0">
-                                        {{ latest_analysis.error_message }}
+                                    <div class="small text-muted mt-3">
+                                        {{ latest_analysis.current_step }}
                                     </div>
 
                                 {% endif %}
 
                             </div>
 
+
+                            <div class="action-grid mt-3">
+
+                                <a
+                                    href="{% url 'video_library:analysis_detail' latest_analysis.id %}"
+                                    class="btn btn-outline-primary"
+                                >
+                                    Open Analysis
+                                </a>
+
+                                <a
+                                    href="{% url 'video_library:analysis_history' video.id %}"
+                                    class="btn btn-outline-secondary"
+                                >
+                                    Analysis History
+                                </a>
+
+                                <form
+                                    method="post"
+                                    action="{% url 'video_library:rerun_analysis' video.id %}"
+                                >
+                                    {% csrf_token %}
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-outline-warning w-100"
+                                    >
+                                        Rerun Analysis
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+
                         {% else %}
 
-                            <p class="text-muted">
-                                No analysis has been requested for this video.
-                            </p>
+                            <div class="alert alert-secondary">
+
+                                No analysis has been created for this video yet.
+
+                            </div>
+
 
                             <form
                                 method="post"
                                 action="{% url 'video_library:request_analysis' video.id %}"
                             >
+
                                 {% csrf_token %}
 
                                 <button
                                     type="submit"
-                                    class="btn btn-primary w-100"
+                                    class="btn btn-primary"
                                 >
-                                    🤖 Analyze Video
+                                    Request AI Analysis
                                 </button>
 
                             </form>
@@ -852,227 +400,62 @@
                 </section>
 
 
-                {% if latest_analysis and latest_analysis.status == 'completed' %}
+                <!-- ANALYSIS MOMENTS -->
+
+                {% if analysis_moment_items %}
 
                     <section class="card detail-card mb-4">
 
-                        <div class="card-body p-4">
+                        <div class="card-header bg-white border-0 p-4 pb-2">
 
-                            <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                            <h2 class="h4 mb-1">
+                                Analysis Moments
+                            </h2>
 
-                                <div>
-
-                                    <h2 class="h5 mb-1">
-                                        Coach Verification
-                                    </h2>
-
-                                    <p class="small text-muted mb-0">
-                                        Confirm whether the analysis is useful and accurate.
-                                    </p>
-
-                                </div>
-
-
-                                {% if latest_analysis.review_status == 'approved' %}
-
-                                    <span class="badge text-bg-success review-badge">
-                                        Approved
-                                    </span>
-
-                                {% elif latest_analysis.review_status == 'partial' %}
-
-                                    <span class="badge text-bg-warning review-badge">
-                                        Partially Correct
-                                    </span>
-
-                                {% elif latest_analysis.review_status == 'rejected' %}
-
-                                    <span class="badge text-bg-danger review-badge">
-                                        Rejected
-                                    </span>
-
-                                {% else %}
-
-                                    <span class="badge text-bg-secondary review-badge">
-                                        Pending Review
-                                    </span>
-
-                                {% endif %}
-
-                            </div>
-
-
-                            <form
-                                method="post"
-                                action="{% url 'video_library:review_analysis' latest_analysis.id %}"
-                            >
-                                {% csrf_token %}
-
-                                <div class="mb-3">
-
-                                    <label
-                                        for="review-status"
-                                        class="form-label fw-semibold"
-                                    >
-                                        Review Decision
-                                    </label>
-
-                                    <select
-                                        name="review_status"
-                                        id="review-status"
-                                        class="form-select"
-                                        required
-                                    >
-
-                                        <option value="">
-                                            Choose a decision
-                                        </option>
-
-                                        <option
-                                            value="approved"
-                                            {% if latest_analysis.review_status == 'approved' %}
-                                                selected
-                                            {% endif %}
-                                        >
-                                            Correct and useful
-                                        </option>
-
-                                        <option
-                                            value="partial"
-                                            {% if latest_analysis.review_status == 'partial' %}
-                                                selected
-                                            {% endif %}
-                                        >
-                                            Partially correct
-                                        </option>
-
-                                        <option
-                                            value="rejected"
-                                            {% if latest_analysis.review_status == 'rejected' %}
-                                                selected
-                                            {% endif %}
-                                        >
-                                            Incorrect or not useful
-                                        </option>
-
-                                    </select>
-
-                                </div>
-
-
-                                <div class="mb-3">
-
-                                    <label
-                                        for="coach-review-notes"
-                                        class="form-label fw-semibold"
-                                    >
-                                        Coach Notes
-                                    </label>
-
-                                    <textarea
-                                        name="coach_review_notes"
-                                        id="coach-review-notes"
-                                        class="form-control"
-                                        rows="4"
-                                        placeholder="Explain what was accurate, incomplete, or incorrect."
-                                    >{{ latest_analysis.coach_review_notes }}</textarea>
-
-                                </div>
-
-
-                                <button
-                                    type="submit"
-                                    class="btn btn-primary w-100"
-                                >
-                                    Save Coach Review
-                                </button>
-
-                            </form>
-
-
-                            {% if latest_analysis.reviewed_by %}
-
-                                <div class="small text-muted mt-3">
-
-                                    Reviewed by
-
-                                    {% if latest_analysis.reviewed_by.get_full_name %}
-                                        {{ latest_analysis.reviewed_by.get_full_name }}
-                                    {% else %}
-                                        {{ latest_analysis.reviewed_by.username }}
-                                    {% endif %}
-
-                                    {% if latest_analysis.reviewed_at %}
-                                        on
-                                        {{ latest_analysis.reviewed_at|date:"M j, Y g:i A" }}
-                                    {% endif %}
-
-                                </div>
-
-                            {% endif %}
+                            <p class="small text-muted mb-0">
+                                Key observations and extracted frames.
+                            </p>
 
                         </div>
 
-                    </section>
 
-                {% endif %}
+                        <div class="card-body p-4">
 
+                            <div class="row g-3">
 
-                <section class="card detail-card mb-4">
+                                {% for item in analysis_moment_items %}
 
-                    <div class="card-body p-4">
+                                    <div class="col-12 col-md-6">
 
-                        <h2 class="h5 mb-3">
-                            Video Information
-                        </h2>
+                                        <div class="moment-card h-100">
 
+                                            {% if item.moment.frame_image %}
 
-                        {% if video.primary_athlete %}
+                                                <img
+                                                    src="{{ item.moment.frame_image.url }}"
+                                                    alt="{{ item.moment.label }}"
+                                                    class="moment-frame mb-3"
+                                                >
 
-                            <div class="metadata-row">
-
-                                <div class="metadata-label">
-                                    Primary Athlete
-                                </div>
-
-                                <a
-                                    href="{% url 'video_library:athlete_timeline' video.primary_athlete.id %}"
-                                    class="fw-semibold text-decoration-none"
-                                >
-                                    {% if video.primary_athlete.get_full_name %}
-                                        {{ video.primary_athlete.get_full_name }}
-                                    {% else %}
-                                        {{ video.primary_athlete.username }}
-                                    {% endif %}
-                                </a>
-
-                            </div>
-
-                        {% endif %}
-
-
-                        {% if video.tagged_athletes.all %}
-
-                            <div class="metadata-row">
-
-                                <div class="metadata-label">
-                                    Additional Athletes
-                                </div>
-
-                                {% for athlete in video.tagged_athletes.all %}
-
-                                    <div>
-
-                                        <a
-                                            href="{% url 'video_library:athlete_timeline' athlete.id %}"
-                                            class="text-decoration-none"
-                                        >
-                                            {% if athlete.get_full_name %}
-                                                {{ athlete.get_full_name }}
-                                            {% else %}
-                                                {{ athlete.username }}
                                             {% endif %}
-                                        </a>
+
+                                            <div class="small text-muted">
+                                                {{ item.moment.timestamp_seconds }}s
+                                            </div>
+
+                                            <h3 class="h6">
+                                                {{ item.moment.label }}
+                                            </h3>
+
+                                            {% if item.moment.description %}
+
+                                                <p class="small mb-0">
+                                                    {{ item.moment.description }}
+                                                </p>
+
+                                            {% endif %}
+
+                                        </div>
 
                                     </div>
 
@@ -1080,12 +463,54 @@
 
                             </div>
 
+                        </div>
+
+                    </section>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- RIGHT -->
+
+            <div class="col-12 col-xl-4">
+
+                <!-- VIDEO INFO -->
+
+                <section class="card detail-card mb-4">
+
+                    <div class="card-header bg-white border-0 p-4 pb-2">
+
+                        <h2 class="h5 mb-1">
+                            Video Information
+                        </h2>
+
+                    </div>
+
+
+                    <div class="card-body p-4">
+
+                        {% if video.primary_athlete %}
+
+                            <div class="info-row">
+
+                                <div class="small text-muted">
+                                    Athlete
+                                </div>
+
+                                <strong>
+                                    {{ video.primary_athlete.get_full_name|default:video.primary_athlete.username }}
+                                </strong>
+
+                            </div>
+
                         {% endif %}
 
 
-                        <div class="metadata-row">
+                        <div class="info-row">
 
-                            <div class="metadata-label">
+                            <div class="small text-muted">
                                 Event
                             </div>
 
@@ -1098,9 +523,9 @@
 
                         {% if video.skill_name %}
 
-                            <div class="metadata-row">
+                            <div class="info-row">
 
-                                <div class="metadata-label">
+                                <div class="small text-muted">
                                     Skill
                                 </div>
 
@@ -1113,10 +538,10 @@
                         {% endif %}
 
 
-                        <div class="metadata-row">
+                        <div class="info-row">
 
-                            <div class="metadata-label">
-                                Video Type
+                            <div class="small text-muted">
+                                Type
                             </div>
 
                             <strong>
@@ -1126,29 +551,16 @@
                         </div>
 
 
-                        <div class="metadata-row">
-
-                            <div class="metadata-label">
-                                Visibility
-                            </div>
-
-                            <strong>
-                                {{ video.get_visibility_display }}
-                            </strong>
-
-                        </div>
-
-
                         {% if video.recorded_at %}
 
-                            <div class="metadata-row">
+                            <div class="info-row">
 
-                                <div class="metadata-label">
+                                <div class="small text-muted">
                                     Recorded
                                 </div>
 
                                 <strong>
-                                    {{ video.recorded_at|date:"F j, Y" }}
+                                    {{ video.recorded_at|date:"M j, Y" }}
                                 </strong>
 
                             </div>
@@ -1156,24 +568,11 @@
                         {% endif %}
 
 
-                        <div class="metadata-row">
-
-                            <div class="metadata-label">
-                                Uploaded
-                            </div>
-
-                            <strong>
-                                {{ video.uploaded_at|date:"F j, Y g:i A" }}
-                            </strong>
-
-                        </div>
-
-
                         {% if video.training_group %}
 
-                            <div class="metadata-row">
+                            <div class="info-row">
 
-                                <div class="metadata-label">
+                                <div class="small text-muted">
                                     Training Group
                                 </div>
 
@@ -1186,75 +585,17 @@
                         {% endif %}
 
 
-                        {% if video.practice_plan %}
+                        {% if video.notes %}
 
-                            <div class="metadata-row">
+                            <div class="info-row">
 
-                                <div class="metadata-label">
-                                    Practice
+                                <div class="small text-muted mb-1">
+                                    Notes
                                 </div>
 
-                                <a
-                                    href="{% url 'practice_planner:practice_builder' video.practice_plan.id %}"
-                                    class="text-decoration-none"
-                                >
-                                    {{ video.practice_plan.title }}
-                                </a>
-
-                            </div>
-
-                        {% endif %}
-
-
-                        {% if video.file_size_mb %}
-
-                            <div class="metadata-row">
-
-                                <div class="metadata-label">
-                                    File Size
+                                <div>
+                                    {{ video.notes }}
                                 </div>
-
-                                <strong>
-                                    {{ video.file_size_mb }} MB
-                                </strong>
-
-                            </div>
-
-                        {% endif %}
-
-
-                        {% if video.formatted_duration %}
-
-                            <div class="metadata-row">
-
-                                <div class="metadata-label">
-                                    Duration
-                                </div>
-
-                                <strong>
-                                    {{ video.formatted_duration }}
-                                </strong>
-
-                            </div>
-
-                        {% endif %}
-
-
-                        {% if video.uploaded_by %}
-
-                            <div class="metadata-row">
-
-                                <div class="metadata-label">
-                                    Uploaded By
-                                </div>
-
-                                <strong>
-                                    {% if video.uploaded_by.get_full_name %}
-                                        {{ video.uploaded_by.get_full_name }}
-                                    {% else %}
-                                        {{ video.uploaded_by.username }}
-                                    {% endif %}
-                                </strong>
 
                             </div>
 
@@ -1265,23 +606,302 @@
                 </section>
 
 
-                {% if video.tag_list %}
+                <!-- COACHING REFERENCES -->
 
-                    <section class="card detail-card">
+                <section class="card detail-card mb-4">
+
+                    <div class="card-header bg-white border-0 p-4 pb-2">
+
+                        <h2 class="h5 mb-1">
+                            Coaching References
+                        </h2>
+
+                        <p class="small text-muted mb-0">
+                            Mark this attempt for future progress and comparison workflows.
+                        </p>
+
+                    </div>
+
+
+                    <div class="card-body p-4">
+
+                        <!-- ACTIVE BADGES -->
+
+                        {% if video.is_personal_best or video.is_reference_attempt or video.is_coaching_example %}
+
+                            <div class="d-flex flex-wrap gap-2 mb-4">
+
+                                {% if video.is_personal_best %}
+
+                                    <span class="reference-badge reference-badge-best">
+                                        ⭐ Personal Best
+                                    </span>
+
+                                {% endif %}
+
+
+                                {% if video.is_reference_attempt %}
+
+                                    <span class="reference-badge reference-badge-reference">
+                                        🎯 Reference Attempt
+                                    </span>
+
+                                {% endif %}
+
+
+                                {% if video.is_coaching_example %}
+
+                                    <span class="reference-badge reference-badge-example">
+                                        📌 Coaching Example
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <!-- PERSONAL BEST -->
+
+                        <form
+                            method="post"
+                            action="{% url 'video_library:toggle_personal_best' video.id %}"
+                            class="mb-2"
+                        >
+
+                            {% csrf_token %}
+
+                            <button
+                                type="submit"
+                                class="btn {% if video.is_personal_best %}btn-warning{% else %}btn-outline-warning{% endif %} w-100"
+                            >
+
+                                {% if video.is_personal_best %}
+                                    ⭐ Personal Best
+                                {% else %}
+                                    ☆ Mark Personal Best
+                                {% endif %}
+
+                            </button>
+
+                        </form>
+
+
+                        <!-- REFERENCE ATTEMPT -->
+
+                        <form
+                            method="post"
+                            action="{% url 'video_library:toggle_reference_attempt' video.id %}"
+                            class="mb-2"
+                        >
+
+                            {% csrf_token %}
+
+                            <button
+                                type="submit"
+                                class="btn {% if video.is_reference_attempt %}btn-primary{% else %}btn-outline-primary{% endif %} w-100"
+                            >
+
+                                {% if video.is_reference_attempt %}
+                                    🎯 Current Reference Attempt
+                                {% else %}
+                                    🎯 Mark Reference Attempt
+                                {% endif %}
+
+                            </button>
+
+                        </form>
+
+
+                        <!-- COACHING EXAMPLE -->
+
+                        <form
+                            method="post"
+                            action="{% url 'video_library:toggle_coaching_example' video.id %}"
+                        >
+
+                            {% csrf_token %}
+
+                            <button
+                                type="submit"
+                                class="btn {% if video.is_coaching_example %}btn-success{% else %}btn-outline-success{% endif %} w-100"
+                            >
+
+                                {% if video.is_coaching_example %}
+                                    📌 Coaching Example
+                                {% else %}
+                                    📌 Mark Coaching Example
+                                {% endif %}
+
+                            </button>
+
+                        </form>
+
+
+                        {% if video.reference_marked_by %}
+
+                            <div class="small text-muted mt-3">
+
+                                Last marked by:
+
+                                <strong>
+                                    {{ video.reference_marked_by.get_full_name|default:video.reference_marked_by.username }}
+                                </strong>
+
+                                {% if video.reference_marked_at %}
+                                    on
+                                    {{ video.reference_marked_at|date:"M j, Y" }}
+                                {% endif %}
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </section>
+
+
+                <!-- FAVORITE -->
+
+                <section class="card detail-card mb-4">
+
+                    <div class="card-body p-4">
+
+                        <form
+                            method="post"
+                            action="{% url 'video_library:toggle_favorite' video.id %}"
+                        >
+
+                            {% csrf_token %}
+
+                            <input
+                                type="hidden"
+                                name="next"
+                                value="{% url 'video_library:video_detail' video.id %}"
+                            >
+
+                            <button
+                                type="submit"
+                                class="btn {% if video.is_favorite %}btn-warning{% else %}btn-outline-warning{% endif %} w-100"
+                            >
+
+                                {% if video.is_favorite %}
+                                    ⭐ Remove Favorite
+                                {% else %}
+                                    ☆ Add to Favorites
+                                {% endif %}
+
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </section>
+
+
+                <!-- PROGRESS / COMPARE -->
+
+                {% if video.primary_athlete %}
+
+                    <section class="card detail-card mb-4">
+
+                        <div class="card-header bg-white border-0 p-4 pb-2">
+
+                            <h2 class="h5 mb-1">
+                                Athlete Progress
+                            </h2>
+
+                        </div>
+
 
                         <div class="card-body p-4">
 
-                            <h2 class="h5 mb-3">
-                                Tags
+                            <div class="d-grid gap-2">
+
+                                <a
+                                    href="{% url 'video_library:athlete_video_timeline' video.primary_athlete.id %}"
+                                    class="btn btn-outline-secondary"
+                                >
+                                    📈 Athlete Timeline
+                                </a>
+
+
+                                {% if video.skill_name %}
+
+                                    <a
+                                        href="{% url 'video_library:athlete_skill_progress' video.primary_athlete.id %}?skill={{ video.skill_name|urlencode }}"
+                                        class="btn btn-outline-success"
+                                    >
+                                        📊 View Skill Progress
+                                    </a>
+
+                                    <a
+                                        href="{% url 'video_library:athlete_video_compare_select' video.primary_athlete.id %}?skill={{ video.skill_name|urlencode }}"
+                                        class="btn btn-outline-primary"
+                                    >
+                                        ↔ Compare {{ video.skill_name }}
+                                    </a>
+
+                                {% else %}
+
+                                    <a
+                                        href="{% url 'video_library:athlete_video_compare_select' video.primary_athlete.id %}"
+                                        class="btn btn-outline-primary"
+                                    >
+                                        ↔ Compare Attempts
+                                    </a>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </section>
+
+                {% endif %}
+
+
+                <!-- RELATED VIDEOS -->
+
+                {% if related_videos %}
+
+                    <section class="card detail-card">
+
+                        <div class="card-header bg-white border-0 p-4 pb-2">
+
+                            <h2 class="h5 mb-1">
+                                Related Videos
                             </h2>
 
-                            <div class="d-flex flex-wrap gap-2">
+                        </div>
 
-                                {% for tag in video.tag_list %}
 
-                                    <span class="badge text-bg-light border tag-badge">
-                                        {{ tag }}
-                                    </span>
+                        <div class="card-body p-4">
+
+                            <div class="d-grid gap-2">
+
+                                {% for related in related_videos %}
+
+                                    <a
+                                        href="{% url 'video_library:video_detail' related.id %}"
+                                        class="btn btn-light border text-start"
+                                    >
+
+                                        <div class="fw-semibold">
+                                            {{ related.title }}
+                                        </div>
+
+                                        <div class="small text-muted">
+                                            {% if related.recorded_at %}
+                                                {{ related.recorded_at|date:"M j, Y" }}
+                                            {% endif %}
+                                        </div>
+
+                                    </a>
 
                                 {% endfor %}
 
@@ -1293,160 +913,12 @@
 
                 {% endif %}
 
-            </aside>
+            </div>
 
         </div>
 
     </div>
 
 </div>
-
-
-<script>
-    document.addEventListener(
-        'DOMContentLoaded',
-        function () {
-            const videoPlayer = document.querySelector(
-                '.main-video'
-            );
-
-            document.querySelectorAll(
-                '.analysis-moment-button'
-            ).forEach(
-                function (button) {
-                    button.addEventListener(
-                        'click',
-                        function () {
-                            const timestamp = Number(
-                                button.dataset.timestamp
-                            );
-
-                            if (!videoPlayer) {
-                                return;
-                            }
-
-                            videoPlayer.currentTime = timestamp;
-
-                            videoPlayer.play();
-                        }
-                    );
-                }
-            );
-
-
-            const panel = document.getElementById(
-                'analysis-panel'
-            );
-
-            if (!panel) {
-                return;
-            }
-
-            if (
-                panel.dataset.isFinished
-                === 'true'
-            ) {
-                return;
-            }
-
-            const progressBar = document.getElementById(
-                'analysis-progress-bar'
-            );
-
-            const progressLabel = document.getElementById(
-                'analysis-progress-label'
-            );
-
-            const statusLabel = document.getElementById(
-                'analysis-status-label'
-            );
-
-            const currentStep = document.getElementById(
-                'analysis-current-step'
-            );
-
-            const csrfToken = document.querySelector(
-                '[name=csrfmiddlewaretoken]'
-            );
-
-
-            async function advanceAnalysis() {
-                try {
-                    const response = await fetch(
-                        panel.dataset.processUrl,
-                        {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRFToken': (
-                                    csrfToken
-                                    ? csrfToken.value
-                                    : ''
-                                ),
-                                'X-Requested-With': (
-                                    'XMLHttpRequest'
-                                ),
-                            },
-                        }
-                    );
-
-                    if (!response.ok) {
-                        throw new Error(
-                            'Unable to update analysis.'
-                        );
-                    }
-
-                    const data = await response.json();
-
-                    progressBar.style.width = (
-                        `${data.progress_percentage}%`
-                    );
-
-                    progressBar.setAttribute(
-                        'aria-valuenow',
-                        data.progress_percentage
-                    );
-
-                    progressLabel.textContent = (
-                        `${data.progress_percentage}%`
-                    );
-
-                    statusLabel.textContent = (
-                        data.status_display
-                        || data.status
-                    );
-
-                    currentStep.textContent = (
-                        data.current_step
-                    );
-
-                    if (data.is_finished) {
-                        window.location.reload();
-                        return;
-                    }
-
-                    window.setTimeout(
-                        advanceAnalysis,
-                        1200
-                    );
-
-                } catch (error) {
-                    console.error(
-                        error
-                    );
-
-                    currentStep.textContent = (
-                        'Unable to update analysis status.'
-                    );
-                }
-            }
-
-
-            window.setTimeout(
-                advanceAnalysis,
-                800
-            );
-        }
-    );
-</script>
 
 {% endblock %}

@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 
 {% block title %}
-Video Comparison
+Compare Videos
 {% endblock %}
 
 {% block content %}
 
 <style>
-    .comparison-shell {
-        max-width: 1700px;
+    .compare-shell {
+        max-width: 1500px;
         margin: 0 auto;
     }
 
-    .comparison-hero {
+    .compare-header {
         padding: 28px;
         color: white;
         border-radius: 24px;
@@ -28,61 +28,122 @@ Video Comparison
             rgba(15, 23, 42, 0.16);
     }
 
-    .comparison-card,
-    .control-card {
-        overflow: hidden;
+    .compare-card {
         border: 0;
         border-radius: 20px;
+        overflow: hidden;
         box-shadow:
             0 8px 24px
-            rgba(15, 23, 42, 0.07);
+            rgba(15, 23, 42, 0.06);
     }
 
-    .comparison-video {
+    .compare-video {
+        display: block;
         width: 100%;
-        height: min(65vh, 650px);
+        height: 460px;
         object-fit: contain;
         background: #000;
     }
 
-    .video-number {
-        width: 38px;
-        height: 38px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
+    .compare-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .compare-info-row {
+        padding: 10px 0;
+        border-bottom: 1px solid #eef2f7;
+    }
+
+    .compare-info-row:last-child {
+        border-bottom: 0;
+    }
+
+    .measurement-box {
+        height: 100%;
+        padding: 12px;
+        border: 1px solid #e9ecef;
         border-radius: 12px;
-        color: white;
+        background: #fff;
+    }
+
+    .phase-card {
+        padding: 16px;
+        border: 1px solid #e9ecef;
+        border-radius: 16px;
+        background: #fff;
+    }
+
+    .phase-sync-button.active-phase {
+        color: #fff;
         background: #0d6efd;
-        font-weight: 800;
+        border-color: #0d6efd;
     }
 
-    .comparison-range {
-        width: 100%;
+    .compare-time {
+        font-variant-numeric: tabular-nums;
     }
 
-    .sync-status {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        padding: 7px 11px;
-        border-radius: 999px;
-        color: #146c43;
-        background: #d1e7dd;
-        font-size: 0.85rem;
+    .comparison-highlight {
+        padding: 18px;
+        border: 1px solid #dbeafe;
+        border-radius: 16px;
+        background: #f8fbff;
+    }
+
+    .comparison-delta {
+        font-size: 1.75rem;
         font-weight: 700;
+        white-space: nowrap;
     }
 
-    @media (max-width: 1199px) {
-        .comparison-video {
-            height: 480px;
+    .comparison-change-card,
+    .coach-interpretation-card {
+        display: block;
+        width: 100%;
+        height: 100%;
+        padding: 14px;
+        text-align: left;
+        color: inherit;
+        border: 1px solid #e9ecef;
+        border-radius: 14px;
+        background: white;
+        transition:
+            transform 0.15s ease,
+            border-color 0.15s ease,
+            box-shadow 0.15s ease;
+    }
+
+    .comparison-change-card:hover,
+    .coach-interpretation-card:hover {
+        border-color: #0d6efd;
+        transform: translateY(-2px);
+        box-shadow:
+            0 7px 18px
+            rgba(15, 23, 42, 0.08);
+    }
+
+    .technique-profile-box {
+        padding: 16px;
+        border: 1px solid #e9ecef;
+        border-radius: 14px;
+        background: #f8fafc;
+    }
+
+    @media (max-width: 991px) {
+        .compare-video {
+            height: 360px;
         }
     }
 
     @media (max-width: 767px) {
-        .comparison-video {
-            height: 330px;
+        .compare-header {
+            padding: 22px;
+        }
+
+        .compare-video {
+            height: 280px;
         }
     }
 </style>
@@ -90,327 +151,1075 @@ Video Comparison
 
 <div class="container-fluid py-4">
 
-    <div class="comparison-shell">
+    <div class="compare-shell">
 
-        <section class="comparison-hero mb-4">
+        <!-- =====================================================
+             HEADER
+             ===================================================== -->
 
-            <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-4">
+        <section class="compare-header mb-4">
 
-                <div>
+            {% if shared_athlete %}
+                <div class="small text-uppercase fw-semibold opacity-75 mb-2">
+                    {{ shared_athlete.get_full_name|default:shared_athlete.username }}
+                </div>
+            {% endif %}
 
-                    {% if shared_athlete %}
+            <h1 class="h2 fw-bold mb-2">
+                Video Comparison
+            </h1>
 
-                        <a
-                            href="{% url 'video_library:compare_select' shared_athlete.id %}"
-                            class="text-white text-decoration-none opacity-75"
+            <p class="mb-0 opacity-75">
+                Compare two attempts side by side and synchronize
+                them by time or by detected gymnastics phase.
+            </p>
+
+        </section>
+
+
+        <!-- =====================================================
+             SYNCHRONIZED CONTROLS
+             ===================================================== -->
+
+        <section class="card compare-card mb-4">
+
+            <div class="card-body p-4">
+
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+
+                    <div>
+                        <h2 class="h5 mb-1">
+                            Synchronized Controls
+                        </h2>
+
+                        <p class="small text-muted mb-0">
+                            Play, pause, restart, or move both attempts together.
+                        </p>
+                    </div>
+
+                    <div class="compare-controls">
+
+                        <button
+                            type="button"
+                            id="play-both"
+                            class="btn btn-primary"
                         >
-                            ← Choose Different Videos
-                        </a>
+                            ▶ Play Both
+                        </button>
 
-                    {% else %}
-
-                        <a
-                            href="{% url 'video_library:video_list' %}"
-                            class="text-white text-decoration-none opacity-75"
+                        <button
+                            type="button"
+                            id="pause-both"
+                            class="btn btn-outline-secondary"
                         >
-                            ← Video Library
-                        </a>
+                            ⏸ Pause Both
+                        </button>
 
-                    {% endif %}
+                        <button
+                            type="button"
+                            id="restart-both"
+                            class="btn btn-outline-secondary"
+                        >
+                            ↺ Restart Both
+                        </button>
 
-                    <h1 class="display-6 fw-bold mt-3 mb-2">
-                        Side-by-Side Comparison
-                    </h1>
+                        <button
+                            type="button"
+                            id="back-both"
+                            class="btn btn-outline-secondary"
+                        >
+                            −0.25s
+                        </button>
 
-                    <p class="lead mb-0 opacity-75">
-                        Review progress, timing, positions, and execution differences.
+                        <button
+                            type="button"
+                            id="forward-both"
+                            class="btn btn-outline-secondary"
+                        >
+                            +0.25s
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             AI PHASE SYNC
+             ===================================================== -->
+
+        {% if phase_comparisons %}
+
+            <section class="card compare-card mb-4">
+
+                <div class="card-body p-4">
+
+                    <h2 class="h5 mb-1">
+                        AI Phase Sync
+                    </h2>
+
+                    <p class="small text-muted mb-3">
+                        Jump each video to its own detected timestamp
+                        for the same gymnastics phase.
+                    </p>
+
+                    <div class="d-flex flex-wrap gap-2">
+
+                        {% for phase in phase_comparisons %}
+
+                            {% if phase.first and phase.second %}
+
+                                <button
+                                    type="button"
+                                    class="btn btn-outline-primary phase-sync-button"
+                                    data-phase="{{ phase.name }}"
+                                    data-first-time="{{ phase.first.timestamp }}"
+                                    data-second-time="{{ phase.second.timestamp }}"
+                                >
+                                    {{ phase.label }}
+                                </button>
+
+                            {% else %}
+
+                                <button
+                                    type="button"
+                                    class="btn btn-outline-secondary"
+                                    disabled
+                                >
+                                    {{ phase.label }}
+                                </button>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        {% endif %}
+
+
+        <!-- =====================================================
+             VIDEOS
+             ===================================================== -->
+
+        <div class="row g-4 mb-4">
+
+            <!-- ATTEMPT A -->
+
+            <div class="col-12 col-xl-6">
+
+                <section class="card compare-card h-100">
+
+                    <div class="card-header bg-white border-0 p-4 pb-2">
+
+                        <div class="small text-muted mb-1">
+                            Attempt A
+                        </div>
+
+                        <h2 class="h5 mb-1">
+                            {{ first_video.title }}
+                        </h2>
+
+                        {% if first_video.skill_name %}
+                            <div class="small text-muted">
+                                {{ first_video.skill_name }}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+                    <div class="card-body p-0">
+
+                        <video
+                            id="compare-video-a"
+                            class="compare-video"
+                            controls
+                            preload="metadata"
+                            playsinline
+                            {% if first_video.thumbnail %}
+                                poster="{{ first_video.thumbnail.url }}"
+                            {% endif %}
+                        >
+                            <source src="{{ first_video.video_file.url }}">
+
+                            Your browser does not support video playback.
+                        </video>
+
+                    </div>
+
+                    <div class="card-footer bg-white border-0 p-4">
+
+                        <div class="compare-info-row">
+
+                            <div class="small text-muted">
+                                Current Time
+                            </div>
+
+                            <strong
+                                id="time-a"
+                                class="compare-time"
+                            >
+                                0.00s
+                            </strong>
+
+                        </div>
+
+                        {% if first_video.primary_athlete %}
+
+                            <div class="compare-info-row">
+
+                                <div class="small text-muted">
+                                    Athlete
+                                </div>
+
+                                <strong>
+                                    {{ first_video.primary_athlete.get_full_name|default:first_video.primary_athlete.username }}
+                                </strong>
+
+                            </div>
+
+                        {% endif %}
+
+                        <div class="compare-info-row">
+
+                            <div class="small text-muted">
+                                AI Analysis
+                            </div>
+
+                            {% if first_analysis %}
+                                <span class="badge text-bg-success">
+                                    Completed
+                                </span>
+                            {% else %}
+                                <span class="badge text-bg-warning">
+                                    No completed analysis
+                                </span>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+
+            <!-- ATTEMPT B -->
+
+            <div class="col-12 col-xl-6">
+
+                <section class="card compare-card h-100">
+
+                    <div class="card-header bg-white border-0 p-4 pb-2">
+
+                        <div class="small text-muted mb-1">
+                            Attempt B
+                        </div>
+
+                        <h2 class="h5 mb-1">
+                            {{ second_video.title }}
+                        </h2>
+
+                        {% if second_video.skill_name %}
+                            <div class="small text-muted">
+                                {{ second_video.skill_name }}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+                    <div class="card-body p-0">
+
+                        <video
+                            id="compare-video-b"
+                            class="compare-video"
+                            controls
+                            preload="metadata"
+                            playsinline
+                            {% if second_video.thumbnail %}
+                                poster="{{ second_video.thumbnail.url }}"
+                            {% endif %}
+                        >
+                            <source src="{{ second_video.video_file.url }}">
+
+                            Your browser does not support video playback.
+                        </video>
+
+                    </div>
+
+                    <div class="card-footer bg-white border-0 p-4">
+
+                        <div class="compare-info-row">
+
+                            <div class="small text-muted">
+                                Current Time
+                            </div>
+
+                            <strong
+                                id="time-b"
+                                class="compare-time"
+                            >
+                                0.00s
+                            </strong>
+
+                        </div>
+
+                        {% if second_video.primary_athlete %}
+
+                            <div class="compare-info-row">
+
+                                <div class="small text-muted">
+                                    Athlete
+                                </div>
+
+                                <strong>
+                                    {{ second_video.primary_athlete.get_full_name|default:second_video.primary_athlete.username }}
+                                </strong>
+
+                            </div>
+
+                        {% endif %}
+
+                        <div class="compare-info-row">
+
+                            <div class="small text-muted">
+                                AI Analysis
+                            </div>
+
+                            {% if second_analysis %}
+                                <span class="badge text-bg-success">
+                                    Completed
+                                </span>
+                            {% else %}
+                                <span class="badge text-bg-warning">
+                                    No completed analysis
+                                </span>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             WHAT CHANGED
+             ===================================================== -->
+
+        {% if comparison_summary %}
+
+            <section class="card compare-card mb-4">
+
+                <div class="card-header bg-white border-0 p-4 pb-2">
+
+                    <h2 class="h5 mb-1">
+                        What Changed?
+                    </h2>
+
+                    <p class="small text-muted mb-0">
+                        Objective differences between Attempt A
+                        and Attempt B at matching phases.
                     </p>
 
                 </div>
 
-                <span class="sync-status">
-                    ● Synchronized controls enabled
-                </span>
+                <div class="card-body p-4">
 
-            </div>
+                    {% if comparison_summary.largest_change %}
 
-        </section>
+                        {% with change=comparison_summary.largest_change %}
 
+                            <div class="comparison-highlight mb-4">
 
-        <section class="row g-4 mb-4">
+                                <div class="small text-uppercase fw-semibold text-muted mb-1">
+                                    Largest Measurement Difference
+                                </div>
 
-            <div class="col-12 col-xl-6">
+                                <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
 
-                <article class="card comparison-card h-100">
+                                    <div>
 
-                    <div class="card-header bg-white border-0 p-4">
+                                        <h3 class="h5 mb-1">
+                                            {{ change.phase_label }}
+                                            ·
+                                            {{ change.measurement_label }}
+                                        </h3>
 
-                        <div class="d-flex align-items-start gap-3">
+                                        <div class="small text-muted">
+                                            Attempt A:
+                                            {{ change.first }}°
+                                            →
+                                            Attempt B:
+                                            {{ change.second }}°
+                                        </div>
 
-                            <div class="video-number">
-                                1
-                            </div>
+                                    </div>
 
-                            <div>
+                                    <div class="comparison-delta">
 
-                                <h2 class="h5 mb-1">
-                                    {{ first_video.title }}
-                                </h2>
+                                        {% if change.delta > 0 %}
+                                            +
+                                        {% endif %}
 
-                                <p class="text-muted mb-0">
+                                        {{ change.delta }}°
 
-                                    {{ first_video.get_event_display }}
+                                    </div>
 
-                                    {% if first_video.skill_name %}
-                                        · {{ first_video.skill_name }}
-                                    {% endif %}
-
-                                    ·
-
-                                    {% if first_video.recorded_at %}
-                                        {{ first_video.recorded_at|date:"M j, Y" }}
-                                    {% else %}
-                                        {{ first_video.uploaded_at|date:"M j, Y" }}
-                                    {% endif %}
-
-                                </p>
+                                </div>
 
                             </div>
 
+                        {% endwith %}
+
+                    {% endif %}
+
+
+                    {% if comparison_summary.top_changes %}
+
+                        <div class="row g-3">
+
+                            {% for change in comparison_summary.top_changes %}
+
+                                <div class="col-12 col-md-6 col-xl-4">
+
+                                    <button
+                                        type="button"
+                                        class="comparison-change-card phase-sync-button"
+                                        data-phase="{{ change.phase }}"
+
+                                        {% for phase in phase_comparisons %}
+                                            {% if phase.name == change.phase and phase.first and phase.second %}
+                                                data-first-time="{{ phase.first.timestamp }}"
+                                                data-second-time="{{ phase.second.timestamp }}"
+                                            {% endif %}
+                                        {% endfor %}
+                                    >
+
+                                        <div class="small text-muted">
+                                            {{ change.phase_label }}
+                                        </div>
+
+                                        <div class="fw-semibold">
+                                            {{ change.measurement_label }}
+                                        </div>
+
+                                        <div class="d-flex justify-content-between align-items-end mt-2">
+
+                                            <div class="small">
+                                                {{ change.first }}°
+                                                →
+                                                {{ change.second }}°
+                                            </div>
+
+                                            <strong>
+                                                {% if change.delta > 0 %}
+                                                    +
+                                                {% endif %}
+
+                                                {{ change.delta }}°
+                                            </strong>
+
+                                        </div>
+
+                                    </button>
+
+                                </div>
+
+                            {% endfor %}
+
                         </div>
 
-                    </div>
-
-                    <video
-                        id="comparison-video-1"
-                        class="comparison-video"
-                        preload="metadata"
-                        playsinline
-                    >
-                        <source
-                            src="{{ first_video.video_file.url }}"
-                            type="{{ first_video.content_type|default:'video/mp4' }}"
-                        >
-                    </video>
-
-                    <div class="card-footer bg-white border-0 p-4">
-
-                        <a
-                            href="{% url 'video_library:video_detail' first_video.id %}"
-                            class="btn btn-sm btn-outline-primary"
-                        >
-                            Open Video 1
-                        </a>
-
-                    </div>
-
-                </article>
-
-            </div>
+                    {% endif %}
 
 
-            <div class="col-12 col-xl-6">
+                    {% if comparison_summary.largest_timing_change %}
 
-                <article class="card comparison-card h-100">
+                        {% with timing=comparison_summary.largest_timing_change %}
 
-                    <div class="card-header bg-white border-0 p-4">
+                            <hr class="my-4">
 
-                        <div class="d-flex align-items-start gap-3">
-
-                            <div class="video-number">
-                                2
+                            <div class="small text-uppercase fw-semibold text-muted mb-2">
+                                Largest Timing Difference
                             </div>
 
-                            <div>
+                            <div class="d-flex flex-wrap align-items-center gap-2">
 
-                                <h2 class="h5 mb-1">
-                                    {{ second_video.title }}
-                                </h2>
+                                <strong>
+                                    {{ timing.phase_label }}
+                                </strong>
 
-                                <p class="text-muted mb-0">
+                                {% if timing.delta > 0 %}
 
-                                    {{ second_video.get_event_display }}
+                                    <span class="badge text-bg-light border">
+                                        Attempt B reached this phase
+                                        {{ timing.absolute_delta }}s later
+                                    </span>
 
-                                    {% if second_video.skill_name %}
-                                        · {{ second_video.skill_name }}
-                                    {% endif %}
+                                {% elif timing.delta < 0 %}
 
-                                    ·
+                                    <span class="badge text-bg-light border">
+                                        Attempt B reached this phase
+                                        {{ timing.absolute_delta }}s earlier
+                                    </span>
 
-                                    {% if second_video.recorded_at %}
-                                        {{ second_video.recorded_at|date:"M j, Y" }}
-                                    {% else %}
-                                        {{ second_video.uploaded_at|date:"M j, Y" }}
-                                    {% endif %}
+                                {% else %}
 
-                                </p>
+                                    <span class="badge text-bg-light border">
+                                        Same detected timestamp
+                                    </span>
+
+                                {% endif %}
 
                             </div>
 
-                        </div>
+                        {% endwith %}
 
-                    </div>
+                    {% endif %}
 
-                    <video
-                        id="comparison-video-2"
-                        class="comparison-video"
-                        preload="metadata"
-                        playsinline
-                    >
-                        <source
-                            src="{{ second_video.video_file.url }}"
-                            type="{{ second_video.content_type|default:'video/mp4' }}"
-                        >
-                    </video>
+                </div>
 
-                    <div class="card-footer bg-white border-0 p-4">
+            </section>
 
-                        <a
-                            href="{% url 'video_library:video_detail' second_video.id %}"
-                            class="btn btn-sm btn-outline-primary"
-                        >
-                            Open Video 2
-                        </a>
-
-                    </div>
-
-                </article>
-
-            </div>
-
-        </section>
+        {% endif %}
 
 
-        <section class="card control-card">
+        <!-- =====================================================
+             COACH INTERPRETATION
+             ===================================================== -->
 
-            <div class="card-body p-4">
+        {% if coaching_interpretation %}
 
-                <div class="row g-4 align-items-end">
+            <section class="card compare-card mb-4">
 
-                    <div class="col-12 col-lg-5">
+                <div class="card-header bg-white border-0 p-4 pb-2">
 
-                        <label
-                            for="comparison-timeline"
-                            class="form-label fw-semibold"
-                        >
-                            Comparison Timeline
-                        </label>
+                    <div class="d-flex justify-content-between align-items-start gap-3">
 
-                        <input
-                            type="range"
-                            id="comparison-timeline"
-                            class="form-range comparison-range"
-                            min="0"
-                            max="1000"
-                            value="0"
-                            step="1"
-                        >
+                        <div>
 
-                        <div class="d-flex justify-content-between small text-muted">
+                            <h2 class="h5 mb-1">
+                                Coach Interpretation
+                            </h2>
 
-                            <span id="current-time-label">
-                                0:00
-                            </span>
+                            <p class="small text-muted mb-0">
+                                Skill-specific interpretation based on
+                                the current coaching profile.
+                            </p>
 
-                            <span id="duration-label">
-                                0:00
-                            </span>
+
+                            {% if coaching_interpretation.using_custom_profile %}
+
+                                <div class="d-flex flex-wrap gap-1 mt-2">
+
+                                    <span class="badge text-bg-primary">
+                                        Custom Technique Profile
+                                    </span>
+
+                                    <span class="badge text-bg-light border">
+                                        {{ coaching_interpretation.profile.strictness_label }}
+                                    </span>
+
+                                </div>
+
+                            {% else %}
+
+                                <div class="mt-2">
+
+                                    <span class="badge text-bg-light border">
+                                        NewSchool Default
+                                    </span>
+
+                                </div>
+
+                            {% endif %}
 
                         </div>
 
-                    </div>
-
-
-                    <div class="col-12 col-md-6 col-lg-2">
-
-                        <label
-                            for="playback-speed"
-                            class="form-label fw-semibold"
-                        >
-                            Playback Speed
-                        </label>
-
-                        <select
-                            id="playback-speed"
-                            class="form-select"
-                        >
-                            <option value="0.25">
-                                0.25×
-                            </option>
-
-                            <option value="0.5">
-                                0.5×
-                            </option>
-
-                            <option value="0.75">
-                                0.75×
-                            </option>
-
-                            <option value="1" selected>
-                                1×
-                            </option>
-
-                            <option value="1.25">
-                                1.25×
-                            </option>
-
-                            <option value="1.5">
-                                1.5×
-                            </option>
-
-                            <option value="2">
-                                2×
-                            </option>
-                        </select>
-
-                    </div>
-
-
-                    <div class="col-12 col-md-6 col-lg-5">
-
-                        <div class="d-flex flex-wrap justify-content-lg-end gap-2">
-
-                            <button
-                                type="button"
-                                id="restart-button"
-                                class="btn btn-outline-secondary"
-                            >
-                                ↺ Restart
-                            </button>
-
-                            <button
-                                type="button"
-                                id="back-button"
-                                class="btn btn-outline-secondary"
-                            >
-                                −0.25 sec
-                            </button>
-
-                            <button
-                                type="button"
-                                id="play-pause-button"
-                                class="btn btn-primary"
-                            >
-                                ▶ Play Both
-                            </button>
-
-                            <button
-                                type="button"
-                                id="forward-button"
-                                class="btn btn-outline-secondary"
-                            >
-                                +0.25 sec
-                            </button>
-
-                        </div>
+                        <span class="fs-4">
+                            🧠
+                        </span>
 
                     </div>
 
                 </div>
 
-            </div>
 
-        </section>
+                <div class="card-body p-4">
+
+                    {% if coaching_interpretation.using_custom_profile %}
+
+                        <div class="technique-profile-box mb-4">
+
+                            <div class="small text-muted mb-2">
+                                Coaching Priorities
+                            </div>
+
+                            <div class="d-flex flex-wrap gap-1">
+
+                                {% for emphasis in coaching_interpretation.profile.active_emphasis_labels %}
+
+                                    <span class="badge text-bg-light border">
+                                        {{ emphasis }}
+                                    </span>
+
+                                {% empty %}
+
+                                    <span class="small text-muted">
+                                        No specific priorities selected.
+                                    </span>
+
+                                {% endfor %}
+
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    {% if coaching_interpretation.has_skill_rules %}
+
+                        <!-- IMPROVEMENTS -->
+
+                        {% if coaching_interpretation.improved %}
+
+                            <div class="mb-4">
+
+                                <h3 class="h6 text-success mb-3">
+                                    Improvements
+                                </h3>
+
+                                <div class="d-flex flex-column gap-2">
+
+                                    {% for item in coaching_interpretation.improved %}
+
+                                        <button
+                                            type="button"
+                                            class="coach-interpretation-card phase-sync-button"
+                                            data-phase="{{ item.phase }}"
+
+                                            {% for phase in phase_comparisons %}
+                                                {% if phase.name == item.phase and phase.first and phase.second %}
+                                                    data-first-time="{{ phase.first.timestamp }}"
+                                                    data-second-time="{{ phase.second.timestamp }}"
+                                                {% endif %}
+                                            {% endfor %}
+                                        >
+
+                                            <span class="badge text-bg-success mb-2">
+                                                Improved
+                                            </span>
+
+                                            <div class="fw-semibold">
+                                                {{ item.message }}
+                                            </div>
+
+                                            {% if item.evidence %}
+
+                                                <div class="small text-muted mt-2">
+                                                    A:
+                                                    {{ item.evidence.first }}°
+                                                    →
+                                                    B:
+                                                    {{ item.evidence.second }}°
+                                                </div>
+
+                                            {% endif %}
+
+                                        </button>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <!-- REVIEW -->
+
+                        {% if coaching_interpretation.review %}
+
+                            <div class="mb-4">
+
+                                <h3 class="h6 text-warning mb-3">
+                                    Review
+                                </h3>
+
+                                <div class="d-flex flex-column gap-2">
+
+                                    {% for item in coaching_interpretation.review %}
+
+                                        <button
+                                            type="button"
+                                            class="coach-interpretation-card phase-sync-button"
+                                            data-phase="{{ item.phase }}"
+
+                                            {% for phase in phase_comparisons %}
+                                                {% if phase.name == item.phase and phase.first and phase.second %}
+                                                    data-first-time="{{ phase.first.timestamp }}"
+                                                    data-second-time="{{ phase.second.timestamp }}"
+                                                {% endif %}
+                                            {% endfor %}
+                                        >
+
+                                            <span class="badge text-bg-warning mb-2">
+                                                Review
+                                            </span>
+
+                                            <div class="fw-semibold">
+                                                {{ item.message }}
+                                            </div>
+
+                                            {% if item.evidence %}
+
+                                                <div class="small text-muted mt-2">
+                                                    A:
+                                                    {{ item.evidence.first }}°
+                                                    →
+                                                    B:
+                                                    {{ item.evidence.second }}°
+                                                </div>
+
+                                            {% endif %}
+
+                                        </button>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <!-- SIMILAR -->
+
+                        {% if coaching_interpretation.similar %}
+
+                            <details>
+
+                                <summary class="small fw-semibold">
+                                    Similar Positions
+                                </summary>
+
+                                <div class="d-flex flex-column gap-2 mt-3">
+
+                                    {% for item in coaching_interpretation.similar %}
+
+                                        <div class="border rounded-3 p-3">
+
+                                            <span class="badge text-bg-light border mb-2">
+                                                Similar
+                                            </span>
+
+                                            <div class="small">
+                                                {{ item.message }}
+                                            </div>
+
+                                        </div>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            </details>
+
+                        {% endif %}
+
+
+                    {% else %}
+
+                        <div class="alert alert-secondary mb-0">
+
+                            No skill-specific interpretation rules
+                            are available yet for:
+
+                            <strong>
+                                {{ comparison_skill_name|default:"this skill" }}
+                            </strong>
+
+                            Raw measurement comparisons remain
+                            available below.
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <div class="small text-muted mt-4">
+
+                        Coach Interpretation uses the current technique
+                        profile and saved pose measurements. Coaches
+                        should verify the result before using it as
+                        technical feedback.
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        {% endif %}
+
+
+        <!-- =====================================================
+             PHASE MEASUREMENTS
+             ===================================================== -->
+
+        {% if phase_comparisons %}
+
+            <section class="card compare-card mb-4">
+
+                <div class="card-header bg-white border-0 p-4 pb-2">
+
+                    <h2 class="h5 mb-1">
+                        Phase Measurements
+                    </h2>
+
+                    <p class="small text-muted mb-0">
+                        Compare body measurements at equivalent
+                        detected movement phases.
+                    </p>
+
+                </div>
+
+
+                <div class="card-body p-4">
+
+                    <div class="d-flex flex-column gap-4">
+
+                        {% for phase in phase_comparisons %}
+
+                            {% if phase.first and phase.second %}
+
+                                <div class="phase-card">
+
+                                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+
+                                        <div>
+
+                                            <h3 class="h6 mb-1">
+                                                {{ phase.label }}
+                                            </h3>
+
+                                            <div class="small text-muted">
+                                                A:
+                                                {{ phase.first.timestamp }}s
+                                                ·
+                                                B:
+                                                {{ phase.second.timestamp }}s
+                                            </div>
+
+                                        </div>
+
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm btn-outline-primary phase-sync-button"
+                                            data-phase="{{ phase.name }}"
+                                            data-first-time="{{ phase.first.timestamp }}"
+                                            data-second-time="{{ phase.second.timestamp }}"
+                                        >
+                                            Jump to Phase
+                                        </button>
+
+                                    </div>
+
+
+                                    <div class="row g-3">
+
+                                        <div class="col-12 col-md-6 col-xl-3">
+                                            <div class="measurement-box">
+
+                                                <div class="small text-muted mb-2">
+                                                    Knee Angle
+                                                </div>
+
+                                                <div class="d-flex justify-content-between">
+                                                    <span>A</span>
+                                                    <strong>
+                                                        {% if phase.first.knee_angle != None %}
+                                                            {{ phase.first.knee_angle }}°
+                                                        {% else %}
+                                                            —
+                                                        {% endif %}
+                                                    </strong>
+                                                </div>
+
+                                                <div class="d-flex justify-content-between">
+                                                    <span>B</span>
+                                                    <strong>
+                                                        {% if phase.second.knee_angle != None %}
+                                                            {{ phase.second.knee_angle }}°
+                                                        {% else %}
+                                                            —
+                                                        {% endif %}
+                                                    </strong>
+                                                </div>
+
+                                            </div>
+                                        </div>
+
+
+                                        <div class="col-12 col-md-6 col-xl-3">
+                                            <div class="measurement-box">
+
+                                                <div class="small text-muted mb-2">
+                                                    Hip Angle
+                                                </div>
+
+                                                <div class="d-flex justify-content-between">
+                                                    <span>A</span>
+                                                    <strong>
+                                                        {% if phase.first.hip_angle != None %}
+                                                            {{ phase.first.hip_angle }}°
+                                                        {% else %}
+                                                            —
+                                                        {% endif %}
+                                                    </strong>
+                                                </div>
+
+                                                <div class="d-flex justify-content-between">
+                                                    <span>B</span>
+                                                    <strong>
+                                                        {% if phase.second.hip_angle != None %}
+                                                            {{ phase.second.hip_angle }}°
+                                                        {% else %}
+                                                            —
+                                                        {% endif %}
+                                                    </strong>
+                                                </div>
+
+                                            </div>
+                                        </div>
+
+
+                                        <div class="col-12 col-md-6 col-xl-3">
+                                            <div class="measurement-box">
+
+                                                <div class="small text-muted mb-2">
+                                                    Shoulder Angle
+                                                </div>
+
+                                                <div class="d-flex justify-content-between">
+                                                    <span>A</span>
+                                                    <strong>
+                                                        {% if phase.first.shoulder_angle != None %}
+                                                            {{ phase.first.shoulder_angle }}°
+                                                        {% else %}
+                                                            —
+                                                        {% endif %}
+                                                    </strong>
+                                                </div>
+
+                                                <div class="d-flex justify-content-between">
+                                                    <span>B</span>
+                                                    <strong>
+                                                        {% if phase.second.shoulder_angle != None %}
+                                                            {{ phase.second.shoulder_angle }}°
+                                                        {% else %}
+                                                            —
+                                                        {% endif %}
+                                                    </strong>
+                                                </div>
+
+                                            </div>
+                                        </div>
+
+
+                                        <div class="col-12 col-md-6 col-xl-3">
+                                            <div class="measurement-box">
+
+                                                <div class="small text-muted mb-2">
+                                                    Elbow Angle
+                                                </div>
+
+                                                <div class="d-flex justify-content-between">
+                                                    <span>A</span>
+                                                    <strong>
+                                                        {% if phase.first.elbow_angle != None %}
+                                                            {{ phase.first.elbow_angle }}°
+                                                        {% else %}
+                                                            —
+                                                        {% endif %}
+                                                    </strong>
+                                                </div>
+
+                                                <div class="d-flex justify-content-between">
+                                                    <span>B</span>
+                                                    <strong>
+                                                        {% if phase.second.elbow_angle != None %}
+                                                            {{ phase.second.elbow_angle }}°
+                                                        {% else %}
+                                                            —
+                                                        {% endif %}
+                                                    </strong>
+                                                </div>
+
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        {% endif %}
+
+
+        <!-- =====================================================
+             NAVIGATION
+             ===================================================== -->
+
+        <div class="d-flex flex-wrap gap-2 mt-4">
+
+            <a
+                href="{% url 'video_library:video_detail' first_video.id %}"
+                class="btn btn-outline-primary"
+            >
+                Open Attempt A
+            </a>
+
+            <a
+                href="{% url 'video_library:video_detail' second_video.id %}"
+                class="btn btn-outline-primary"
+            >
+                Open Attempt B
+            </a>
+
+            <a
+                href="{% url 'video_library:video_list' %}"
+                class="btn btn-outline-secondary"
+            >
+                Back to Library
+            </a>
+
+        </div>
 
     </div>
 
@@ -421,362 +1230,445 @@ Video Comparison
     document.addEventListener(
         'DOMContentLoaded',
         function () {
-            const firstVideo = document.getElementById(
-                'comparison-video-1'
+
+            const videoA = document.getElementById(
+                'compare-video-a'
             );
 
-            const secondVideo = document.getElementById(
-                'comparison-video-2'
+            const videoB = document.getElementById(
+                'compare-video-b'
             );
 
-            const playPauseButton = document.getElementById(
-                'play-pause-button'
+            const playButton = document.getElementById(
+                'play-both'
+            );
+
+            const pauseButton = document.getElementById(
+                'pause-both'
             );
 
             const restartButton = document.getElementById(
-                'restart-button'
+                'restart-both'
             );
 
             const backButton = document.getElementById(
-                'back-button'
+                'back-both'
             );
 
             const forwardButton = document.getElementById(
-                'forward-button'
+                'forward-both'
             );
 
-            const playbackSpeed = document.getElementById(
-                'playback-speed'
+            const timeA = document.getElementById(
+                'time-a'
             );
 
-            const timeline = document.getElementById(
-                'comparison-timeline'
+            const timeB = document.getElementById(
+                'time-b'
             );
 
-            const currentTimeLabel = document.getElementById(
-                'current-time-label'
-            );
 
-            const durationLabel = document.getElementById(
-                'duration-label'
-            );
-
-            let isPlaying = false;
-            let isSeeking = false;
-
-
-            function formatTime(seconds) {
-                if (
-                    !Number.isFinite(seconds)
-                    || seconds < 0
-                ) {
-                    return '0:00';
-                }
-
-                const minutes = Math.floor(
-                    seconds / 60
-                );
-
-                const remainingSeconds = Math.floor(
-                    seconds % 60
-                );
-
-                return (
-                    `${minutes}:`
-                    + `${remainingSeconds}`
-                        .padStart(
-                            2,
-                            '0'
-                        )
-                );
+            if (
+                !videoA
+                || !videoB
+            ) {
+                return;
             }
 
 
-            function getComparisonDuration() {
-                const durations = [
-                    firstVideo.duration,
-                    secondVideo.duration,
-                ].filter(
-                    function (duration) {
-                        return Number.isFinite(
-                            duration
+            let phaseSyncInProgress = false;
+            let phaseSeekedA = false;
+            let phaseSeekedB = false;
+            let normalSyncInProgress = false;
+
+
+            function updateTimes() {
+
+                if (timeA) {
+                    timeA.textContent = (
+                        `${videoA.currentTime.toFixed(2)}s`
+                    );
+                }
+
+                if (timeB) {
+                    timeB.textContent = (
+                        `${videoB.currentTime.toFixed(2)}s`
+                    );
+                }
+            }
+
+
+            function clearActivePhase() {
+
+                document.querySelectorAll(
+                    '.phase-sync-button'
+                ).forEach(
+                    function (button) {
+
+                        button.classList.remove(
+                            'active-phase'
                         );
                     }
                 );
+            }
 
-                if (!durations.length) {
-                    return 0;
-                }
 
-                return Math.min(
-                    ...durations
+            function markActivePhase(
+                phaseName
+            ) {
+
+                clearActivePhase();
+
+                document.querySelectorAll(
+                    '.phase-sync-button'
+                ).forEach(
+                    function (button) {
+
+                        if (
+                            button.dataset.phase
+                            === phaseName
+                        ) {
+                            button.classList.add(
+                                'active-phase'
+                            );
+                        }
+                    }
                 );
             }
 
 
-            function setBothTimes(timeValue) {
-                const comparisonDuration = (
-                    getComparisonDuration()
-                );
+            function finishPhaseSyncIfReady() {
 
-                const safeTime = Math.max(
-                    0,
-                    Math.min(
-                        timeValue,
-                        comparisonDuration
-                    )
-                );
+                if (
+                    phaseSeekedA
+                    && phaseSeekedB
+                ) {
+                    phaseSyncInProgress = false;
+                    phaseSeekedA = false;
+                    phaseSeekedB = false;
 
-                firstVideo.currentTime = Math.min(
-                    safeTime,
-                    firstVideo.duration || safeTime
-                );
-
-                secondVideo.currentTime = Math.min(
-                    safeTime,
-                    secondVideo.duration || safeTime
-                );
-
-                updateTimeline();
+                    updateTimes();
+                }
             }
 
 
             async function playBoth() {
+
+                phaseSyncInProgress = false;
+
+                const sharedTime = Math.min(
+                    videoA.currentTime,
+                    videoB.currentTime
+                );
+
+                normalSyncInProgress = true;
+
+                videoA.currentTime = sharedTime;
+                videoB.currentTime = sharedTime;
+
+                window.setTimeout(
+                    function () {
+                        normalSyncInProgress = false;
+                    },
+                    150
+                );
+
                 try {
+
                     await Promise.all([
-                        firstVideo.play(),
-                        secondVideo.play(),
+                        videoA.play(),
+                        videoB.play(),
                     ]);
 
-                    isPlaying = true;
-
-                    playPauseButton.textContent = (
-                        '❚❚ Pause Both'
-                    );
                 } catch (error) {
+
                     console.error(
-                        'Unable to play both videos.',
+                        'Unable to start synchronized playback:',
                         error
                     );
                 }
+
+                clearActivePhase();
             }
 
 
             function pauseBoth() {
-                firstVideo.pause();
-                secondVideo.pause();
-
-                isPlaying = false;
-
-                playPauseButton.textContent = (
-                    '▶ Play Both'
-                );
+                videoA.pause();
+                videoB.pause();
             }
 
 
-            function updateTimeline() {
-                if (isSeeking) {
-                    return;
-                }
+            function restartBoth() {
 
-                const comparisonDuration = (
-                    getComparisonDuration()
+                pauseBoth();
+
+                phaseSyncInProgress = false;
+                normalSyncInProgress = true;
+
+                videoA.currentTime = 0;
+                videoB.currentTime = 0;
+
+                window.setTimeout(
+                    function () {
+                        normalSyncInProgress = false;
+                    },
+                    150
                 );
 
-                if (!comparisonDuration) {
-                    return;
-                }
-
-                const currentTime = Math.min(
-                    firstVideo.currentTime,
-                    secondVideo.currentTime
-                );
-
-                const progress = (
-                    currentTime
-                    / comparisonDuration
-                    * 1000
-                );
-
-                timeline.value = progress;
-
-                currentTimeLabel.textContent = (
-                    formatTime(
-                        currentTime
-                    )
-                );
-
-                durationLabel.textContent = (
-                    formatTime(
-                        comparisonDuration
-                    )
-                );
+                clearActivePhase();
+                updateTimes();
             }
 
 
-            function synchronizeVideos() {
-                if (!isPlaying) {
-                    return;
-                }
+            function seekBoth(
+                amount
+            ) {
 
-                const timeDifference = Math.abs(
-                    firstVideo.currentTime
-                    - secondVideo.currentTime
+                pauseBoth();
+
+                phaseSyncInProgress = false;
+
+                const durationA = (
+                    Number.isFinite(
+                        videoA.duration
+                    )
+                    ? videoA.duration
+                    : Infinity
                 );
 
-                if (timeDifference > 0.08) {
-                    secondVideo.currentTime = (
-                        firstVideo.currentTime
+                const durationB = (
+                    Number.isFinite(
+                        videoB.duration
+                    )
+                    ? videoB.duration
+                    : Infinity
+                );
+
+                const targetTime = Math.max(
+                    0,
+                    Math.min(
+                        videoA.currentTime + amount,
+                        durationA,
+                        durationB
+                    )
+                );
+
+                normalSyncInProgress = true;
+
+                videoA.currentTime = targetTime;
+                videoB.currentTime = targetTime;
+
+                window.setTimeout(
+                    function () {
+                        normalSyncInProgress = false;
+                    },
+                    150
+                );
+
+                clearActivePhase();
+                updateTimes();
+            }
+
+
+            document.querySelectorAll(
+                '.phase-sync-button'
+            ).forEach(
+                function (button) {
+
+                    button.addEventListener(
+                        'click',
+                        function () {
+
+                            const firstTime = Number(
+                                button.dataset.firstTime
+                            );
+
+                            const secondTime = Number(
+                                button.dataset.secondTime
+                            );
+
+                            if (
+                                Number.isNaN(firstTime)
+                                ||
+                                Number.isNaN(secondTime)
+                            ) {
+                                return;
+                            }
+
+                            pauseBoth();
+
+                            phaseSyncInProgress = true;
+                            normalSyncInProgress = false;
+
+                            phaseSeekedA = false;
+                            phaseSeekedB = false;
+
+                            videoA.currentTime = firstTime;
+                            videoB.currentTime = secondTime;
+
+                            markActivePhase(
+                                button.dataset.phase
+                            );
+
+                            window.setTimeout(
+                                function () {
+
+                                    if (
+                                        phaseSyncInProgress
+                                    ) {
+                                        phaseSyncInProgress = false;
+                                        phaseSeekedA = false;
+                                        phaseSeekedB = false;
+
+                                        updateTimes();
+                                    }
+                                },
+                                500
+                            );
+                        }
                     );
                 }
+            );
+
+
+            if (playButton) {
+                playButton.addEventListener(
+                    'click',
+                    playBoth
+                );
             }
 
+            if (pauseButton) {
+                pauseButton.addEventListener(
+                    'click',
+                    pauseBoth
+                );
+            }
 
-            playPauseButton.addEventListener(
-                'click',
-                function () {
-                    if (isPlaying) {
-                        pauseBoth();
-                    } else {
-                        playBoth();
+            if (restartButton) {
+                restartButton.addEventListener(
+                    'click',
+                    restartBoth
+                );
+            }
+
+            if (backButton) {
+                backButton.addEventListener(
+                    'click',
+                    function () {
+                        seekBoth(-0.25);
                     }
-                }
-            );
+                );
+            }
+
+            if (forwardButton) {
+                forwardButton.addEventListener(
+                    'click',
+                    function () {
+                        seekBoth(0.25);
+                    }
+                );
+            }
 
 
-            restartButton.addEventListener(
-                'click',
-                function () {
-                    pauseBoth();
-                    setBothTimes(0);
-                }
-            );
-
-
-            backButton.addEventListener(
-                'click',
-                function () {
-                    pauseBoth();
-
-                    setBothTimes(
-                        Math.min(
-                            firstVideo.currentTime,
-                            secondVideo.currentTime
-                        ) - 0.25
-                    );
-                }
-            );
-
-
-            forwardButton.addEventListener(
-                'click',
-                function () {
-                    pauseBoth();
-
-                    setBothTimes(
-                        Math.min(
-                            firstVideo.currentTime,
-                            secondVideo.currentTime
-                        ) + 0.25
-                    );
-                }
-            );
-
-
-            playbackSpeed.addEventListener(
-                'change',
-                function () {
-                    const speed = Number(
-                        playbackSpeed.value
-                    );
-
-                    firstVideo.playbackRate = speed;
-                    secondVideo.playbackRate = speed;
-                }
-            );
-
-
-            timeline.addEventListener(
-                'input',
-                function () {
-                    isSeeking = true;
-
-                    const comparisonDuration = (
-                        getComparisonDuration()
-                    );
-
-                    const newTime = (
-                        Number(
-                            timeline.value
-                        )
-                        / 1000
-                        * comparisonDuration
-                    );
-
-                    currentTimeLabel.textContent = (
-                        formatTime(
-                            newTime
-                        )
-                    );
-                }
-            );
-
-
-            timeline.addEventListener(
-                'change',
-                function () {
-                    const comparisonDuration = (
-                        getComparisonDuration()
-                    );
-
-                    const newTime = (
-                        Number(
-                            timeline.value
-                        )
-                        / 1000
-                        * comparisonDuration
-                    );
-
-                    setBothTimes(
-                        newTime
-                    );
-
-                    isSeeking = false;
-                }
-            );
-
-
-            firstVideo.addEventListener(
+            videoA.addEventListener(
                 'timeupdate',
-                function () {
-                    synchronizeVideos();
-                    updateTimeline();
-                }
+                updateTimes
             );
 
-
-            secondVideo.addEventListener(
+            videoB.addEventListener(
                 'timeupdate',
-                updateTimeline
+                updateTimes
             );
 
 
-            [
-                firstVideo,
-                secondVideo,
-            ].forEach(
-                function (video) {
-                    video.addEventListener(
-                        'loadedmetadata',
-                        updateTimeline
-                    );
+            videoA.addEventListener(
+                'seeked',
+                function () {
 
-                    video.addEventListener(
-                        'ended',
-                        pauseBoth
-                    );
+                    if (phaseSyncInProgress) {
+                        phaseSeekedA = true;
+
+                        finishPhaseSyncIfReady();
+
+                        return;
+                    }
+
+                    if (normalSyncInProgress) {
+                        updateTimes();
+                        return;
+                    }
+
+                    if (
+                        Math.abs(
+                            videoB.currentTime
+                            - videoA.currentTime
+                        ) > 0.08
+                    ) {
+                        normalSyncInProgress = true;
+
+                        videoB.currentTime = (
+                            videoA.currentTime
+                        );
+
+                        window.setTimeout(
+                            function () {
+                                normalSyncInProgress = false;
+                            },
+                            150
+                        );
+                    }
+
+                    clearActivePhase();
+                    updateTimes();
                 }
             );
+
+
+            videoB.addEventListener(
+                'seeked',
+                function () {
+
+                    if (phaseSyncInProgress) {
+                        phaseSeekedB = true;
+
+                        finishPhaseSyncIfReady();
+
+                        return;
+                    }
+
+                    if (normalSyncInProgress) {
+                        updateTimes();
+                        return;
+                    }
+
+                    if (
+                        Math.abs(
+                            videoA.currentTime
+                            - videoB.currentTime
+                        ) > 0.08
+                    ) {
+                        normalSyncInProgress = true;
+
+                        videoA.currentTime = (
+                            videoB.currentTime
+                        );
+
+                        window.setTimeout(
+                            function () {
+                                normalSyncInProgress = false;
+                            },
+                            150
+                        );
+                    }
+
+                    clearActivePhase();
+                    updateTimes();
+                }
+            );
+
+
+            updateTimes();
         }
     );
 </script>

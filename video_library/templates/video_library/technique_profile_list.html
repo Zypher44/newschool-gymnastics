@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}
+Technique Profiles
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
+
+        <div>
+
+            <h1 class="h3 mb-1">
+                Technique Profiles
+            </h1>
+
+            <p class="text-muted mb-0">
+                Choose what your program emphasizes.
+                No angle configuration required.
+            </p>
+
+        </div>
+
+
+        <a
+            href="{% url 'video_library:technique_profile_create' %}"
+            class="btn btn-primary"
+        >
+            + Add Skill Profile
+        </a>
+
+    </div>
+
+
+    <div class="row g-3">
+
+        {% for profile in profiles %}
+
+            <div class="col-12 col-md-6 col-xl-4">
+
+                <div class="card border-0 shadow-sm h-100">
+
+                    <div class="card-body p-4">
+
+                        <div class="d-flex justify-content-between gap-3 mb-3">
+
+                            <div>
+
+                                <h2 class="h5 mb-1">
+                                    {{ profile.skill_name }}
+                                </h2>
+
+                                <span class="badge text-bg-primary">
+                                    {{ profile.get_strictness_display }}
+                                </span>
+
+                            </div>
+
+
+                            {% if profile.is_active %}
+
+                                <span class="badge text-bg-success">
+                                    Active
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge text-bg-secondary">
+                                    Inactive
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="small text-muted mb-2">
+                            Coaching priorities
+                        </div>
+
+
+                        <div class="d-flex flex-wrap gap-1">
+
+                            {% for emphasis in profile.active_emphases %}
+
+                                <span class="badge text-bg-light border">
+                                    {{ emphasis }}
+                                </span>
+
+                            {% empty %}
+
+                                <span class="text-muted small">
+                                    No priorities selected.
+                                </span>
+
+                            {% endfor %}
+
+                        </div>
+
+
+                        <a
+                            href="{% url 'video_library:technique_profile_edit' profile.id %}"
+                            class="btn btn-outline-primary w-100 mt-4"
+                        >
+                            Edit Profile
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        {% empty %}
+
+            <div class="col-12">
+
+                <div class="alert alert-secondary">
+                    No custom technique profiles yet.
+                    The built-in NewSchool defaults will continue to be used.
+                </div>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

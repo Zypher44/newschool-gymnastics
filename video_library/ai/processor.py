@@ -7,7 +7,9 @@ from video_library.models import (
 )
 
 from .mock_engine import MockAnalysisEngine
-
+from .cv_pipeline import (
+    ComputerVisionPipeline,
+)
 
 class VideoAnalysisProcessor:
     """
@@ -18,12 +20,18 @@ class VideoAnalysisProcessor:
     """
 
     def __init__(
-        self,
-        engine=None,
+            self,
+            engine=None,
+            cv_pipeline=None,
     ):
         self.engine = (
-            engine
-            or MockAnalysisEngine()
+                engine
+                or MockAnalysisEngine()
+        )
+
+        self.cv_pipeline = (
+                cv_pipeline
+                or ComputerVisionPipeline()
         )
 
     def process(
@@ -60,9 +68,19 @@ class VideoAnalysisProcessor:
                 ),
             )
 
+            cv_results = (
+                self.cv_pipeline.process(
+                    analysis=analysis,
+                )
+            )
+
             result = self.engine.analyze(
                 analysis=analysis,
             )
+
+            result.raw_results[
+                'computer_vision'
+            ] = cv_results
 
             self._save_result(
                 analysis=analysis,
@@ -132,7 +150,15 @@ class VideoAnalysisProcessor:
             ],
         )
 
-        analysis.moments.all().delete()
+        analysis.moments.filter(
+            label__in=[
+                'Start',
+                'Key body position',
+                'Alignment review',
+                'Finish',
+            ],
+            frame_image='',
+        ).delete()
 
         VideoAnalysisMoment.objects.bulk_create([
             VideoAnalysisMoment(

@@ -1,0 +1,164 @@
+{% if latest_analysis and latest_analysis.status == 'completed' %}
+
+    <section class="card detail-card mb-4">
+
+        <div class="card-body p-4">
+
+            <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+
+                <div>
+
+                    <h2 class="h5 mb-1">
+                        Coach Verification
+                    </h2>
+
+                    <p class="small text-muted mb-0">
+                        Confirm whether the analysis is useful and accurate.
+                    </p>
+
+                </div>
+
+
+                {% if latest_analysis.review_status == 'approved' %}
+
+                    <span class="badge text-bg-success review-badge">
+                        Approved
+                    </span>
+
+                {% elif latest_analysis.review_status == 'partial' %}
+
+                    <span class="badge text-bg-warning review-badge">
+                        Partially Correct
+                    </span>
+
+                {% elif latest_analysis.review_status == 'rejected' %}
+
+                    <span class="badge text-bg-danger review-badge">
+                        Rejected
+                    </span>
+
+                {% else %}
+
+                    <span class="badge text-bg-secondary review-badge">
+                        Pending Review
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+
+            <form
+                method="post"
+                action="{% url 'video_library:review_analysis' latest_analysis.id %}"
+            >
+                {% csrf_token %}
+
+                <div class="mb-3">
+
+                    <label
+                        for="review-status"
+                        class="form-label fw-semibold"
+                    >
+                        Review Decision
+                    </label>
+
+                    <select
+                        name="review_status"
+                        id="review-status"
+                        class="form-select"
+                        required
+                    >
+
+                        <option value="">
+                            Choose a decision
+                        </option>
+
+                        <option
+                            value="approved"
+                            {% if latest_analysis.review_status == 'approved' %}
+                                selected
+                            {% endif %}
+                        >
+                            Correct and useful
+                        </option>
+
+                        <option
+                            value="partial"
+                            {% if latest_analysis.review_status == 'partial' %}
+                                selected
+                            {% endif %}
+                        >
+                            Partially correct
+                        </option>
+
+                        <option
+                            value="rejected"
+                            {% if latest_analysis.review_status == 'rejected' %}
+                                selected
+                            {% endif %}
+                        >
+                            Incorrect or not useful
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    <label
+                        for="coach-review-notes"
+                        class="form-label fw-semibold"
+                    >
+                        Coach Notes
+                    </label>
+
+                    <textarea
+                        name="coach_review_notes"
+                        id="coach-review-notes"
+                        class="form-control"
+                        rows="4"
+                        placeholder="Explain what was accurate, incomplete, or incorrect."
+                    >{{ latest_analysis.coach_review_notes }}</textarea>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="btn btn-primary w-100"
+                >
+                    Save Coach Review
+                </button>
+
+            </form>
+
+
+            {% if latest_analysis.reviewed_by %}
+
+                <div class="small text-muted mt-3">
+
+                    Reviewed by
+
+                    {% if latest_analysis.reviewed_by.get_full_name %}
+                        {{ latest_analysis.reviewed_by.get_full_name }}
+                    {% else %}
+                        {{ latest_analysis.reviewed_by.username }}
+                    {% endif %}
+
+                    {% if latest_analysis.reviewed_at %}
+                        on
+                        {{ latest_analysis.reviewed_at|date:"M j, Y g:i A" }}
+                    {% endif %}
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+
+{% endif %}

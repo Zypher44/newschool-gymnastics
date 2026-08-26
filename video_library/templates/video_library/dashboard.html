@@ -38,8 +38,7 @@ Video Library
         right: -120px;
         top: -130px;
         border-radius: 50%;
-        background:
-            rgba(255, 255, 255, 0.09);
+        background: rgba(255, 255, 255, 0.09);
     }
 
     .video-hero-content {
@@ -102,10 +101,23 @@ Video Library
         background: #0f172a;
     }
 
-    .dashboard-video-preview video {
+    .dashboard-video-preview video,
+    .dashboard-video-thumbnail {
+        display: block;
         width: 100%;
         height: 100%;
         object-fit: contain;
+        background: #0f172a;
+    }
+
+    .dashboard-video-placeholder {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 2.5rem;
         background: #0f172a;
     }
 
@@ -133,7 +145,6 @@ Video Library
         font-size: 0.75rem;
         font-weight: 700;
         background: rgba(13, 110, 253, 0.9);
-        backdrop-filter: blur(8px);
     }
 
     .video-favorite-mark {
@@ -177,6 +188,45 @@ Video Library
         background: #f1f5f9;
     }
 
+    .video-card-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin-top: 16px;
+    }
+
+    .reference-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-top: 8px;
+        margin-bottom: 10px;
+    }
+
+    .reference-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .reference-badge-reference {
+        color: #084298;
+        background: #cfe2ff;
+    }
+
+    .reference-badge-best {
+        color: #664d03;
+        background: #fff3cd;
+    }
+
+    .reference-badge-example {
+        color: #146c43;
+        background: #d1e7dd;
+    }
+
     .empty-video-state {
         padding: 64px 24px;
         text-align: center;
@@ -198,6 +248,8 @@ Video Library
 
     <div class="video-dashboard-shell">
 
+        <!-- HERO -->
+
         <section class="video-hero mb-4">
 
             <div class="video-hero-content">
@@ -215,11 +267,11 @@ Video Library
                         </h1>
 
                         <p class="lead mb-0 opacity-75">
-                            Store every skill, routine, competition, and coaching moment in one organized place.
+                            Store, analyze, compare, and track gymnastics
+                            progress in one organized place.
                         </p>
 
                     </div>
-
 
                     <div class="d-flex flex-wrap gap-2">
 
@@ -245,6 +297,8 @@ Video Library
 
         </section>
 
+
+        <!-- STATS -->
 
         <section class="row g-3 mb-4">
 
@@ -363,25 +417,19 @@ Video Library
         </section>
 
 
+        <!-- QUICK ACTIONS -->
+
         <section class="card dashboard-section-card mb-4">
 
             <div class="card-header bg-white border-0 p-4">
 
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <h2 class="h4 mb-1">
+                    Quick Actions
+                </h2>
 
-                    <div>
-
-                        <h2 class="h4 mb-1">
-                            Quick Actions
-                        </h2>
-
-                        <p class="text-muted mb-0">
-                            Upload, search, and organize videos quickly.
-                        </p>
-
-                    </div>
-
-                </div>
+                <p class="text-muted mb-0">
+                    Upload, search, organize, and configure video analysis.
+                </p>
 
             </div>
 
@@ -390,7 +438,7 @@ Video Library
 
                 <div class="row g-3">
 
-                    <div class="col-12 col-md-4">
+                    <div class="col-12 col-md-6 col-xl-3">
 
                         <a
                             href="{% url 'video_library:upload' %}"
@@ -406,7 +454,8 @@ Video Library
                             </h3>
 
                             <p class="text-muted mb-0">
-                                Move videos off your phone and tag them by athlete, event, and skill.
+                                Upload videos and tag them by athlete,
+                                event, skill, and practice.
                             </p>
 
                         </a>
@@ -414,7 +463,7 @@ Video Library
                     </div>
 
 
-                    <div class="col-12 col-md-4">
+                    <div class="col-12 col-md-6 col-xl-3">
 
                         <a
                             href="{% url 'video_library:video_list' %}"
@@ -430,7 +479,8 @@ Video Library
                             </h3>
 
                             <p class="text-muted mb-0">
-                                Find videos by athlete, skill, event, tags, notes, or recorded date.
+                                Find videos by athlete, skill, event,
+                                tags, notes, or date.
                             </p>
 
                         </a>
@@ -438,7 +488,7 @@ Video Library
                     </div>
 
 
-                    <div class="col-12 col-md-4">
+                    <div class="col-12 col-md-6 col-xl-3">
 
                         <a
                             href="{% url 'video_library:video_list' %}?favorites=yes"
@@ -454,12 +504,42 @@ Video Library
                             </h3>
 
                             <p class="text-muted mb-0">
-                                Quickly reopen key progress clips, routines, and coaching examples.
+                                Reopen important coaching examples
+                                and progress clips quickly.
                             </p>
 
                         </a>
 
                     </div>
+
+
+                    {% if request.user.role == 'head_coach' %}
+
+                        <div class="col-12 col-md-6 col-xl-3">
+
+                            <a
+                                href="{% url 'video_library:technique_profile_list' %}"
+                                class="quick-action-card"
+                            >
+
+                                <div class="quick-action-icon">
+                                    🎯
+                                </div>
+
+                                <h3 class="h5 mb-2">
+                                    Technique Profiles
+                                </h3>
+
+                                <p class="text-muted mb-0">
+                                    Choose what your program emphasizes
+                                    for each gymnastics skill.
+                                </p>
+
+                            </a>
+
+                        </div>
+
+                    {% endif %}
 
                 </div>
 
@@ -467,6 +547,8 @@ Video Library
 
         </section>
 
+
+        <!-- RECENT UPLOADS -->
 
         <section class="card dashboard-section-card">
 
@@ -514,6 +596,8 @@ Video Library
 
                                 <article class="video-dashboard-card h-100">
 
+                                    <!-- PREVIEW -->
+
                                     <a
                                         href="{% url 'video_library:video_detail' video.id %}"
                                         class="text-decoration-none"
@@ -521,16 +605,35 @@ Video Library
 
                                         <div class="dashboard-video-preview">
 
-                                            <video
-                                                preload="metadata"
-                                                muted
-                                                playsinline
-                                            >
-                                                <source
-                                                    src="{{ video.video_file.url }}"
-                                                    type="{{ video.content_type|default:'video/mp4' }}"
+                                            {% if video.thumbnail %}
+
+                                                <img
+                                                    src="{{ video.thumbnail.url }}"
+                                                    alt="{{ video.title }}"
+                                                    class="dashboard-video-thumbnail"
+                                                    loading="lazy"
                                                 >
-                                            </video>
+
+                                            {% elif video.video_file %}
+
+                                                <video
+                                                    preload="metadata"
+                                                    muted
+                                                    playsinline
+                                                >
+                                                    <source
+                                                        src="{{ video.video_file.url }}"
+                                                    >
+                                                </video>
+
+                                            {% else %}
+
+                                                <div class="dashboard-video-placeholder">
+                                                    🎥
+                                                </div>
+
+                                            {% endif %}
+
 
                                             <div class="video-overlay">
 
@@ -552,6 +655,8 @@ Video Library
 
                                     </a>
 
+
+                                    <!-- INFO -->
 
                                     <div class="p-4">
 
@@ -591,7 +696,6 @@ Video Library
                                                 <button
                                                     type="submit"
                                                     class="btn btn-sm btn-light border"
-                                                    title="Toggle favorite"
                                                 >
                                                     {% if video.is_favorite %}
                                                         ⭐
@@ -603,6 +707,41 @@ Video Library
                                             </form>
 
                                         </div>
+
+
+                                        <!-- REFERENCE BADGES -->
+
+                                        {% if video.is_personal_best or video.is_reference_attempt or video.is_coaching_example %}
+
+                                            <div class="reference-badges">
+
+                                                {% if video.is_reference_attempt %}
+
+                                                    <span class="reference-badge reference-badge-reference">
+                                                        🎯 Reference
+                                                    </span>
+
+                                                {% endif %}
+
+                                                {% if video.is_personal_best %}
+
+                                                    <span class="reference-badge reference-badge-best">
+                                                        ⭐ Personal Best
+                                                    </span>
+
+                                                {% endif %}
+
+                                                {% if video.is_coaching_example %}
+
+                                                    <span class="reference-badge reference-badge-example">
+                                                        📌 Coaching Example
+                                                    </span>
+
+                                                {% endif %}
+
+                                            </div>
+
+                                        {% endif %}
 
 
                                         {% if video.primary_athlete %}
@@ -647,12 +786,50 @@ Video Library
                                         </div>
 
 
-                                        <a
-                                            href="{% url 'video_library:video_detail' video.id %}"
-                                            class="btn btn-outline-primary w-100 mt-3"
-                                        >
-                                            Open Video
-                                        </a>
+                                        <!-- ACTIONS -->
+
+                                        <div class="video-card-actions">
+
+                                            <a
+                                                href="{% url 'video_library:video_detail' video.id %}"
+                                                class="btn btn-outline-primary"
+                                            >
+                                                Open Video
+                                            </a>
+
+
+                                            {% if video.primary_athlete %}
+
+                                                <a
+                                                    href="{% url 'video_library:athlete_video_timeline' video.primary_athlete.id %}"
+                                                    class="btn btn-outline-secondary"
+                                                >
+                                                    📈 Athlete Timeline
+                                                </a>
+
+
+                                                <a
+                                                    href="{% url 'video_library:athlete_video_compare_select' video.primary_athlete.id %}{% if video.skill_name %}?skill={{ video.skill_name|urlencode }}{% endif %}"
+                                                    class="btn btn-outline-secondary"
+                                                >
+                                                    ↔ Compare Attempts
+                                                </a>
+
+
+                                                {% if video.skill_name %}
+
+                                                    <a
+                                                        href="{% url 'video_library:athlete_skill_progress' video.primary_athlete.id %}?skill={{ video.skill_name|urlencode }}"
+                                                        class="btn btn-outline-success"
+                                                    >
+                                                        📊 {{ video.skill_name }} Progress
+                                                    </a>
+
+                                                {% endif %}
+
+                                            {% endif %}
+
+                                        </div>
 
                                     </div>
 
@@ -663,6 +840,7 @@ Video Library
                         {% endfor %}
 
                     </div>
+
 
                 {% else %}
 
@@ -676,8 +854,13 @@ Video Library
                             Your video library is ready
                         </h2>
 
-                        <p class="text-muted mx-auto" style="max-width: 560px;">
-                            Upload videos from your phone or computer and organize them by athlete, event, skill, and practice.
+                        <p
+                            class="text-muted mx-auto"
+                            style="max-width: 560px;"
+                        >
+                            Upload videos from your phone or computer
+                            and organize them by athlete, event, skill,
+                            and practice.
                         </p>
 
                         <a

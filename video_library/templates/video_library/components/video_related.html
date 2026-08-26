@@ -1,0 +1,86 @@
+{% if related_videos %}
+
+    <section class="card detail-card">
+
+        <div class="card-header bg-white border-0 px-4 pt-4 pb-2">
+
+            <h2 class="h5 mb-1">
+                Related Videos
+            </h2>
+
+            <p class="text-muted mb-0">
+                More videos for the same athlete and event.
+            </p>
+
+        </div>
+
+        <div class="card-body px-4 pb-4">
+
+            <div class="row g-3">
+
+                {% for related in related_videos %}
+
+                    <div class="col-12 col-md-6">
+
+                        <a
+                            href="{% url 'video_library:video_detail' related.id %}"
+                            class="text-decoration-none text-body"
+                        >
+
+                            <article class="related-video-card h-100">
+
+                                <video
+                                    class="related-video-preview"
+                                    preload="metadata"
+                                    muted
+                                    playsinline
+                                >
+                                    <source
+                                        src="{{ related.video_file.url }}"
+                                        type="{{ related.content_type|default:'video/mp4' }}"
+                                    >
+                                </video>
+
+                                <div class="p-3">
+
+                                    <strong class="d-block text-truncate">
+                                        {{ related.title }}
+                                    </strong>
+
+                                    <div class="small text-muted mt-1">
+
+                                        {{ related.get_event_display }}
+
+                                        {% if related.skill_name %}
+                                            · {{ related.skill_name }}
+                                        {% endif %}
+
+                                    </div>
+
+                                    <div class="small text-muted mt-2">
+
+                                        {% if related.recorded_at %}
+                                            {{ related.recorded_at|date:"M j, Y" }}
+                                        {% else %}
+                                            {{ related.uploaded_at|date:"M j, Y" }}
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+
+                            </article>
+
+                        </a>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </section>
+
+{% endif %}

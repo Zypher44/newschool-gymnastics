@@ -1,0 +1,17 @@
+<section class="card video-player-card mb-4">
+
+    <video
+        controls
+        preload="metadata"
+        playsinline
+        class="main-video"
+        {% if video.thumbnail %}
+            poster="{{ video.thumbnail.url }}"
+        {% endif %}
+    >
+        <source src="{{ video.video_file.url }}">
+
+        Your browser does not support video playback.
+    </video>
+
+</section>

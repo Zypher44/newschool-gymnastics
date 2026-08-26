@@ -1,0 +1,27 @@
+{% if video.tag_list %}
+
+    <section class="card detail-card">
+
+        <div class="card-body p-4">
+
+            <h2 class="h5 mb-3">
+                Tags
+            </h2>
+
+            <div class="d-flex flex-wrap gap-2">
+
+                {% for tag in video.tag_list %}
+
+                    <span class="badge text-bg-light border tag-badge">
+                        {{ tag }}
+                    </span>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </section>
+
+{% endif %}

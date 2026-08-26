@@ -1,0 +1,72 @@
+<section class="video-hero mb-4">
+
+    <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-4">
+
+        <div>
+
+            <a
+                href="{% url 'video_library:video_list' %}"
+                class="text-white text-decoration-none opacity-75"
+            >
+                ← All Videos
+            </a>
+
+            <div class="d-flex flex-wrap gap-2 mt-3 mb-2">
+
+                <span class="badge bg-white text-primary">
+                    {{ video.get_event_display }}
+                </span>
+
+                <span class="badge bg-white bg-opacity-25">
+                    {{ video.get_video_type_display }}
+                </span>
+
+                {% if video.is_favorite %}
+
+                    <span class="badge bg-warning text-dark">
+                        ⭐ Favorite
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+            <h1 class="display-6 fw-bold mb-2">
+                {{ video.title }}
+            </h1>
+
+            <p class="lead mb-0 opacity-75">
+
+                {% if video.skill_name %}
+                    {{ video.skill_name }}
+                {% else %}
+                    Gymnastics video
+                {% endif %}
+
+            </p>
+
+        </div>
+
+
+        <form
+            method="post"
+            action="{% url 'video_library:toggle_favorite' video.id %}"
+        >
+            {% csrf_token %}
+
+            <button
+                type="submit"
+                class="btn {% if video.is_favorite %}btn-warning{% else %}btn-outline-light{% endif %}"
+            >
+                {% if video.is_favorite %}
+                    ⭐ Remove Favorite
+                {% else %}
+                    ☆ Add to Favorites
+                {% endif %}
+            </button>
+
+        </form>
+
+    </div>
+
+</section>

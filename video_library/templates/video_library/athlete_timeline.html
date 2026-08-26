@@ -12,146 +12,296 @@
         margin: 0 auto;
     }
 
-    .athlete-hero {
-        padding: 30px;
+    .timeline-hero {
+        position: relative;
+        overflow: hidden;
+        padding: 32px;
         color: white;
         border-radius: 26px;
         background:
             linear-gradient(
                 135deg,
                 rgba(17, 24, 39, 0.98),
-                rgba(30, 64, 175, 0.95),
+                rgba(30, 64, 175, 0.96),
                 rgba(79, 70, 229, 0.92)
             );
         box-shadow:
-            0 16px 45px
-            rgba(15, 23, 42, 0.16);
+            0 18px 50px
+            rgba(15, 23, 42, 0.18);
     }
 
-    .athlete-avatar {
-        width: 72px;
-        height: 72px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        border-radius: 22px;
-        color: #1d4ed8;
-        background: white;
-        font-size: 1.6rem;
-        font-weight: 800;
+    .timeline-hero::after {
+        content: "";
+        position: absolute;
+        width: 320px;
+        height: 320px;
+        right: -110px;
+        top: -130px;
+        border-radius: 50%;
+        background:
+            rgba(255, 255, 255, 0.08);
     }
 
-    .metric-card,
-    .event-card {
+    .timeline-hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .timeline-stat-card {
+        height: 100%;
         border: 0;
-        border-radius: 20px;
+        border-radius: 18px;
         box-shadow:
             0 8px 24px
             rgba(15, 23, 42, 0.06);
     }
 
-    .event-card {
-        overflow: hidden;
-    }
-
-    .event-heading {
-        padding: 20px 24px;
-        border-bottom: 1px solid #eef2f7;
-        background: white;
-    }
-
-    .timeline-track {
-        position: relative;
-        padding-left: 34px;
-    }
-
-    .timeline-track::before {
-        content: "";
-        position: absolute;
-        top: 6px;
-        bottom: 6px;
-        left: 12px;
-        width: 3px;
-        border-radius: 999px;
-        background: #dbeafe;
-    }
-
-    .timeline-entry {
-        position: relative;
-        margin-bottom: 20px;
-    }
-
-    .timeline-entry:last-child {
-        margin-bottom: 0;
-    }
-
-    .timeline-entry::before {
-        content: "";
-        position: absolute;
-        top: 18px;
-        left: -28px;
-        width: 15px;
-        height: 15px;
-        border: 3px solid white;
-        border-radius: 50%;
-        background: #0d6efd;
-        box-shadow: 0 0 0 2px #bfdbfe;
+    .timeline-section-card {
+        border: 0;
+        border-radius: 22px;
+        box-shadow:
+            0 8px 26px
+            rgba(15, 23, 42, 0.06);
     }
 
     .timeline-video-card {
+        height: 100%;
         overflow: hidden;
-        border: 1px solid #e9ecef;
+        border: 0;
         border-radius: 18px;
         background: white;
+        box-shadow:
+            0 7px 22px
+            rgba(15, 23, 42, 0.08);
         transition:
             transform 0.2s ease,
             box-shadow 0.2s ease;
     }
 
     .timeline-video-card:hover {
-        transform: translateY(-3px);
+        transform: translateY(-4px);
         box-shadow:
-            0 12px 30px
-            rgba(15, 23, 42, 0.1);
+            0 15px 36px
+            rgba(15, 23, 42, 0.14);
     }
 
-    .timeline-video {
+    .timeline-video-card-reference {
+        border: 2px solid #0d6efd;
+    }
+
+    .timeline-video-preview {
+        position: relative;
         width: 100%;
-        height: 210px;
+        height: 220px;
+        overflow: hidden;
+        background: #0f172a;
+    }
+
+    .timeline-video-thumbnail,
+    .timeline-video-preview video {
+        display: block;
+        width: 100%;
+        height: 100%;
         object-fit: contain;
         background: #0f172a;
     }
 
-    .skill-chip {
+    .timeline-video-placeholder {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 2.5rem;
+        background: #0f172a;
+    }
+
+    .timeline-video-overlay {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 14px;
+        pointer-events: none;
+        background:
+            linear-gradient(
+                transparent,
+                rgba(0, 0, 0, 0.78)
+            );
+    }
+
+    .timeline-event-badge {
+        padding: 5px 10px;
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 700;
+        border-radius: 999px;
+        background:
+            rgba(13, 110, 253, 0.92);
+    }
+
+    .timeline-favorite {
+        color: #ffc107;
+        font-size: 1.2rem;
+    }
+
+    .reference-image-label {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        z-index: 5;
+        padding: 6px 10px;
+        border-radius: 999px;
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 700;
+        background: #0d6efd;
+    }
+
+    .timeline-video-body {
+        padding: 20px;
+    }
+
+    .timeline-video-title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .timeline-date {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .timeline-skill-badge {
         display: inline-flex;
-        padding: 7px 11px;
+        align-items: center;
+        padding: 5px 9px;
+        font-size: 0.75rem;
+        font-weight: 600;
         border: 1px solid #dbeafe;
         border-radius: 999px;
         color: #1d4ed8;
         background: #eff6ff;
-        font-size: 0.85rem;
-        font-weight: 600;
+    }
+
+    .reference-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-bottom: 12px;
+    }
+
+    .reference-badge {
+        display: inline-flex;
+        padding: 5px 9px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .reference-badge-reference {
+        color: #084298;
+        background: #cfe2ff;
+    }
+
+    .reference-badge-best {
+        color: #664d03;
+        background: #fff3cd;
+    }
+
+    .reference-badge-example {
+        color: #146c43;
+        background: #d1e7dd;
+    }
+
+    .timeline-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin-top: 16px;
+    }
+
+    .event-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .event-count {
+        min-width: 34px;
+        padding: 5px 9px;
+        text-align: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+        border-radius: 999px;
+        color: #475569;
+        background: #f1f5f9;
+    }
+
+    .skill-progress-grid {
+        display: grid;
+        grid-template-columns:
+            repeat(
+                auto-fit,
+                minmax(220px, 1fr)
+            );
+        gap: 12px;
+    }
+
+    .skill-progress-card {
+        display: block;
+        height: 100%;
+        padding: 18px;
+        color: inherit;
+        text-decoration: none;
+        border: 1px solid #e9ecef;
+        border-radius: 16px;
+        background: #fff;
+        transition:
+            transform 0.15s ease,
+            border-color 0.15s ease,
+            box-shadow 0.15s ease;
+    }
+
+    .skill-progress-card:hover {
+        color: inherit;
+        border-color: #198754;
+        transform: translateY(-2px);
+        box-shadow:
+            0 8px 20px
+            rgba(15, 23, 42, 0.08);
+    }
+
+    .skill-progress-icon {
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 12px;
+        border-radius: 12px;
+        background: #ecfdf5;
+        font-size: 1.2rem;
+    }
+
+    .timeline-empty {
+        padding: 60px 24px;
+        text-align: center;
     }
 
     @media (max-width: 767px) {
-        .athlete-hero {
+        .timeline-hero {
             padding: 24px;
         }
 
-        .timeline-track {
-            padding-left: 26px;
-        }
-
-        .timeline-track::before {
-            left: 7px;
-        }
-
-        .timeline-entry::before {
-            left: -25px;
-        }
-
-        .timeline-video {
+        .timeline-video-preview {
             height: 250px;
         }
     }
@@ -162,72 +312,48 @@
 
     <div class="timeline-shell">
 
-        <section class="athlete-hero mb-4">
+        <!-- HERO -->
 
-            <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-4">
+        <section class="timeline-hero mb-4">
 
-                <div class="d-flex flex-column flex-md-row align-items-md-center gap-3">
+            <div class="timeline-hero-content">
 
-                    <div class="athlete-avatar">
-
-                        {% if athlete.first_name %}
-                            {{ athlete.first_name|slice:":1" }}
-                        {% else %}
-                            {{ athlete.username|slice:":1" }}
-                        {% endif %}
-
-                    </div>
+                <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-4">
 
                     <div>
 
-                        <a
-                            href="{% url 'video_library:video_list' %}"
-                            class="text-white text-decoration-none opacity-75"
-                        >
-                            ← Video Library
-                        </a>
+                        <div class="small text-uppercase fw-semibold opacity-75 mb-2">
+                            Athlete Video Timeline
+                        </div>
 
-                        <h1 class="display-6 fw-bold mt-2 mb-1">
-
-                            {% if athlete.get_full_name %}
-                                {{ athlete.get_full_name }}
-                            {% else %}
-                                {{ athlete.username }}
-                            {% endif %}
-
+                        <h1 class="display-6 fw-bold mb-2">
+                            {{ athlete.get_full_name|default:athlete.username }}
                         </h1>
 
                         <p class="lead mb-0 opacity-75">
-                            Athlete video timeline and skill history
+                            Review skill attempts, compare videos,
+                            and track progress over time.
                         </p>
 
                     </div>
 
-                </div>
+                    <div class="d-flex flex-wrap gap-2">
 
+                        <a
+                            href="{% url 'video_library:dashboard' %}"
+                            class="btn btn-outline-light"
+                        >
+                            ← Video Library
+                        </a>
 
-                <div class="d-flex flex-wrap gap-2">
+                        <a
+                            href="{% url 'video_library:athlete_video_compare_select' athlete.id %}"
+                            class="btn btn-light text-primary fw-semibold"
+                        >
+                            ↔ Compare Attempts
+                        </a>
 
-                    <a
-                      href="{% url 'video_library:compare_select' athlete.id %}"
-                      class="btn btn-warning"
-                    >
-                      ⚖ Compare Videos
-                    </a>
-
-                    <a
-                        href="{% url 'video_library:video_list' %}?athlete={{ athlete.id }}"
-                        class="btn btn-outline-light"
-                    >
-                        Filter Library
-                    </a>
-
-                    <a
-                        href="{% url 'video_library:upload' %}"
-                        class="btn btn-light text-primary fw-semibold"
-                    >
-                        ＋ Upload Video
-                    </a>
+                    </div>
 
                 </div>
 
@@ -236,19 +362,21 @@
         </section>
 
 
+        <!-- STATS -->
+
         <section class="row g-3 mb-4">
 
             <div class="col-6 col-lg-3">
 
-                <div class="card metric-card h-100">
+                <div class="card timeline-stat-card">
 
                     <div class="card-body p-4">
 
-                        <div class="small text-muted">
-                            Total Videos
+                        <div class="small text-muted mb-1">
+                            Videos
                         </div>
 
-                        <div class="h2 mb-0">
+                        <div class="h2 fw-semibold mb-0">
                             {{ total_video_count }}
                         </div>
 
@@ -261,15 +389,36 @@
 
             <div class="col-6 col-lg-3">
 
-                <div class="card metric-card h-100">
+                <div class="card timeline-stat-card">
 
                     <div class="card-body p-4">
 
-                        <div class="small text-muted">
+                        <div class="small text-muted mb-1">
+                            Favorites
+                        </div>
+
+                        <div class="h2 fw-semibold mb-0">
+                            {{ favorite_count }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-6 col-lg-3">
+
+                <div class="card timeline-stat-card">
+
+                    <div class="card-body p-4">
+
+                        <div class="small text-muted mb-1">
                             Events
                         </div>
 
-                        <div class="h2 mb-0">
+                        <div class="h2 fw-semibold mb-0">
                             {{ event_count }}
                         </div>
 
@@ -282,37 +431,16 @@
 
             <div class="col-6 col-lg-3">
 
-                <div class="card metric-card h-100">
+                <div class="card timeline-stat-card">
 
                     <div class="card-body p-4">
 
-                        <div class="small text-muted">
+                        <div class="small text-muted mb-1">
                             Skills
                         </div>
 
-                        <div class="h2 mb-0">
+                        <div class="h2 fw-semibold mb-0">
                             {{ skill_count }}
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="col-6 col-lg-3">
-
-                <div class="card metric-card h-100">
-
-                    <div class="card-body p-4">
-
-                        <div class="small text-muted">
-                            Favorites
-                        </div>
-
-                        <div class="h2 mb-0">
-                            {{ favorite_count }}
                         </div>
 
                     </div>
@@ -324,25 +452,49 @@
         </section>
 
 
+        <!-- SKILL PROGRESS -->
+
         {% if skill_names %}
 
-            <section class="card event-card mb-4">
+            <section class="card timeline-section-card mb-4">
+
+                <div class="card-header bg-white border-0 p-4 pb-2">
+
+                    <h2 class="h4 mb-1">
+                        Skill Progress
+                    </h2>
+
+                    <p class="text-muted mb-0">
+                        Open a skill to review analyzed attempts,
+                        measurement trends, consistency, and references.
+                    </p>
+
+                </div>
+
 
                 <div class="card-body p-4">
 
-                    <h2 class="h5 mb-3">
-                        Skills in the Library
-                    </h2>
+                    <div class="skill-progress-grid">
 
-                    <div class="d-flex flex-wrap gap-2">
-
-                        {% for skill in skill_names %}
+                        {% for skill_name in skill_names %}
 
                             <a
-                                href="{% url 'video_library:video_list' %}?athlete={{ athlete.id }}&search={{ skill|urlencode }}"
-                                class="skill-chip text-decoration-none"
+                                href="{% url 'video_library:athlete_skill_progress' athlete.id %}?skill={{ skill_name|urlencode }}"
+                                class="skill-progress-card"
                             >
-                                {{ skill }}
+
+                                <div class="skill-progress-icon">
+                                    📊
+                                </div>
+
+                                <h3 class="h6 mb-1">
+                                    {{ skill_name }}
+                                </h3>
+
+                                <div class="small text-muted">
+                                    View progress trends and attempt history
+                                </div>
+
                             </a>
 
                         {% endfor %}
@@ -356,164 +508,245 @@
         {% endif %}
 
 
+        <!-- EVENT SECTIONS -->
+
         {% if event_sections %}
 
-            <div class="d-flex flex-column gap-4">
+            {% for section in event_sections %}
 
-                {% for section in event_sections %}
+                <section class="card timeline-section-card mb-4">
 
-                    <section class="card event-card">
+                    <div class="card-header bg-white border-0 p-4">
 
                         <div class="event-heading">
 
-                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                            <div>
 
-                                <div>
+                                <h2 class="h4 mb-1">
+                                    {{ section.label }}
+                                </h2>
 
-                                    <h2 class="h4 mb-1">
-                                        {{ section.label }}
-                                    </h2>
-
-                                    <p class="text-muted mb-0">
-                                        {{ section.count }}
-                                        video{{ section.count|pluralize }}
-                                    </p>
-
-                                </div>
-
-                                <a
-                                    href="{% url 'video_library:video_list' %}?athlete={{ athlete.id }}&event={{ section.value }}"
-                                    class="btn btn-sm btn-outline-primary"
-                                >
-                                    View {{ section.label }} Videos
-                                </a>
+                                <p class="small text-muted mb-0">
+                                    Videos recorded for this event.
+                                </p>
 
                             </div>
 
+                            <span class="event-count">
+                                {{ section.count }}
+                            </span>
+
                         </div>
 
-
-                        <div class="card-body p-4">
-
-                            <div class="timeline-track">
-
-                                {% for video in section.videos %}
-
-                                    <article class="timeline-entry">
-
-                                        <div class="timeline-video-card">
-
-                                            <div class="row g-0">
-
-                                                <div class="col-12 col-lg-5">
-
-                                                    <a
-                                                        href="{% url 'video_library:video_detail' video.id %}"
-                                                        class="text-decoration-none"
-                                                    >
-
-                                                        <video
-                                                            class="timeline-video"
-                                                            preload="metadata"
-                                                            muted
-                                                            playsinline
-                                                        >
-                                                            <source
-                                                                src="{{ video.video_file.url }}"
-                                                                type="{{ video.content_type|default:'video/mp4' }}"
-                                                            >
-                                                        </video>
-
-                                                    </a>
-
-                                                </div>
+                    </div>
 
 
-                                                <div class="col-12 col-lg-7">
+                    <div class="card-body p-4 pt-0">
 
-                                                    <div class="p-4 h-100 d-flex flex-column">
+                        <div class="row g-4">
 
-                                                        <div class="d-flex justify-content-between align-items-start gap-3">
+                            {% for video in section.videos %}
 
-                                                            <div>
+                                <div class="col-12 col-md-6 col-xl-4">
 
-                                                                <div class="small text-muted mb-1">
+                                    <article
+                                        class="timeline-video-card {% if video.is_reference_attempt %}timeline-video-card-reference{% endif %}"
+                                    >
 
-                                                                    {% if video.recorded_at %}
-                                                                        {{ video.recorded_at|date:"F j, Y" }}
-                                                                    {% else %}
-                                                                        Uploaded {{ video.uploaded_at|date:"F j, Y" }}
-                                                                    {% endif %}
+                                        <!-- THUMBNAIL -->
 
-                                                                </div>
+                                        <a
+                                            href="{% url 'video_library:video_detail' video.id %}"
+                                            class="text-decoration-none"
+                                        >
 
-                                                                <h3 class="h5 mb-1">
-                                                                    {{ video.title }}
-                                                                </h3>
+                                            <div class="timeline-video-preview">
 
-                                                                <p class="text-muted mb-2">
+                                                {% if video.is_reference_attempt %}
 
-                                                                    {{ video.get_video_type_display }}
-
-                                                                    {% if video.skill_name %}
-                                                                        · {{ video.skill_name }}
-                                                                    {% endif %}
-
-                                                                </p>
-
-                                                            </div>
-
-                                                            {% if video.is_favorite %}
-
-                                                                <span class="fs-5">
-                                                                    ⭐
-                                                                </span>
-
-                                                            {% endif %}
-
-                                                        </div>
-
-
-                                                        {% if video.notes %}
-
-                                                            <p class="small mb-3">
-                                                                {{ video.notes|truncatechars:180 }}
-                                                            </p>
-
-                                                        {% endif %}
-
-
-                                                        {% if video.tag_list %}
-
-                                                            <div class="d-flex flex-wrap gap-1 mb-3">
-
-                                                                {% for tag in video.tag_list %}
-
-                                                                    <span class="badge text-bg-light border">
-                                                                        {{ tag }}
-                                                                    </span>
-
-                                                                {% endfor %}
-
-                                                            </div>
-
-                                                        {% endif %}
-
-
-                                                        <div class="mt-auto">
-
-                                                            <a
-                                                                href="{% url 'video_library:video_detail' video.id %}"
-                                                                class="btn btn-outline-primary"
-                                                            >
-                                                                Open Video
-                                                            </a>
-
-                                                        </div>
-
+                                                    <div class="reference-image-label">
+                                                        🎯 Reference
                                                     </div>
 
+                                                {% endif %}
+
+
+                                                {% if video.thumbnail %}
+
+                                                    <img
+                                                        src="{{ video.thumbnail.url }}"
+                                                        alt="{{ video.title }}"
+                                                        class="timeline-video-thumbnail"
+                                                        loading="lazy"
+                                                    >
+
+                                                {% elif video.video_file %}
+
+                                                    <video
+                                                        muted
+                                                        playsinline
+                                                        preload="metadata"
+                                                    >
+                                                        <source
+                                                            src="{{ video.video_file.url }}"
+                                                        >
+                                                    </video>
+
+                                                {% else %}
+
+                                                    <div class="timeline-video-placeholder">
+                                                        🎥
+                                                    </div>
+
+                                                {% endif %}
+
+
+                                                <div class="timeline-video-overlay">
+
+                                                    <span class="timeline-event-badge">
+                                                        {{ video.get_event_display }}
+                                                    </span>
+
+                                                    {% if video.is_favorite %}
+
+                                                        <span class="timeline-favorite">
+                                                            ★
+                                                        </span>
+
+                                                    {% endif %}
+
                                                 </div>
+
+                                            </div>
+
+                                        </a>
+
+
+                                        <!-- VIDEO INFO -->
+
+                                        <div class="timeline-video-body">
+
+                                            <h3 class="h5 timeline-video-title mb-1">
+                                                {{ video.title }}
+                                            </h3>
+
+                                            <div class="small text-muted mb-2">
+                                                {{ video.get_video_type_display }}
+                                            </div>
+
+
+                                            {% if video.skill_name %}
+
+                                                <div class="mb-2">
+
+                                                    <span class="timeline-skill-badge">
+                                                        {{ video.skill_name }}
+                                                    </span>
+
+                                                </div>
+
+                                            {% endif %}
+
+
+                                            <!-- COACHING REFERENCE BADGES -->
+
+                                            {% if video.is_personal_best or video.is_reference_attempt or video.is_coaching_example %}
+
+                                                <div class="reference-badges">
+
+                                                    {% if video.is_reference_attempt %}
+
+                                                        <span class="reference-badge reference-badge-reference">
+                                                            🎯 Reference
+                                                        </span>
+
+                                                    {% endif %}
+
+                                                    {% if video.is_personal_best %}
+
+                                                        <span class="reference-badge reference-badge-best">
+                                                            ⭐ Personal Best
+                                                        </span>
+
+                                                    {% endif %}
+
+                                                    {% if video.is_coaching_example %}
+
+                                                        <span class="reference-badge reference-badge-example">
+                                                            📌 Coaching Example
+                                                        </span>
+
+                                                    {% endif %}
+
+                                                </div>
+
+                                            {% endif %}
+
+
+                                            <div class="timeline-date">
+
+                                                {% if video.recorded_at %}
+
+                                                    Recorded
+                                                    {{ video.recorded_at|date:"M j, Y" }}
+
+                                                {% else %}
+
+                                                    Uploaded
+                                                    {{ video.uploaded_at|date:"M j, Y" }}
+
+                                                {% endif %}
+
+                                            </div>
+
+
+                                            {% if video.training_group %}
+
+                                                <div class="small text-muted mt-1">
+                                                    {{ video.training_group.name }}
+                                                </div>
+
+                                            {% endif %}
+
+
+                                            <!-- ACTIONS -->
+
+                                            <div class="timeline-actions">
+
+                                                <a
+                                                    href="{% url 'video_library:video_detail' video.id %}"
+                                                    class="btn btn-outline-primary btn-sm"
+                                                >
+                                                    Open Video
+                                                </a>
+
+
+                                                {% if video.skill_name %}
+
+                                                    <a
+                                                        href="{% url 'video_library:athlete_skill_progress' athlete.id %}?skill={{ video.skill_name|urlencode }}"
+                                                        class="btn btn-outline-success btn-sm"
+                                                    >
+                                                        📊 View Skill Progress
+                                                    </a>
+
+                                                    <a
+                                                        href="{% url 'video_library:athlete_video_compare_select' athlete.id %}?skill={{ video.skill_name|urlencode }}"
+                                                        class="btn btn-outline-secondary btn-sm"
+                                                    >
+                                                        ↔ Compare {{ video.skill_name }}
+                                                    </a>
+
+                                                {% else %}
+
+                                                    <a
+                                                        href="{% url 'video_library:athlete_video_compare_select' athlete.id %}"
+                                                        class="btn btn-outline-secondary btn-sm"
+                                                    >
+                                                        ↔ Compare Attempts
+                                                    </a>
+
+                                                {% endif %}
 
                                             </div>
 
@@ -521,34 +754,37 @@
 
                                     </article>
 
-                                {% endfor %}
+                                </div>
 
-                            </div>
+                            {% endfor %}
 
                         </div>
 
-                    </section>
+                    </div>
 
-                {% endfor %}
+                </section>
 
-            </div>
+            {% endfor %}
+
 
         {% else %}
 
-            <section class="card event-card">
+            <section class="card timeline-section-card">
 
-                <div class="card-body text-center py-5">
+                <div class="timeline-empty">
 
                     <div class="display-4 mb-3">
-                        🎥
+                        📹
                     </div>
 
                     <h2 class="h4">
-                        No videos for this athlete
+                        No athlete videos yet
                     </h2>
 
-                    <p class="text-muted">
-                        Upload the first video and assign this athlete as the primary athlete.
+                    <p class="text-muted mb-4">
+                        Upload a video and assign this athlete
+                        as the primary athlete to begin building
+                        their timeline.
                     </p>
 
                     <a
@@ -563,6 +799,27 @@
             </section>
 
         {% endif %}
+
+
+        <!-- BOTTOM NAV -->
+
+        <div class="d-flex flex-wrap gap-2 mt-4">
+
+            <a
+                href="{% url 'video_library:dashboard' %}"
+                class="btn btn-outline-secondary"
+            >
+                ← Video Library
+            </a>
+
+            <a
+                href="{% url 'video_library:athlete_video_compare_select' athlete.id %}"
+                class="btn btn-outline-primary"
+            >
+                ↔ Compare Attempts
+            </a>
+
+        </div>
 
     </div>
 

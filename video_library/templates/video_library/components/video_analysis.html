@@ -1,0 +1,527 @@
+<section class="card detail-card mb-4">
+
+    <div class="card-body p-4">
+
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+
+            <div>
+
+                <h2 class="h5 mb-1">
+                    AI Analysis
+                </h2>
+
+                <p class="small text-muted mb-0">
+                    Automated video processing and computer-vision analysis.
+                </p>
+
+            </div>
+
+            <span class="fs-4">
+                🤖
+            </span>
+
+        </div>
+
+
+        <!-- History / Re-run -->
+        {% if analysis_count %}
+
+            <div class="analysis-action-bar mb-3">
+
+                <div class="d-flex flex-wrap gap-2">
+
+                    <a
+                        href="{% url 'video_library:analysis_history' video.id %}"
+                        class="btn btn-sm btn-outline-primary"
+                    >
+                        View History
+
+                        <span class="badge text-bg-light border ms-1">
+                            {{ analysis_count }}
+                        </span>
+                    </a>
+
+
+                    {% if latest_analysis and latest_analysis.is_finished %}
+
+                        <form
+                            method="post"
+                            action="{% url 'video_library:rerun_analysis' video.id %}"
+                        >
+                            {% csrf_token %}
+
+                            <button
+                                type="submit"
+                                class="btn btn-sm btn-outline-secondary"
+                            >
+                                Run New Analysis
+                            </button>
+
+                        </form>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        {% endif %}
+
+
+        {% if latest_analysis %}
+
+            <div
+                id="analysis-panel"
+                data-analysis-id="{{ latest_analysis.id }}"
+                data-status-url="{% url 'video_library:analysis_status' latest_analysis.id %}"
+                data-process-url="{% url 'video_library:process_mock_analysis' latest_analysis.id %}"
+                data-is-finished="{% if latest_analysis.is_finished %}true{% else %}false{% endif %}"
+            >
+
+                <!-- Status -->
+                <div class="mb-4">
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+
+                        <strong id="analysis-status-label">
+                            {{ latest_analysis.get_status_display }}
+                        </strong>
+
+                        <span id="analysis-progress-label">
+                            {{ latest_analysis.progress_percentage }}%
+                        </span>
+
+                    </div>
+
+
+                    <div class="progress">
+
+                        <div
+                            id="analysis-progress-bar"
+                            class="progress-bar"
+                            role="progressbar"
+                            style="width: {{ latest_analysis.progress_percentage }}%;"
+                            aria-valuenow="{{ latest_analysis.progress_percentage }}"
+                            aria-valuemin="0"
+                            aria-valuemax="100"
+                        ></div>
+
+                    </div>
+
+
+                    <div
+                        id="analysis-current-step"
+                        class="small text-muted mt-2"
+                    >
+                        {{ latest_analysis.current_step|default:"Waiting to begin" }}
+                    </div>
+
+                </div>
+
+
+                <!-- Full Analysis -->
+                <div class="d-grid mb-4">
+
+                    <a
+                        href="{% url 'video_library:analysis_detail' latest_analysis.id %}"
+                        class="btn btn-outline-primary"
+                    >
+                        Open Full Analysis
+                    </a>
+
+                </div>
+
+
+                {% if latest_analysis.status == 'completed' %}
+
+                    <!-- Pipeline Status -->
+                    <div class="border rounded-3 p-3 mb-3">
+
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+
+                            <div class="small fw-semibold">
+                                Analysis Pipeline
+                            </div>
+
+                            <span class="badge text-bg-success">
+                                Complete
+                            </span>
+
+                        </div>
+
+
+                        <div class="d-flex flex-wrap gap-2">
+
+                            <span class="badge text-bg-light border">
+                                Version
+                                {{ latest_analysis.analysis_version }}
+                            </span>
+
+                            <span class="badge text-bg-light border">
+                                {{ latest_analysis.get_analysis_source_display }}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Computer Vision Status -->
+                    <div class="border rounded-3 p-3 mb-3">
+
+                        <h3 class="h6 mb-3">
+                            Computer Vision
+                        </h3>
+
+                        <div class="d-flex flex-column gap-2">
+
+                            <div class="d-flex justify-content-between align-items-center">
+
+                                <span class="small">
+                                    Video Frames
+                                </span>
+
+                                <span class="badge text-bg-success">
+                                    ✓ Extracted
+                                </span>
+
+                            </div>
+
+
+                            <div class="d-flex justify-content-between align-items-center">
+
+                                <span class="small">
+                                    Body Pose
+                                </span>
+
+                                <span class="badge text-bg-success">
+                                    ✓ Detected
+                                </span>
+
+                            </div>
+
+
+                            <div class="d-flex justify-content-between align-items-center">
+
+                                <span class="small">
+                                    Joint Angles
+                                </span>
+
+                                <span class="badge text-bg-success">
+                                    ✓ Calculated
+                                </span>
+
+                            </div>
+
+
+                            <div class="d-flex justify-content-between align-items-center">
+
+                                <span class="small">
+                                    Pose Overlays
+                                </span>
+
+                                <span class="badge text-bg-success">
+                                    ✓ Generated
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Current Development Warning -->
+                    <div class="alert alert-warning small">
+
+                        Computer-vision measurements are now generated from
+                        the real uploaded video.
+
+                        Coaching observations and skill interpretation are
+                        still demonstration results and require coach review.
+
+                    </div>
+
+
+                    <!-- Detected Skill -->
+                    {% if latest_analysis.detected_skill %}
+
+                        <div class="mb-3">
+
+                            <div class="small text-muted">
+                                Detected Skill
+                            </div>
+
+                            <div class="d-flex flex-wrap align-items-center gap-2">
+
+                                <strong>
+                                    {{ latest_analysis.detected_skill }}
+                                </strong>
+
+
+                                {% if latest_analysis.confidence_percentage %}
+
+                                    <span class="badge text-bg-light border">
+                                        {{ latest_analysis.confidence_percentage }}%
+                                        confidence
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- Summary -->
+                    {% if latest_analysis.summary %}
+
+                        <div class="mb-3">
+
+                            <h3 class="h6">
+                                Analysis Summary
+                            </h3>
+
+                            <p class="mb-0">
+                                {{ latest_analysis.summary }}
+                            </p>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- Strengths -->
+                    {% if latest_analysis.strengths %}
+
+                        <div class="mb-3">
+
+                            <h3 class="h6">
+                                Strengths
+                            </h3>
+
+                            <ul class="mb-0 ps-3">
+
+                                {% for strength in latest_analysis.strengths %}
+
+                                    <li class="mb-1">
+                                        {{ strength }}
+                                    </li>
+
+                                {% endfor %}
+
+                            </ul>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- Areas to Review -->
+                    {% if latest_analysis.improvements %}
+
+                        <div class="mb-3">
+
+                            <h3 class="h6">
+                                Review Areas
+                            </h3>
+
+                            <ul class="mb-0 ps-3">
+
+                                {% for improvement in latest_analysis.improvements %}
+
+                                    <li class="mb-1">
+                                        {{ improvement }}
+                                    </li>
+
+                                {% endfor %}
+
+                            </ul>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- Coach Verification Status -->
+                    {% if latest_analysis.review_status == 'approved' %}
+
+                        <div class="alert alert-success small mb-0">
+
+                            ✓ This analysis has been approved by a coach.
+
+                        </div>
+
+                    {% elif latest_analysis.review_status == 'partial' %}
+
+                        <div class="alert alert-warning small mb-0">
+
+                            This analysis was marked partially correct
+                            by a coach.
+
+                        </div>
+
+                    {% elif latest_analysis.review_status == 'rejected' %}
+
+                        <div class="alert alert-danger small mb-0">
+
+                            This analysis was rejected by a coach.
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="alert alert-secondary small mb-0">
+
+                            Coach verification is still pending.
+
+                        </div>
+
+                    {% endif %}
+
+
+                {% elif latest_analysis.status == 'failed' %}
+
+                    <!-- Failed -->
+                    <div class="alert alert-danger">
+
+                        <strong>
+                            Analysis Failed
+                        </strong>
+
+                        {% if latest_analysis.error_message %}
+
+                            <div class="small mt-1">
+                                {{ latest_analysis.error_message }}
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <form
+                        method="post"
+                        action="{% url 'video_library:rerun_analysis' video.id %}"
+                    >
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary w-100"
+                        >
+                            Try Analysis Again
+                        </button>
+
+                    </form>
+
+
+                {% elif latest_analysis.status == 'cancelled' %}
+
+                    <!-- Cancelled -->
+                    <div class="alert alert-secondary">
+
+                        This analysis was cancelled.
+
+                    </div>
+
+
+                    <form
+                        method="post"
+                        action="{% url 'video_library:rerun_analysis' video.id %}"
+                    >
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary w-100"
+                        >
+                            Start New Analysis
+                        </button>
+
+                    </form>
+
+
+                {% else %}
+
+                    <!-- Processing -->
+                    <div class="border rounded-3 p-3">
+
+                        <div class="d-flex align-items-center gap-3">
+
+                            <div
+                                class="spinner-border spinner-border-sm text-primary"
+                                role="status"
+                            >
+                                <span class="visually-hidden">
+                                    Processing
+                                </span>
+                            </div>
+
+                            <div>
+
+                                <strong class="d-block">
+                                    Computer Vision Processing
+                                </strong>
+
+                                <span class="small text-muted">
+                                    Frames, pose landmarks, joint angles,
+                                    and overlays are being generated.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+        {% else %}
+
+            <!-- No Analysis -->
+            <div class="text-center py-3">
+
+                <div class="fs-1 mb-2">
+                    🤖
+                </div>
+
+                <h3 class="h6">
+                    No Analysis Yet
+                </h3>
+
+                <p class="small text-muted">
+                    Analyze this video to extract real frames,
+                    detect body position, calculate joint angles,
+                    and generate pose overlays.
+                </p>
+
+
+                <form
+                    method="post"
+                    action="{% url 'video_library:request_analysis' video.id %}"
+                >
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary w-100"
+                    >
+                        🤖 Analyze Video
+                    </button>
+
+                </form>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</section>
