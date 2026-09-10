@@ -1,0 +1,421 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ page_title }} | {{ gym.name }}
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="row justify-content-center">
+
+        <div class="col-xl-8">
+
+            <div class="mb-4">
+
+                <a
+                    href="{% url 'people_management' %}"
+                    class="text-decoration-none"
+                >
+                    ← Back to People
+                </a>
+
+                <div class="text-muted small mt-3">
+                    {{ gym.name }}
+                </div>
+
+                <h2 class="fw-bold mb-1">
+                    {{ page_title }}
+                </h2>
+
+                {% if is_editing %}
+
+                    <div class="text-muted">
+                        {{ person.get_full_name|default:person.username }}
+                        · {{ membership.get_role_display }}
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <form method="post">
+
+                {% csrf_token %}
+
+
+                <!-- Basic Information -->
+
+                <div class="card mb-4">
+
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+
+                        <h5 class="fw-bold">
+                            Basic Information
+                        </h5>
+
+                    </div>
+
+
+                    <div class="card-body px-4 pb-4">
+
+                        {% if not is_editing %}
+
+                            <div class="mb-3">
+
+                                <label class="form-label fw-semibold">
+                                    Role
+                                </label>
+
+                                {{ form.role }}
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <div class="row g-3">
+
+                            <div class="col-md-6">
+
+                                <label class="form-label fw-semibold">
+                                    First Name
+                                </label>
+
+                                {{ form.first_name }}
+
+                            </div>
+
+
+                            <div class="col-md-6">
+
+                                <label class="form-label fw-semibold">
+                                    Last Name
+                                </label>
+
+                                {{ form.last_name }}
+
+                            </div>
+
+
+                            <div class="col-md-12">
+
+                                <label class="form-label fw-semibold">
+                                    Email
+                                </label>
+
+                                {{ form.email }}
+
+                            </div>
+
+
+                            {% if not is_editing %}
+
+                                <div class="col-md-6">
+
+                                    <label class="form-label fw-semibold">
+                                        Username
+                                    </label>
+
+                                    {{ form.username }}
+
+                                </div>
+
+
+                                <div class="col-md-6">
+
+                                    <label class="form-label fw-semibold">
+                                        Temporary Password
+                                    </label>
+
+                                    {{ form.password }}
+
+                                    <div class="form-text">
+                                        Minimum 8 characters.
+                                    </div>
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Coach / Parent Fields -->
+
+                <div
+                    id="staff-fields"
+                    class="card mb-4"
+                >
+
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+
+                        <h5 class="fw-bold mb-1">
+                            Contact / Staff Information
+                        </h5>
+
+                    </div>
+
+                    <div class="card-body px-4 pb-4">
+
+                        <div class="row g-3">
+
+                            {% if not is_editing or person_role == 'coach' or person_role == 'head_coach' %}
+
+                                <div
+                                    class="col-md-6"
+                                    id="title-field"
+                                >
+
+                                    <label class="form-label fw-semibold">
+                                        Coaching Title
+                                    </label>
+
+                                    {{ form.title }}
+
+                                </div>
+
+                            {% endif %}
+
+
+                            <div class="col-md-6">
+
+                                <label class="form-label fw-semibold">
+                                    Phone
+                                </label>
+
+                                {{ form.phone }}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Athlete Fields -->
+
+                <div
+                    id="athlete-fields"
+                    class="card mb-4"
+                >
+
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+
+                        <h5 class="fw-bold mb-1">
+                            Athlete Information
+                        </h5>
+
+                    </div>
+
+                    <div class="card-body px-4 pb-4">
+
+                        <div class="row g-3">
+
+                            <div class="col-md-6">
+
+                                <label class="form-label fw-semibold">
+                                    Date of Birth
+                                </label>
+
+                                {{ form.date_of_birth }}
+
+                            </div>
+
+
+                            <div class="col-md-6">
+
+                                <label class="form-label fw-semibold">
+                                    Level
+                                </label>
+
+                                {{ form.level }}
+
+                            </div>
+
+
+                            <div class="col-md-6">
+
+                                <label class="form-label fw-semibold">
+                                    Emergency Contact
+                                </label>
+
+                                {{ form.emergency_contact_name }}
+
+                            </div>
+
+
+                            <div class="col-md-6">
+
+                                <label class="form-label fw-semibold">
+                                    Relationship
+                                </label>
+
+                                {{ form.emergency_contact_relationship }}
+
+                            </div>
+
+
+                            <div class="col-md-6">
+
+                                <label class="form-label fw-semibold">
+                                    Emergency Phone
+                                </label>
+
+                                {{ form.emergency_contact_phone }}
+
+                            </div>
+
+
+                            <div class="col-12">
+
+                                <label class="form-label fw-semibold">
+                                    Medical / Important Notes
+                                </label>
+
+                                {{ form.medical_notes }}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                {% if form.errors %}
+
+                    <div class="alert alert-danger">
+
+                        <strong>
+                            Please correct the following:
+                        </strong>
+
+                        {{ form.errors }}
+
+                    </div>
+
+                {% endif %}
+
+
+                <div class="d-flex justify-content-between">
+
+                    <a
+                        href="{% url 'people_management' %}"
+                        class="btn btn-light border"
+                    >
+                        Cancel
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary px-4"
+                    >
+
+                        {% if is_editing %}
+                            Save Changes
+                        {% else %}
+                            Add Person
+                        {% endif %}
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+{% if not is_editing %}
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    const roleField = document.getElementById('id_role');
+    const athleteFields = document.getElementById('athlete-fields');
+    const staffFields = document.getElementById('staff-fields');
+    const titleField = document.getElementById('title-field');
+
+    function updateFields() {
+
+        const role = roleField.value;
+
+        if (role === 'athlete') {
+
+            athleteFields.style.display = 'block';
+            staffFields.style.display = 'none';
+
+        } else if (
+            role === 'coach' ||
+            role === 'head_coach'
+        ) {
+
+            athleteFields.style.display = 'none';
+            staffFields.style.display = 'block';
+
+            if (titleField) {
+                titleField.style.display = 'block';
+            }
+
+        } else if (role === 'parent') {
+
+            athleteFields.style.display = 'none';
+            staffFields.style.display = 'block';
+
+            if (titleField) {
+                titleField.style.display = 'none';
+            }
+
+        }
+
+    }
+
+    roleField.addEventListener(
+        'change',
+        updateFields
+    );
+
+    updateFields();
+
+});
+
+</script>
+
+{% else %}
+
+<style>
+
+{% if person_role == 'athlete' %}
+
+    #staff-fields {
+        display: none;
+    }
+
+{% else %}
+
+    #athlete-fields {
+        display: none;
+    }
+
+{% endif %}
+
+</style>
+
+{% endif %}
+
+{% endblock %}

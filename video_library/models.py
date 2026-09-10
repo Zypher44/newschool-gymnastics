@@ -1943,3 +1943,117 @@ class TechniqueProfile(
                 False,
             )
         ]
+
+# ============================================================
+# SKILL GOAL
+# ============================================================
+
+
+class SkillGoal(models.Model):
+
+    STATUS_ACTIVE = 'active'
+    STATUS_COMPLETED = 'completed'
+    STATUS_PAUSED = 'paused'
+
+    STATUS_CHOICES = [
+        (
+            STATUS_ACTIVE,
+            'Active',
+        ),
+        (
+            STATUS_COMPLETED,
+            'Completed',
+        ),
+        (
+            STATUS_PAUSED,
+            'Paused',
+        ),
+    ]
+
+
+    athlete = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='video_skill_goals',
+        limit_choices_to={
+            'role': 'athlete',
+        },
+    )
+
+
+    skill_name = models.CharField(
+        max_length=150,
+    )
+
+
+    title = models.CharField(
+        max_length=180,
+    )
+
+
+    description = models.TextField(
+        blank=True,
+    )
+
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_ACTIVE,
+    )
+
+
+    reference_video = models.ForeignKey(
+        'Video',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='skill_goals',
+        help_text=(
+            'Optional reference attempt '
+            'connected to this goal.'
+        ),
+    )
+
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='created_video_skill_goals',
+    )
+
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+
+    completed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+
+    class Meta:
+
+        ordering = [
+            'status',
+            '-created_at',
+        ]
+
+
+    def __str__(
+        self,
+    ):
+        return (
+            f'{self.athlete} - '
+            f'{self.skill_name} - '
+            f'{self.title}'
+        )

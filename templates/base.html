@@ -2,17 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1"
-    >
-
-    <title>
-        {% block title %}
-            NewSchool Gymnastics
-        {% endblock %}
-    </title>
+    <title>{% block title %}NewSchool Gymnastics{% endblock %}</title>
 
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
@@ -34,19 +26,11 @@
         body {
             min-height: 100vh;
             margin: 0;
-            background: var(--app-background);
             overflow-x: hidden;
+            background: var(--app-background);
         }
 
-        .app-shell {
-            min-height: 100vh;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Sidebar
-        |--------------------------------------------------------------------------
-        */
+        .app-shell { min-height: 100vh; }
 
         .sidebar {
             position: sticky;
@@ -60,11 +44,10 @@
             padding: 16px;
             background: var(--sidebar-background);
             transition: width 0.25s ease;
+            z-index: 1040;
         }
 
-        .sidebar.collapsed {
-            width: 90px;
-        }
+        .sidebar.collapsed { width: 90px; }
 
         .sidebar-brand {
             display: flex;
@@ -80,12 +63,15 @@
 
         .sidebar-brand-icon {
             width: 30px;
-            text-align: center;
             flex-shrink: 0;
+            text-align: center;
             font-size: 1.35rem;
         }
 
-        .sidebar.collapsed .brand-text {
+        .sidebar.collapsed .brand-text,
+        .sidebar.collapsed .sidebar-label,
+        .sidebar.collapsed .sidebar-section,
+        .sidebar.collapsed .toggle-label {
             display: none;
         }
 
@@ -94,19 +80,12 @@
             overflow-x: hidden;
             overflow-y: auto;
             padding-bottom: 12px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
 
         .sidebar-navigation::-webkit-scrollbar {
-            width: 5px;
-        }
-
-        .sidebar-navigation::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .sidebar-navigation::-webkit-scrollbar-thumb {
-            border-radius: 999px;
-            background: #374151;
+            display: none;
         }
 
         .sidebar-section {
@@ -119,24 +98,21 @@
             white-space: nowrap;
         }
 
-        .sidebar.collapsed .sidebar-section {
-            display: none;
-        }
-
         .sidebar-link {
             position: relative;
             display: flex;
             align-items: center;
             gap: 12px;
+            width: 100%;
             margin-bottom: 5px;
             padding: 11px 12px;
+            border: 0;
             border-radius: 10px;
+            background: transparent;
             color: var(--sidebar-text);
+            text-align: left;
             text-decoration: none;
             white-space: nowrap;
-            transition:
-                color 0.2s ease,
-                background-color 0.2s ease;
         }
 
         .sidebar-link:hover,
@@ -145,29 +121,12 @@
             background: var(--sidebar-hover);
         }
 
-        .sidebar-link-button {
-            width: 100%;
-            border: 0;
-            background: transparent;
-            text-align: left;
-            font: inherit;
-        }
-
         .sidebar-icon {
             position: relative;
             width: 26px;
             min-width: 26px;
-            text-align: center;
             flex-shrink: 0;
-        }
-
-        .sidebar-label {
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .sidebar.collapsed .sidebar-label {
-            display: none;
+            text-align: center;
         }
 
         .sidebar-notification-badge {
@@ -194,10 +153,6 @@
             border-top: 1px solid var(--sidebar-border);
         }
 
-        .sidebar-toggle-wrapper {
-            padding-top: 10px;
-        }
-
         .sidebar-toggle {
             width: 100%;
             padding: 9px 12px;
@@ -211,16 +166,6 @@
             color: white;
             background: var(--sidebar-hover);
         }
-
-        .sidebar.collapsed .toggle-label {
-            display: none;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Main Layout
-        |--------------------------------------------------------------------------
-        */
 
         .main-area {
             min-width: 0;
@@ -243,45 +188,10 @@
             font-weight: 800;
         }
 
-        .main-content {
-            padding: 24px;
-        }
+        .topbar-search { width: min(420px, 100%); }
+        .main-content { padding: 24px; }
 
-        .card {
-            border: 0;
-            border-radius: 14px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        }
-
-        .mobile-menu-button {
-            display: none;
-        }
-
-        .sidebar-overlay {
-            display: none;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Topbar Search
-        |--------------------------------------------------------------------------
-        */
-
-        .topbar-search {
-            width: min(420px, 100%);
-        }
-
-        .topbar-search .form-control {
-            border-color: #e3e7ed;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Notification Dropdown
-        |--------------------------------------------------------------------------
-        */
-
-        .notification-bell-button {
+        .notification-button {
             position: relative;
             width: 43px;
             height: 43px;
@@ -292,16 +202,11 @@
             border: 1px solid #e5e7eb;
             border-radius: 13px;
             background: white;
-            font-size: 1.05rem;
         }
 
-        .notification-bell-button:hover,
-        .notification-bell-button:focus {
-            border-color: rgba(13, 110, 253, 0.28);
-            background: var(--primary-soft);
-        }
+        .notification-button:hover { background: var(--primary-soft); }
 
-        .notification-bell-badge {
+        .notification-badge {
             position: absolute;
             top: -6px;
             right: -7px;
@@ -319,123 +224,38 @@
             font-weight: 800;
         }
 
-        .notification-dropdown-menu {
+        .notification-menu {
             width: 380px;
             max-width: calc(100vw - 24px);
-            padding: 0;
             overflow: hidden;
             border: 0;
             border-radius: 18px;
             box-shadow: 0 18px 50px rgba(17, 24, 39, 0.18);
         }
 
-        .notification-dropdown-header {
-            padding: 18px 20px;
-            border-bottom: 1px solid #eef0f3;
-            background: white;
-        }
-
-        .notification-dropdown-list {
-            max-height: 430px;
+        .notification-list {
+            max-height: 420px;
             overflow-y: auto;
         }
 
-        .notification-dropdown-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 15px 18px;
+        .notification-item {
+            display: block;
+            padding: 14px 18px;
             border-bottom: 1px solid #f0f2f5;
-            background: white;
             color: inherit;
             text-decoration: none;
-            transition: background 0.2s ease;
         }
 
-        .notification-dropdown-item:hover {
-            background: #f8fafc;
-        }
-
-        .notification-dropdown-item.unread {
-            background: #f4f8ff;
-        }
-
-        .notification-dropdown-item.unread:hover {
-            background: #edf4ff;
-        }
-
-        .notification-dropdown-icon {
-            width: 42px;
-            height: 42px;
-            min-width: 42px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 13px;
-            background: #eaf2ff;
-            font-size: 1.15rem;
-        }
-
-        .notification-dropdown-title {
-            color: #172033;
-            font-size: 0.9rem;
-            font-weight: 750;
-        }
-
-        .notification-dropdown-message {
-            margin-top: 3px;
-            color: #667085;
-            font-size: 0.8rem;
-            line-height: 1.4;
-        }
-
-        .notification-dropdown-time {
-            margin-top: 5px;
-            color: #98a2b3;
-            font-size: 0.72rem;
-        }
-
-        .notification-unread-dot {
-            width: 8px;
-            height: 8px;
-            min-width: 8px;
-            margin-top: 6px;
-            border-radius: 50%;
-            background: #0d6efd;
-        }
-
-        .notification-dropdown-empty {
-            padding: 35px 20px;
-            color: #6c757d;
-            text-align: center;
-        }
-
-        .notification-dropdown-footer {
-            padding: 12px 16px;
-            border-top: 1px solid #eef0f3;
-            background: white;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | User Menu
-        |--------------------------------------------------------------------------
-        */
+        .notification-item.unread { background: #f4f8ff; }
 
         .user-menu-button {
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 5px 9px 5px 6px;
+            padding: 6px 10px;
             border: 1px solid #e5e7eb;
-            border-radius: 14px;
+            border-radius: 13px;
             background: white;
-        }
-
-        .user-menu-button:hover,
-        .user-menu-button:focus {
-            border-color: rgba(13, 110, 253, 0.25);
-            background: #f8fafc;
         }
 
         .user-avatar {
@@ -444,946 +264,476 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            border-radius: 11px;
-            background: var(--primary-soft);
-            color: #0d6efd;
+            border-radius: 50%;
+            background: #0d6efd;
+            color: white;
             font-weight: 800;
             text-transform: uppercase;
         }
 
-        .user-menu-name {
-            max-width: 145px;
-            overflow: hidden;
-            color: #172033;
-            font-size: 0.86rem;
-            font-weight: 750;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .user-menu-role {
-            color: #6c757d;
-            font-size: 0.68rem;
-            text-transform: capitalize;
-        }
-
-        .user-dropdown-menu {
-            min-width: 220px;
-            padding: 8px;
-            border: 0;
-            border-radius: 14px;
-            box-shadow: 0 14px 40px rgba(17, 24, 39, 0.14);
-        }
-
-        .user-dropdown-menu .dropdown-item {
-            padding: 10px 12px;
-            border-radius: 9px;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Mobile
-        |--------------------------------------------------------------------------
-        */
-
-        @media (max-width: 991.98px) {
-            .topbar-search {
-                order: 3;
-                width: 100%;
-                max-width: none;
-            }
-        }
+        .mobile-menu-button,
+        .sidebar-overlay { display: none; }
 
         @media (max-width: 767.98px) {
-            .mobile-menu-button {
-                display: inline-flex;
-            }
-
             .sidebar {
                 position: fixed;
-                top: 0;
-                left: -280px;
-                z-index: 1050;
-                width: 270px;
-                height: 100vh;
-                box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
+                left: -310px;
+                width: 300px;
                 transition: left 0.25s ease;
             }
 
-            .sidebar.mobile-open {
-                left: 0;
-            }
-
-            .sidebar.collapsed {
-                width: 270px;
-            }
+            .sidebar.mobile-open { left: 0; }
+            .sidebar.collapsed { width: 300px; }
 
             .sidebar.collapsed .brand-text,
             .sidebar.collapsed .sidebar-label,
             .sidebar.collapsed .sidebar-section,
             .sidebar.collapsed .toggle-label {
-                display: initial;
+                display: inline;
             }
 
-            .sidebar-toggle-wrapper {
-                display: none;
-            }
-
-            .sidebar-overlay {
+            .sidebar-overlay.active {
                 position: fixed;
                 inset: 0;
-                z-index: 1040;
-                display: none;
-                background: rgba(0, 0, 0, 0.45);
-            }
-
-            .sidebar-overlay.show {
+                z-index: 1030;
                 display: block;
+                background: rgba(17, 24, 39, 0.55);
             }
 
-            .topbar {
-                padding: 12px 16px;
-            }
-
-            .main-content {
-                padding: 16px;
-            }
-
-            .user-menu-details {
-                display: none;
-            }
-        }
-
-        @media (max-width: 575.98px) {
-            .notification-dropdown-menu {
-                position: fixed !important;
-                top: 68px !important;
-                right: 12px !important;
-                left: 12px !important;
-                width: auto;
-                transform: none !important;
-            }
-
-            .topbar-title {
-                max-width: 170px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-            }
+            .mobile-menu-button { display: inline-flex; }
+            .sidebar-toggle { display: none; }
+            .topbar { padding: 12px 16px; }
+            .main-content { padding: 16px; }
+            .topbar-search { display: none; }
+            .user-menu-details { display: none; }
         }
     </style>
+
+    {% block extra_css %}{% endblock %}
 </head>
 
 <body>
 
-<div
-    class="sidebar-overlay"
-    id="sidebar-overlay"
-></div>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
 
 <div class="d-flex app-shell">
 
-    <nav
-        class="sidebar"
-        id="sidebar"
-    >
-        <div class="sidebar-brand">
-            <span class="sidebar-brand-icon">
-                🤸
-            </span>
+    {% if user.is_authenticated %}
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <span class="sidebar-brand-icon">🤸</span>
+                <span class="brand-text">NewSchool Gymnastics</span>
+            </div>
 
-            <span class="brand-text">
-                NewSchool Gymnastics
-            </span>
-        </div>
+            <div class="sidebar-navigation">
 
-        <div class="sidebar-navigation">
+                {% if user.role == 'director' %}
+                    <div class="sidebar-section">Gym Management</div>
 
-            {% if user.is_authenticated %}
-
-                {% if user.role == 'coach' or user.role == 'head_coach' %}
-
-                    <div class="sidebar-section">
-                        Home
-                    </div>
-
-                    <a
-                        href="{% url 'coach_dashboard' %}"
-                        class="sidebar-link"
-                        title="Dashboard"
-                    >
-                        <span class="sidebar-icon">
-                            🏠
-                        </span>
-
-                        <span class="sidebar-label">
-                            Dashboard
-                        </span>
+                    <a href="{% url 'director_dashboard' %}" class="sidebar-link">
+                        <span class="sidebar-icon">🏢</span>
+                        <span class="sidebar-label">Director Dashboard</span>
                     </a>
 
-                    <div class="sidebar-section">
-                        Athletes
-                    </div>
-
-                    <a
-                        href="{% url 'athlete_search' %}"
-                        class="sidebar-link"
-                        title="Athlete Search"
-                    >
-                        <span class="sidebar-icon">
-                            👥
-                        </span>
-
-                        <span class="sidebar-label">
-                            Athlete Search
-                        </span>
+                    <a href="{% url 'people_management' %}" class="sidebar-link">
+                        <span class="sidebar-icon">👥</span>
+                        <span class="sidebar-label">Manage People</span>
                     </a>
 
-                    <a
-                        href="{% url 'take_attendance' %}"
-                        class="sidebar-link"
-                        title="Attendance"
-                    >
-                        <span class="sidebar-icon">
-                            ✅
-                        </span>
-
-                        <span class="sidebar-label">
-                            Attendance
-                        </span>
+                    <a href="{% url 'director_event_list' %}" class="sidebar-link">
+                        <span class="sidebar-icon">📅</span>
+                        <span class="sidebar-label">Gym Events</span>
                     </a>
 
-                    <a
-                        href="{% url 'team_skills_dashboard' %}"
-                        class="sidebar-link"
-                        title="Team Skills"
-                    >
-                        <span class="sidebar-icon">
-                            🏆
-                        </span>
-
-                        <span class="sidebar-label">
-                            Team Skills
-                        </span>
+                    <a href="{% url 'create_training_group' %}" class="sidebar-link">
+                        <span class="sidebar-icon">🤸</span>
+                        <span class="sidebar-label">Create Training Group</span>
                     </a>
 
-                    <div class="sidebar-section">
-                        Performance
-                    </div>
+                {% elif user.role == 'coach' or user.role == 'head_coach' %}
+                    <div class="sidebar-section">Home</div>
 
-                    <a
-                        href="{% url 'testing_session_list' %}"
-                        class="sidebar-link"
-                        title="Testing Sessions"
-                    >
-                        <span class="sidebar-icon">
-                            📊
-                        </span>
-
-                        <span class="sidebar-label">
-                            Testing Sessions
-                        </span>
+                    <a href="{% url 'coach_dashboard' %}" class="sidebar-link">
+                        <span class="sidebar-icon">🏠</span>
+                        <span class="sidebar-label">Dashboard</span>
                     </a>
 
-                    <a
-                        href="{% url 'testing_exercise_list' %}"
-                        class="sidebar-link"
-                        title="Exercise Library"
-                    >
-                        <span class="sidebar-icon">
-                            🏋️
-                        </span>
+                    <div class="sidebar-section">Athletes</div>
 
-                        <span class="sidebar-label">
-                            Exercise Library
-                        </span>
+                    <a href="{% url 'athlete_search' %}" class="sidebar-link">
+                        <span class="sidebar-icon">👥</span>
+                        <span class="sidebar-label">Athlete Search</span>
                     </a>
 
-                    <div class="sidebar-section">
-                        Planning
-                    </div>
-
-                    <a
-                        href="{% url 'add_event' %}"
-                        class="sidebar-link"
-                        title="Create Event"
-                    >
-                        <span class="sidebar-icon">
-                            📅
-                        </span>
-
-                        <span class="sidebar-label">
-                            Create Event
-                        </span>
+                    <a href="{% url 'take_attendance' %}" class="sidebar-link">
+                        <span class="sidebar-icon">✅</span>
+                        <span class="sidebar-label">Attendance</span>
                     </a>
 
-                    <div class="sidebar-section">
-                        Insights
-                    </div>
+                    <a href="{% url 'team_skills_dashboard' %}" class="sidebar-link">
+                        <span class="sidebar-icon">🏆</span>
+                        <span class="sidebar-label">Team Skills</span>
+                    </a>
 
-                    <a
-                        href="{% url 'report_center' %}"
-                        class="sidebar-link"
-                        title="Reports Center"
-                    >
-                        <span class="sidebar-icon">
-                            📈
-                        </span>
+                    <div class="sidebar-section">Performance</div>
 
-                        <span class="sidebar-label">
-                            Reports
-                        </span>
+                    <a href="{% url 'testing_session_list' %}" class="sidebar-link">
+                        <span class="sidebar-icon">📊</span>
+                        <span class="sidebar-label">Testing Sessions</span>
+                    </a>
+
+                    <a href="{% url 'testing_exercise_list' %}" class="sidebar-link">
+                        <span class="sidebar-icon">🏋️</span>
+                        <span class="sidebar-label">Exercise Library</span>
+                    </a>
+
+                    <a href="{% url 'routine_tracker:daily_routine_tracker' %}" class="sidebar-link">
+                        <span class="sidebar-icon">✅</span>
+                        <span class="sidebar-label">Routine Tracker</span>
+                    </a>
+
+                    <a href="{% url 'routine_tracker:routine_consistency_summary' %}" class="sidebar-link">
+                        <span class="sidebar-icon">📈</span>
+                        <span class="sidebar-label">Routine Consistency</span>
+                    </a>
+
+                    <div class="sidebar-section">Planning</div>
+
+                    {% if user.role == 'head_coach' %}
+                        <a href="{% url 'pathway:pathway_manager' %}" class="sidebar-link">
+                            <span class="sidebar-icon">🌳</span>
+                            <span class="sidebar-label">HP Pathway Manager</span>
+                        </a>
+                    {% endif %}
+
+                    <a href="{% url 'pathway:pathway_overview' %}" class="sidebar-link">
+                        <span class="sidebar-icon">🌳</span>
+                        <span class="sidebar-label">HP Pathway</span>
+                    </a>
+
+                    <a href="{% url 'add_event' %}" class="sidebar-link">
+                        <span class="sidebar-icon">📅</span>
+                        <span class="sidebar-label">Create Event</span>
+                    </a>
+
+                    <div class="sidebar-section">Insights</div>
+
+                    <a href="{% url 'report_center' %}" class="sidebar-link">
+                        <span class="sidebar-icon">📈</span>
+                        <span class="sidebar-label">Reports</span>
+                    </a>
+
+                    <a href="{% url 'video_library:dashboard' %}" class="sidebar-link">
+                        <span class="sidebar-icon">📹</span>
+                        <span class="sidebar-label">Video Library</span>
                     </a>
 
                 {% elif user.role == 'athlete' %}
+                    <div class="sidebar-section">Home</div>
 
-                    <div class="sidebar-section">
-                        Home
-                    </div>
-
-                    <a
-                        href="{% url 'athlete_dashboard' %}"
-                        class="sidebar-link"
-                        title="Athlete Home"
-                    >
-                        <span class="sidebar-icon">
-                            🏠
-                        </span>
-
-                        <span class="sidebar-label">
-                            Athlete Home
-                        </span>
+                    <a href="{% url 'athlete_dashboard' %}" class="sidebar-link">
+                        <span class="sidebar-icon">🏠</span>
+                        <span class="sidebar-label">Athlete Home</span>
                     </a>
 
-                    <div class="sidebar-section">
-                        Wellness
-                    </div>
+                    <div class="sidebar-section">Wellness</div>
 
-                    <a
-                        href="{% url 'submit_survey' %}"
-                        class="sidebar-link"
-                        title="Daily Survey"
-                    >
-                        <span class="sidebar-icon">
-                            📝
-                        </span>
-
-                        <span class="sidebar-label">
-                            Daily Survey
-                        </span>
+                    <a href="{% url 'submit_survey' %}" class="sidebar-link">
+                        <span class="sidebar-icon">📝</span>
+                        <span class="sidebar-label">Daily Survey</span>
                     </a>
 
-                    <div class="sidebar-section">
-                        Performance
-                    </div>
+                    <div class="sidebar-section">Performance</div>
 
-                    <a
-                        href="{% url 'athlete_testing_history' %}"
-                        class="sidebar-link"
-                        title="Testing Progress"
-                    >
-                        <span class="sidebar-icon">
-                            📊
-                        </span>
+                    <a href="{% url 'athlete_testing_history' %}" class="sidebar-link">
+                        <span class="sidebar-icon">📊</span>
+                        <span class="sidebar-label">Testing Progress</span>
+                    </a>
 
-                        <span class="sidebar-label">
-                            Testing Progress
-                        </span>
+                    <a href="{% url 'video_library:family_library' %}" class="sidebar-link">
+                        <span class="sidebar-icon">🎥</span>
+                        <span class="sidebar-label">My Video Library</span>
+                    </a>
+
+                    <a href="{% url 'routine_tracker:athlete_routine_consistency' %}" class="sidebar-link">
+                        <span class="sidebar-icon">📈</span>
+                        <span class="sidebar-label">Routine Consistency</span>
                     </a>
 
                 {% elif user.role == 'parent' %}
+                    <div class="sidebar-section">Home</div>
 
-                    <div class="sidebar-section">
-                        Home
-                    </div>
-
-                    <a
-                        href="{% url 'parent_dashboard' %}"
-                        class="sidebar-link"
-                        title="Parent Dashboard"
-                    >
-                        <span class="sidebar-icon">
-                            🏠
-                        </span>
-
-                        <span class="sidebar-label">
-                            Parent Home
-                        </span>
+                    <a href="{% url 'parent_dashboard' %}" class="sidebar-link">
+                        <span class="sidebar-icon">🏠</span>
+                        <span class="sidebar-label">Parent Home</span>
                     </a>
 
-                    <div class="sidebar-section">
-                        Family
-                    </div>
+                    <div class="sidebar-section">Family</div>
 
-                    <a
-                        href="{% url 'parent_dashboard' %}"
-                        class="sidebar-link"
-                        title="Athlete Progress"
-                    >
-                        <span class="sidebar-icon">
-                            📈
-                        </span>
-
-                        <span class="sidebar-label">
-                            Athlete Progress
-                        </span>
+                    <a href="{% url 'parent_dashboard' %}" class="sidebar-link">
+                        <span class="sidebar-icon">📈</span>
+                        <span class="sidebar-label">Athlete Progress</span>
                     </a>
 
-                    <a
-                        href="{% url 'parent_dashboard' %}"
-                        class="sidebar-link"
-                        title="Upcoming Events"
-                    >
-                        <span class="sidebar-icon">
-                            📅
-                        </span>
-
-                        <span class="sidebar-label">
-                            Upcoming Events
-                        </span>
+                    <a href="{% url 'routine_tracker:parent_routine_consistency_home' %}" class="sidebar-link">
+                        <span class="sidebar-icon">📈</span>
+                        <span class="sidebar-label">Routine Consistency</span>
                     </a>
 
+                    <a href="{% url 'parent_dashboard' %}" class="sidebar-link">
+                        <span class="sidebar-icon">📅</span>
+                        <span class="sidebar-label">Upcoming Events</span>
+                    </a>
+
+                    <a href="{% url 'pathway:pathway_overview' %}" class="sidebar-link">
+                        <span class="sidebar-icon">🌳</span>
+                        <span class="sidebar-label">HP Pathway</span>
+                    </a>
+
+                    <a href="{% url 'video_library:family_library' %}" class="sidebar-link">
+                        <span class="sidebar-icon">🎥</span>
+                        <span class="sidebar-label">Athlete Videos</span>
+                    </a>
                 {% endif %}
 
-                <div class="sidebar-section">
-                    Communication
-                </div>
+                <div class="sidebar-section">Communication</div>
 
-                <a
-                    href="{% url 'notification_list' %}"
-                    class="sidebar-link"
-                    title="Notifications"
-                >
+                <a href="{% url 'notification_list' %}" class="sidebar-link">
                     <span class="sidebar-icon">
                         🔔
-
                         {% if global_unread_notification_count %}
                             <span class="sidebar-notification-badge">
-                                {% if global_unread_notification_count > 99 %}
-                                    99+
-                                {% else %}
-                                    {{ global_unread_notification_count }}
-                                {% endif %}
+                                {% if global_unread_notification_count > 99 %}99+{% else %}{{ global_unread_notification_count }}{% endif %}
                             </span>
                         {% endif %}
                     </span>
-
-                    <span class="sidebar-label">
-                        Notifications
-                    </span>
+                    <span class="sidebar-label">Notifications</span>
                 </a>
 
-                <a
-                    href="{% url 'communication_inbox' %}"
-                    class="sidebar-link"
-                    title="Messages"
-                >
+                <a href="{% url 'communication_inbox' %}" class="sidebar-link">
                     <span class="sidebar-icon">
                         💬
-
                         {% if global_unread_message_count %}
                             <span class="sidebar-notification-badge">
-                                {% if global_unread_message_count > 99 %}
-                                    99+
-                                {% else %}
-                                    {{ global_unread_message_count }}
-                                {% endif %}
+                                {% if global_unread_message_count > 99 %}99+{% else %}{{ global_unread_message_count }}{% endif %}
                             </span>
                         {% endif %}
                     </span>
-
-                    <span class="sidebar-label">
-                        Messages
-                    </span>
-                </a>
-
-                <a
-                    href="{% url 'video_library:dashboard' %}"
-                    class="nav-link"
-                >
-                    📹 Video Library
+                    <span class="sidebar-label">Messages</span>
                 </a>
 
                 <div class="sidebar-account">
-                    <div class="sidebar-section">
-                        Account
-                    </div>
-
-                    <form
-                        method="post"
-                        action="{% url 'logout' %}"
-                        class="m-0"
-                    >
+                    <form method="post" action="{% url 'logout' %}">
                         {% csrf_token %}
-
-                        <button
-                            type="submit"
-                            class="sidebar-link sidebar-link-button"
-                            title="Logout"
-                        >
-                            <span class="sidebar-icon">
-                                🚪
-                            </span>
-
-                            <span class="sidebar-label">
-                                Logout
-                            </span>
+                        <button type="submit" class="sidebar-link">
+                            <span class="sidebar-icon">🚪</span>
+                            <span class="sidebar-label">Logout</span>
                         </button>
                     </form>
                 </div>
+            </div>
 
-            {% endif %}
-
-        </div>
-
-        <div class="sidebar-toggle-wrapper">
-            <button
-                type="button"
-                class="sidebar-toggle"
-                id="sidebar-toggle"
-            >
-                <span id="toggle-icon">
-                    ◀
-                </span>
-
-                <span
-                    class="toggle-label ms-2"
-                    id="toggle-label"
-                >
-                    Collapse Menu
-                </span>
+            <button type="button" class="sidebar-toggle" id="sidebar-toggle">
+                <span id="toggle-icon">◀</span>
+                <span class="toggle-label ms-2">Collapse Menu</span>
             </button>
-        </div>
-    </nav>
+        </nav>
+    {% endif %}
 
     <div class="main-area">
-
         <header class="topbar">
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
-
+            <div class="d-flex justify-content-between align-items-center gap-3">
                 <div class="d-flex align-items-center gap-3">
-                    <button
-                        type="button"
-                        class="btn btn-outline-secondary mobile-menu-button"
-                        id="mobile-menu-button"
-                        aria-label="Open navigation"
-                    >
-                        ☰
-                    </button>
+                    {% if user.is_authenticated %}
+                        <button
+                            type="button"
+                            class="btn btn-outline-secondary mobile-menu-button"
+                            id="mobile-menu-button"
+                        >
+                            ☰
+                        </button>
+                    {% endif %}
 
                     <div class="topbar-title">
-                        {% block page_header %}
-                            Dashboard
-                        {% endblock %}
+                        {% block page_header %}Dashboard{% endblock %}
                     </div>
                 </div>
 
                 {% if user.is_authenticated %}
-                    {% if user.role == 'coach' or user.role == 'head_coach' %}
-                        <form
-                            method="get"
-                            action="{% url 'athlete_search' %}"
-                            class="topbar-search"
-                        >
-                            <div class="input-group">
-                                <input
-                                    type="search"
-                                    name="q"
-                                    class="form-control"
-                                    placeholder="Search athletes..."
-                                    aria-label="Search athletes"
-                                >
+                    <div class="d-flex align-items-center gap-2 ms-auto">
+                        {% if user.role == 'coach' or user.role == 'head_coach' %}
+                            <form method="get" action="{% url 'athlete_search' %}" class="topbar-search me-2">
+                                <div class="input-group">
+                                    <input
+                                        type="search"
+                                        name="q"
+                                        class="form-control"
+                                        placeholder="Search athletes..."
+                                    >
+                                    <button class="btn btn-outline-primary" type="submit">🔍</button>
+                                </div>
+                            </form>
+                        {% endif %}
 
-                                <button
-                                    class="btn btn-outline-primary"
-                                    type="submit"
-                                    aria-label="Search"
-                                >
-                                    🔍
-                                </button>
-                            </div>
-                        </form>
-                    {% endif %}
-                {% endif %}
-
-                {% if user.is_authenticated %}
-                    <div class="d-flex align-items-center gap-2">
-
-                        <!-- Notification bell -->
                         <div class="dropdown">
                             <button
-                                class="notification-bell-button"
+                                class="notification-button"
                                 type="button"
                                 data-bs-toggle="dropdown"
                                 data-bs-auto-close="outside"
-                                aria-expanded="false"
-                                aria-label="Open notifications"
                             >
                                 🔔
-
                                 {% if global_unread_notification_count %}
-                                    <span class="notification-bell-badge">
-                                        {% if global_unread_notification_count > 99 %}
-                                            99+
-                                        {% else %}
-                                            {{ global_unread_notification_count }}
-                                        {% endif %}
+                                    <span class="notification-badge">
+                                        {% if global_unread_notification_count > 99 %}99+{% else %}{{ global_unread_notification_count }}{% endif %}
                                     </span>
                                 {% endif %}
                             </button>
 
-                            <div class="dropdown-menu dropdown-menu-end notification-dropdown-menu">
-
-                                <div class="notification-dropdown-header">
-                                    <div class="d-flex justify-content-between align-items-center gap-3">
-                                        <div>
-                                            <div class="fw-bold">
-                                                Notifications
-                                            </div>
-
-                                            <div class="small text-muted">
-                                                {% if global_unread_notification_count %}
-                                                    {{ global_unread_notification_count }}
-                                                    unread
-                                                {% else %}
-                                                    You’re all caught up
-                                                {% endif %}
-                                            </div>
+                            <div class="dropdown-menu dropdown-menu-end notification-menu p-0">
+                                <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="fw-bold">Notifications</div>
+                                        <div class="small text-muted">
+                                            {{ global_unread_notification_count|default:0 }} unread
                                         </div>
-
-                                        {% if global_unread_notification_count %}
-                                            <form
-                                                method="post"
-                                                action="{% url 'notification_mark_all_read' %}"
-                                                class="m-0"
-                                            >
-                                                {% csrf_token %}
-
-                                                <button
-                                                    type="submit"
-                                                    class="btn btn-sm btn-outline-primary"
-                                                >
-                                                    Mark all read
-                                                </button>
-                                            </form>
-                                        {% endif %}
                                     </div>
-                                </div>
 
-                                <div class="notification-dropdown-list">
-
-                                    {% if global_recent_notifications %}
-
-                                        {% for notification in global_recent_notifications %}
-                                            <a
-                                                href="{% url 'notification_open' notification.id %}"
-                                                class="
-                                                    notification-dropdown-item
-
-                                                    {% if not notification.is_read %}
-                                                        unread
-                                                    {% endif %}
-                                                "
-                                            >
-                                                <div class="notification-dropdown-icon">
-                                                    {{ notification.get_icon }}
-                                                </div>
-
-                                                <div class="flex-grow-1">
-                                                    <div class="d-flex justify-content-between gap-2">
-                                                        <div class="notification-dropdown-title">
-                                                            {{ notification.title }}
-                                                        </div>
-
-                                                        {% if not notification.is_read %}
-                                                            <span
-                                                                class="notification-unread-dot"
-                                                                title="Unread"
-                                                            ></span>
-                                                        {% endif %}
-                                                    </div>
-
-                                                    {% if notification.message %}
-                                                        <div class="notification-dropdown-message">
-                                                            {{ notification.message|truncatechars:95 }}
-                                                        </div>
-                                                    {% endif %}
-
-                                                    <div class="notification-dropdown-time">
-                                                        {{ notification.created_at|timesince }}
-                                                        ago
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        {% endfor %}
-
-                                    {% else %}
-
-                                        <div class="notification-dropdown-empty">
-                                            <div class="fs-2 mb-2">
-                                                🔔
-                                            </div>
-
-                                            <div class="fw-semibold">
-                                                No notifications yet
-                                            </div>
-
-                                            <div class="small mt-1">
-                                                New updates will appear here.
-                                            </div>
-                                        </div>
-
+                                    {% if global_unread_notification_count %}
+                                        <form method="post" action="{% url 'notification_mark_all_read' %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">Mark all read</button>
+                                        </form>
                                     {% endif %}
-
                                 </div>
 
-                                <div class="notification-dropdown-footer">
-                                    <a
-                                        href="{% url 'notification_list' %}"
-                                        class="btn btn-primary w-100"
-                                    >
+                                <div class="notification-list">
+                                    {% for notification in global_recent_notifications %}
+                                        <a
+                                            href="{% url 'notification_open' notification.id %}"
+                                            class="notification-item {% if not notification.is_read %}unread{% endif %}"
+                                        >
+                                            <div class="fw-semibold">{{ notification.title }}</div>
+                                            {% if notification.message %}
+                                                <div class="small text-muted mt-1">{{ notification.message|truncatechars:95 }}</div>
+                                            {% endif %}
+                                            <div class="small text-muted mt-1">{{ notification.created_at|timesince }} ago</div>
+                                        </a>
+                                    {% empty %}
+                                        <div class="text-center text-muted p-4">No notifications yet.</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="p-3 border-top">
+                                    <a href="{% url 'notification_list' %}" class="btn btn-primary w-100">
                                         View All Notifications
                                     </a>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- User menu -->
                         <div class="dropdown">
                             <button
                                 class="user-menu-button"
                                 type="button"
                                 data-bs-toggle="dropdown"
-                                aria-expanded="false"
                             >
                                 <span class="user-avatar">
-                                    {% if user.first_name %}
-                                        {{ user.first_name|first }}
-                                    {% else %}
-                                        {{ user.username|first }}
-                                    {% endif %}
+                                    {% if user.first_name %}{{ user.first_name|first }}{% else %}{{ user.username|first }}{% endif %}
                                 </span>
 
                                 <span class="user-menu-details text-start">
-                                    <span class="user-menu-name d-block">
-                                        {% if user.get_full_name %}
-                                            {{ user.get_full_name }}
-                                        {% else %}
-                                            {{ user.username }}
-                                        {% endif %}
+                                    <span class="d-block fw-semibold">
+                                        {{ user.get_full_name|default:user.username }}
                                     </span>
-
-                                    <span class="user-menu-role d-block">
-                                        {{ user.role|default:"User" }}
-                                    </span>
+                                    <span class="d-block small text-muted">{{ user.role|title }}</span>
                                 </span>
-
-                                <span class="text-muted small">
-                                    ▾
-                                </span>
+                                <span>▾</span>
                             </button>
 
-                            <div class="dropdown-menu dropdown-menu-end user-dropdown-menu">
-                                <div class="px-3 py-2">
-                                    <div class="fw-semibold">
-                                        {{ user.username }}
-                                    </div>
+                            <div class="dropdown-menu dropdown-menu-end">
+                                <a href="{% url 'notification_list' %}" class="dropdown-item">🔔 Notifications</a>
+                                <a href="{% url 'communication_inbox' %}" class="dropdown-item">💬 Messages</a>
 
-                                    <div class="small text-muted">
-                                        Signed in
-                                    </div>
-                                </div>
-
-                                <div class="dropdown-divider"></div>
-
-                                <a
-                                    href="{% url 'notification_list' %}"
-                                    class="dropdown-item"
-                                >
-                                    🔔 Notifications
-                                </a>
-
-                                <a
-                                    href="{% url 'communication_inbox' %}"
-                                    class="dropdown-item"
-                                >
-                                    💬 Messages
-                                </a>
+                                {% if user.role == 'director' %}
+                                    <a href="{% url 'director_dashboard' %}" class="dropdown-item">🏢 Director Dashboard</a>
+                                {% elif user.role == 'parent' %}
+                                    <a href="{% url 'parent_dashboard' %}" class="dropdown-item">🏠 Parent Home</a>
+                                    <a href="{% url 'video_library:family_library' %}" class="dropdown-item">🎥 Athlete Videos</a>
+                                {% elif user.role == 'athlete' %}
+                                    <a href="{% url 'athlete_dashboard' %}" class="dropdown-item">🏠 Athlete Home</a>
+                                    <a href="{% url 'video_library:family_library' %}" class="dropdown-item">🎥 My Video Library</a>
+                                {% elif user.role == 'coach' or user.role == 'head_coach' %}
+                                    <a href="{% url 'coach_dashboard' %}" class="dropdown-item">🏠 Coach Dashboard</a>
+                                    <a href="{% url 'video_library:dashboard' %}" class="dropdown-item">📹 Video Library</a>
+                                {% endif %}
 
                                 <div class="dropdown-divider"></div>
 
-                                <form
-                                    method="post"
-                                    action="{% url 'logout' %}"
-                                    class="m-0"
-                                >
+                                <form method="post" action="{% url 'logout' %}">
                                     {% csrf_token %}
-
-                                    <button
-                                        type="submit"
-                                        class="dropdown-item text-danger"
-                                    >
-                                        🚪 Logout
-                                    </button>
+                                    <button type="submit" class="dropdown-item text-danger">🚪 Logout</button>
                                 </form>
                             </div>
                         </div>
-
                     </div>
                 {% endif %}
-
             </div>
         </header>
 
         <main class="main-content">
-
             {% if messages %}
-                <div class="mb-4">
-                    {% for message in messages %}
-                        <div
-                            class="
-                                alert
-                                alert-{{ message.tags|default:'info' }}
-                                alert-dismissible
-                                fade
-                                show
-                            "
-                            role="alert"
-                        >
-                            {{ message }}
-
-                            <button
-                                type="button"
-                                class="btn-close"
-                                data-bs-dismiss="alert"
-                                aria-label="Close"
-                            ></button>
-                        </div>
-                    {% endfor %}
-                </div>
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
             {% endif %}
 
-            {% block content %}
-            {% endblock %}
-
+            {% block content %}{% endblock %}
         </main>
     </div>
 </div>
 
-<script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
     const sidebar = document.getElementById("sidebar");
     const sidebarToggle = document.getElementById("sidebar-toggle");
+    const mobileMenuButton = document.getElementById("mobile-menu-button");
+    const sidebarOverlay = document.getElementById("sidebar-overlay");
     const toggleIcon = document.getElementById("toggle-icon");
-    const toggleLabel = document.getElementById("toggle-label");
-    const mobileMenuButton = document.getElementById(
-        "mobile-menu-button"
-    );
-    const sidebarOverlay = document.getElementById(
-        "sidebar-overlay"
-    );
 
-    function updateSidebarToggle(isCollapsed) {
-        if (toggleIcon) {
-            toggleIcon.textContent = isCollapsed ? "▶" : "◀";
-        }
-
-        if (toggleLabel) {
-            toggleLabel.textContent = (
-                isCollapsed
-                ? "Expand Menu"
-                : "Collapse Menu"
-            );
-        }
-    }
-
-    const savedSidebarState = localStorage.getItem(
-        "sidebarCollapsed"
-    );
-
-    if (
-        sidebar
-        && savedSidebarState === "true"
-        && window.innerWidth >= 768
-    ) {
-        sidebar.classList.add("collapsed");
-        updateSidebarToggle(true);
-    } else {
-        updateSidebarToggle(false);
-    }
-
-    if (sidebarToggle && sidebar) {
-        sidebarToggle.addEventListener(
-            "click",
-            function () {
-                sidebar.classList.toggle("collapsed");
-
-                const isCollapsed = sidebar.classList.contains(
-                    "collapsed"
-                );
-
-                updateSidebarToggle(isCollapsed);
-
-                localStorage.setItem(
-                    "sidebarCollapsed",
-                    isCollapsed
-                );
+    if (sidebar && sidebarToggle) {
+        sidebarToggle.addEventListener("click", function () {
+            sidebar.classList.toggle("collapsed");
+            if (toggleIcon) {
+                toggleIcon.textContent = sidebar.classList.contains("collapsed") ? "▶" : "◀";
             }
-        );
+        });
     }
 
     function closeMobileSidebar() {
-        if (sidebar) {
-            sidebar.classList.remove("mobile-open");
-        }
-
-        if (sidebarOverlay) {
-            sidebarOverlay.classList.remove("show");
-        }
+        if (sidebar) sidebar.classList.remove("mobile-open");
+        if (sidebarOverlay) sidebarOverlay.classList.remove("active");
     }
 
     if (mobileMenuButton && sidebar && sidebarOverlay) {
-        mobileMenuButton.addEventListener(
-            "click",
-            function () {
-                sidebar.classList.add("mobile-open");
-                sidebarOverlay.classList.add("show");
-            }
-        );
+        mobileMenuButton.addEventListener("click", function () {
+            sidebar.classList.add("mobile-open");
+            sidebarOverlay.classList.add("active");
+        });
+
+        sidebarOverlay.addEventListener("click", closeMobileSidebar);
     }
 
-    if (sidebarOverlay) {
-        sidebarOverlay.addEventListener(
-            "click",
-            closeMobileSidebar
-        );
-    }
-
-    document.querySelectorAll(
-        ".sidebar-link"
-    ).forEach(function (link) {
-        link.addEventListener(
-            "click",
-            function () {
-                if (window.innerWidth < 768) {
-                    closeMobileSidebar();
-                }
-            }
-        );
+    window.addEventListener("resize", function () {
+        if (window.innerWidth >= 768) closeMobileSidebar();
     });
-
-    window.addEventListener(
-        "resize",
-        function () {
-            if (window.innerWidth >= 768) {
-                closeMobileSidebar();
-            }
-        }
-    );
 </script>
+
+{% block extra_js %}{% endblock %}
 
 </body>
 </html>

@@ -1,0 +1,557 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ athlete.get_full_name|default:athlete.username }} D-Score Dashboard
+{% endblock %}
+
+{% block page_header %}
+D-Score Dashboard
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .dashboard-shell {
+        max-width: 1450px;
+        margin: 0 auto;
+    }
+
+    .dashboard-hero {
+        padding: 32px;
+        color: white;
+        border-radius: 24px;
+        background:
+            linear-gradient(
+                135deg,
+                #111827,
+                #1e40af,
+                #4f46e5
+            );
+        box-shadow:
+            0 16px 45px
+            rgba(15, 23, 42, 0.16);
+    }
+
+    .level-summary {
+        padding: 18px;
+        border-radius: 16px;
+        background:
+            rgba(255, 255, 255, 0.12);
+    }
+
+    .event-card {
+        height: 100%;
+        padding: 24px;
+        border: 1px solid #e5e7eb;
+        border-radius: 22px;
+        background: white;
+        box-shadow:
+            0 8px 24px
+            rgba(15, 23, 42, 0.06);
+        transition:
+            transform 0.18s ease,
+            box-shadow 0.18s ease;
+    }
+
+    .event-card:hover {
+        transform: translateY(-4px);
+        box-shadow:
+            0 14px 34px
+            rgba(15, 23, 42, 0.10);
+    }
+
+    .event-icon {
+        width: 52px;
+        height: 52px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        background: #eef4ff;
+        font-size: 1.5rem;
+    }
+
+    .event-score {
+        font-size: 2.7rem;
+        font-weight: 800;
+        line-height: 1;
+        color: #172033;
+    }
+
+    .event-score-label {
+        color: #667085;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    .routine-status {
+        display: inline-flex;
+        padding: 5px 9px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+
+    .routine-active {
+        color: #0f5132;
+        background: #d1e7dd;
+    }
+
+    .routine-empty {
+        color: #495057;
+        background: #e9ecef;
+    }
+
+    .score-table-card {
+        border: 0;
+        border-radius: 22px;
+        box-shadow:
+            0 8px 24px
+            rgba(15, 23, 42, 0.06);
+    }
+
+    .score-table th {
+        color: #667085;
+        font-size: 0.75rem;
+        font-weight: 750;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .score-table td {
+        vertical-align: middle;
+    }
+
+    .future-score {
+        color: #98a2b3;
+    }
+
+    .section-eyebrow {
+        color: #0d6efd;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+    }
+
+    .future-card {
+        padding: 20px;
+        border: 1px dashed #cbd5e1;
+        border-radius: 18px;
+        background: #f8fafc;
+    }
+
+    @media (max-width: 767px) {
+        .dashboard-hero {
+            padding: 24px;
+        }
+
+        .event-score {
+            font-size: 2.3rem;
+        }
+    }
+</style>
+
+
+<div class="container-fluid py-4">
+
+    <div class="dashboard-shell">
+
+        <!-- =====================================================
+             HERO
+             ===================================================== -->
+
+        <section class="dashboard-hero mb-4">
+
+            <div class="row align-items-center g-4">
+
+                <div class="col-12 col-lg-8">
+
+                    <div class="small text-uppercase fw-semibold opacity-75 mb-2">
+                        Athlete Routine Planning
+                    </div>
+
+                    <h1 class="h2 fw-bold mb-1">
+                        {{ athlete.get_full_name|default:athlete.username }}
+                    </h1>
+
+                    <div class="opacity-75">
+                        Projected difficulty scores across all four events
+                    </div>
+
+                </div>
+
+
+                <div class="col-12 col-lg-4">
+
+                    <div class="level-summary">
+
+                        <div class="small opacity-75 mb-1">
+                            HP Pathway
+                        </div>
+
+                        {% if athlete_pathway %}
+
+                            <div class="fw-bold">
+
+                                {% if athlete_pathway.current_level %}
+                                    {{ athlete_pathway.current_level.name }}
+                                {% else %}
+                                    No Current Level
+                                {% endif %}
+
+                                →
+
+                                {% if athlete_pathway.target_level %}
+                                    {{ athlete_pathway.target_level.name }}
+                                {% else %}
+                                    No Target Level
+                                {% endif %}
+
+                            </div>
+
+                        {% else %}
+
+                            <div class="fw-bold">
+                                No Pathway Assigned
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             NAVIGATION
+             ===================================================== -->
+
+        <div class="d-flex flex-wrap gap-2 mb-4">
+
+            <a
+                href="{% url 'pathway:athlete_pathway_requirements' athlete.id %}"
+                class="btn btn-outline-secondary"
+            >
+                ← Skill Tree
+            </a>
+
+            <a
+                href="{% url 'pathway:athlete_pathway_editor' athlete.id %}"
+                class="btn btn-outline-primary"
+            >
+                Pathway Setup
+            </a>
+
+        </div>
+
+
+        <!-- =====================================================
+             EVENT CARDS
+             ===================================================== -->
+
+        <div class="section-eyebrow mb-2">
+            Projected Difficulty
+        </div>
+
+        <h2 class="h4 mb-3">
+            Current Event D-Scores
+        </h2>
+
+
+        <div class="row g-4 mb-4">
+
+            {% for card in event_cards %}
+
+                <div class="col-12 col-md-6 col-xl-3">
+
+                    <article class="event-card">
+
+                        <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
+
+                            <div class="event-icon">
+                                {{ card.icon }}
+                            </div>
+
+
+                            {% if card.routine %}
+
+                                <span class="routine-status routine-active">
+                                    Current Routine
+                                </span>
+
+                            {% else %}
+
+                                <span class="routine-status routine-empty">
+                                    Not Built
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="event-score-label mb-1">
+                            {{ card.event }}
+                        </div>
+
+
+                        <div class="event-score mb-3">
+                            {{ card.score }}
+                        </div>
+
+
+                        <div class="small text-muted mb-4">
+
+                            {% if card.routine %}
+
+                                {{ card.routine.name }}
+
+                                {% if card.routine.pathway_level %}
+                                    · {{ card.routine.pathway_level.name }}
+                                {% endif %}
+
+                            {% else %}
+
+                                No current routine has been created yet.
+
+                            {% endif %}
+
+                        </div>
+
+
+                        {% if card.event == 'Vault' %}
+
+                            <a
+                                href="{% url 'pathway:vault_d_score_calculator' athlete.id %}"
+                                class="btn btn-outline-primary w-100"
+                            >
+                                Open Vault Builder →
+                            </a>
+
+                        {% elif card.event == 'Bars' %}
+
+                            <a
+                                href="{% url 'pathway:bars_d_score_calculator' athlete.id %}"
+                                class="btn btn-outline-primary w-100"
+                            >
+                                Open Bars Builder →
+                            </a>
+
+                        {% elif card.event == 'Beam' %}
+
+                            <a
+                                href="{% url 'pathway:beam_d_score_calculator' athlete.id %}"
+                                class="btn btn-outline-primary w-100"
+                            >
+                                Open Beam Builder →
+                            </a>
+
+                        {% elif card.event == 'Floor' %}
+
+                            <a
+                                href="{% url 'pathway:floor_d_score_calculator' athlete.id %}"
+                                class="btn btn-outline-primary w-100"
+                            >
+                                Open Floor Builder →
+                            </a>
+
+                        {% endif %}
+
+                    </article>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- =====================================================
+             SCORE DEVELOPMENT TABLE
+             ===================================================== -->
+
+        <section class="card score-table-card mb-4">
+
+            <div class="card-header bg-white border-0 p-4">
+
+                <div class="section-eyebrow">
+                    Athlete Scoring
+                </div>
+
+                <h2 class="h4 mb-1">
+                    Score Development
+                </h2>
+
+                <p class="text-muted mb-0">
+                    D-score is active now. E-score and final score
+                    fields are reserved for the next scoring phase.
+                </p>
+
+            </div>
+
+
+            <div class="card-body p-0">
+
+                <div class="table-responsive">
+
+                    <table class="table score-table mb-0">
+
+                        <thead>
+
+                            <tr>
+
+                                <th class="ps-4">
+                                    Event
+                                </th>
+
+                                <th class="text-center">
+                                    D Score
+                                </th>
+
+                                <th class="text-center">
+                                    E Score
+                                </th>
+
+                                <th class="text-center">
+                                    Final Score
+                                </th>
+
+                                <th class="text-end pe-4">
+                                    Routine
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for card in event_cards %}
+
+                                <tr>
+
+                                    <td class="ps-4">
+
+                                        <div class="d-flex align-items-center gap-2">
+
+                                            <span>
+                                                {{ card.icon }}
+                                            </span>
+
+                                            <strong>
+                                                {{ card.event }}
+                                            </strong>
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <td class="text-center">
+
+                                        <span class="badge text-bg-primary fs-6">
+                                            {{ card.score }}
+                                        </span>
+
+                                    </td>
+
+
+                                    <td class="text-center future-score">
+                                        —
+                                    </td>
+
+
+                                    <td class="text-center future-score">
+                                        —
+                                    </td>
+
+
+                                    <td class="text-end pe-4">
+
+                                        {% if card.routine %}
+
+                                            <span class="text-muted small">
+                                                {{ card.routine.name }}
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="text-muted small">
+                                                Not created
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             FUTURE E-SCORE
+             ===================================================== -->
+
+        <section class="future-card">
+
+            <div class="row align-items-center g-3">
+
+                <div class="col-12 col-lg-8">
+
+                    <div class="section-eyebrow">
+                        Next Scoring Layer
+                    </div>
+
+                    <h3 class="h5 mb-1">
+                        E-Score Integration
+                    </h3>
+
+                    <p class="text-muted mb-0">
+                        This dashboard is ready to eventually combine
+                        projected D score with execution scores,
+                        deductions and final projected competition scores.
+                    </p>
+
+                </div>
+
+
+                <div class="col-12 col-lg-4">
+
+                    <div class="d-flex justify-content-lg-end">
+
+                        <span class="badge text-bg-light border p-2">
+                            Coming Later
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</div>
+
+{% endblock %}

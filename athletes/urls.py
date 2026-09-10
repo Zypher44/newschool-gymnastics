@@ -9,4 +9,6 @@ urlpatterns = [
         views.athlete_dashboard,
         name='athlete_dashboard'
     ),
+
+
 ]

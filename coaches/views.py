@@ -5,6 +5,7 @@ from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.urls import reverse
 from datetime import timedelta
+from gyms.models import GymMembership
 
 User = get_user_model()
 
@@ -117,10 +118,26 @@ def get_team_skill_stats(athletes):
     }
 
 
-def get_upcoming_events(today):
-    return TeamEvent.objects.filter(
-        event_date__gte=today
-    ).order_by('event_date', 'start_time')[:5]
+def get_upcoming_events(today, gym):
+    """
+    Return upcoming events belonging to the selected gym.
+    """
+
+    if gym is None:
+        return TeamEvent.objects.none()
+
+    return (
+        TeamEvent.objects
+        .filter(
+            gym=gym,
+            event_date__gte=today
+        )
+        .select_related('created_by')
+        .order_by(
+            'event_date',
+            'start_time'
+        )[:5]
+    )
 
 def get_recent_activity(athletes, limit=12):
     activities = []
@@ -479,11 +496,32 @@ def build_dashboard_data(assignments, today):
 
 @login_required
 def coach_dashboard(request):
+
     if request.user.role not in ['coach', 'head_coach']:
         return render(request, 'coaches/not_allowed.html', {
             'role': request.user.role,
             'username': request.user.username,
         })
+
+    gym_membership = (
+        GymMembership.objects
+        .filter(
+            user=request.user,
+            is_active=True,
+            role__in=[
+                'head_coach',
+                'coach',
+            ]
+        )
+        .select_related('gym')
+        .first()
+    )
+
+    gym = (
+        gym_membership.gym
+        if gym_membership
+        else None
+    )
 
     today = timezone.now().date()
 
@@ -507,7 +545,11 @@ def coach_dashboard(request):
         skill_stats['skills_not_started'],
 
     ]
-    upcoming_events = get_upcoming_events(today)
+    upcoming_events = get_upcoming_events(
+        today,
+        gym
+    )
+
     recent_activity = get_recent_activity(athletes)
 
     coaching_priorities = list(dashboard_data['coaching_priorities'])
@@ -699,26 +741,110 @@ def athlete_detail(request, athlete_id):
 
 @login_required
 def add_event(request):
-    if request.user.role not in ['coach', 'head_coach']:
-        return render(request, 'coaches/not_allowed.html', {
-            'role': request.user.role,
-            'username': request.user.username,
-        })
+    allowed_roles = [
+        'director',
+        'head_coach',
+        'coach',
+    ]
 
-    if request.method == "POST":
+    if request.user.role not in allowed_roles:
+        return render(
+            request,
+            'coaches/not_allowed.html',
+            {
+                'role': request.user.role,
+                'username': request.user.username,
+            }
+        )
+    gym_membership = (
+        GymMembership.objects
+        .filter(
+            user=request.user,
+            is_active=True,
+            role__in=[
+                'director',
+                'head_coach',
+                'coach',
+            ]
+        )
+        .select_related('gym')
+        .first()
+    )
+
+    if not gym_membership:
+        return render(
+            request,
+            'coaches/not_allowed.html',
+            {
+                'role': request.user.role,
+                'username': request.user.username,
+            }
+        )
+
+    gym = gym_membership.gym
+
+    if request.method == 'POST':
+        title = request.POST.get(
+            'title',
+            ''
+        ).strip()
+
+        event_date = request.POST.get(
+            'event_date',
+            ''
+        ).strip()
+
+        if not title or not event_date:
+            return render(
+                request,
+                'coaches/add_event.html',
+                {
+                    'gym': gym,
+                    'error': (
+                        'An event title and date are required.'
+                    ),
+                }
+            )
+
         TeamEvent.objects.create(
-            title=request.POST.get("title"),
-            event_date=request.POST.get("event_date"),
-            start_time=request.POST.get("start_time") or None,
-            end_time=request.POST.get("end_time") or None,
-            location=request.POST.get("location"),
-            description=request.POST.get("description"),
+            gym=gym,
+            title=title,
+            event_date=event_date,
+            start_time=(
+                request.POST.get('start_time')
+                or None
+            ),
+            end_time=(
+                request.POST.get('end_time')
+                or None
+            ),
+            location=request.POST.get(
+                'location',
+                ''
+            ).strip(),
+            description=request.POST.get(
+                'description',
+                ''
+            ).strip(),
             created_by=request.user,
         )
 
-        return redirect("coach_dashboard")
+        if request.user.role == 'director':
+            return redirect(
+                'director_dashboard'
+            )
 
-    return render(request, "coaches/add_event.html")
+        return redirect(
+            'coach_dashboard'
+        )
+
+    return render(
+        request,
+        'coaches/add_event.html',
+        {
+            'gym': gym,
+        }
+    )
 
 
 @login_required

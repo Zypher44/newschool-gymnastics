@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}
+Edit Event | {{ gym.name }}
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+
+        <div>
+
+            <div class="text-muted small mb-1">
+                {{ gym.name }}
+            </div>
+
+            <h2 class="fw-bold mb-1">
+                Edit Event
+            </h2>
+
+            <div class="text-muted">
+                Update the event information below.
+            </div>
+
+        </div>
+
+        <a
+            href="{% url 'director_event_list' %}"
+            class="btn btn-outline-secondary"
+        >
+            ← Back to Events
+        </a>
+
+    </div>
+
+
+    {% if error %}
+
+        <div class="alert alert-danger">
+            {{ error }}
+        </div>
+
+    {% endif %}
+
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body p-4">
+
+            <form method="post">
+
+                {% csrf_token %}
+
+
+                <div class="mb-3">
+
+                    <label
+                        for="event-title"
+                        class="form-label fw-semibold"
+                    >
+                        Event Title
+                    </label>
+
+                    <input
+                        type="text"
+                        name="title"
+                        id="event-title"
+                        class="form-control"
+                        value="{{ event.title }}"
+                        maxlength="200"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    <label
+                        for="event-date"
+                        class="form-label fw-semibold"
+                    >
+                        Date
+                    </label>
+
+                    <input
+                        type="date"
+                        name="event_date"
+                        id="event-date"
+                        class="form-control"
+                        value="{{ event.event_date|date:'Y-m-d' }}"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+
+                        <label
+                            for="start-time"
+                            class="form-label fw-semibold"
+                        >
+                            Start Time
+                        </label>
+
+                        <input
+                            type="time"
+                            name="start_time"
+                            id="start-time"
+                            class="form-control"
+                            value="{{ event.start_time|time:'H:i' }}"
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-6 mb-3">
+
+                        <label
+                            for="end-time"
+                            class="form-label fw-semibold"
+                        >
+                            End Time
+                        </label>
+
+                        <input
+                            type="time"
+                            name="end_time"
+                            id="end-time"
+                            class="form-control"
+                            value="{{ event.end_time|time:'H:i' }}"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    <label
+                        for="event-location"
+                        class="form-label fw-semibold"
+                    >
+                        Location
+                    </label>
+
+                    <input
+                        type="text"
+                        name="location"
+                        id="event-location"
+                        class="form-control"
+                        value="{{ event.location }}"
+                        maxlength="200"
+                    >
+
+                </div>
+
+
+                <div class="mb-4">
+
+                    <label
+                        for="event-description"
+                        class="form-label fw-semibold"
+                    >
+                        Description
+                    </label>
+
+                    <textarea
+                        name="description"
+                        id="event-description"
+                        rows="5"
+                        class="form-control"
+                    >{{ event.description }}</textarea>
+
+                </div>
+
+
+                <div class="d-flex flex-wrap gap-2">
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        Save Changes
+                    </button>
+
+                    <a
+                        href="{% url 'director_event_list' %}"
+                        class="btn btn-outline-secondary"
+                    >
+                        Cancel
+                    </a>
+
+                    <a
+                        href="{% url 'delete_gym_event' event.id %}"
+                        class="btn btn-outline-danger ms-md-auto"
+                    >
+                        Delete Event
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

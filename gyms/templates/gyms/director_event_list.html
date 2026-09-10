@@ -1,0 +1,389 @@
+{% extends "base.html" %}
+
+{% block title %}
+Gym Events | {{ gym.name }}
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+
+        <div>
+
+            <div class="text-muted small mb-1">
+                {{ gym.name }}
+            </div>
+
+            <h2 class="fw-bold mb-1">
+                Gym Events
+            </h2>
+
+            <div class="text-muted">
+                Manage upcoming and previous gym events.
+            </div>
+
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+
+            <a
+                href="{% url 'director_dashboard' %}"
+                class="btn btn-outline-secondary"
+            >
+                ← Director Dashboard
+            </a>
+
+            <a
+                href="{% url 'add_event' %}"
+                class="btn btn-primary"
+            >
+                + Create Event
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- Upcoming Events -->
+
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-header bg-white border-0 pt-4 px-4">
+
+            <div class="d-flex justify-content-between align-items-center gap-3">
+
+                <div>
+
+                    <h5 class="fw-bold mb-1">
+                        Upcoming Events
+                    </h5>
+
+                    <small class="text-muted">
+                        Scheduled events from today forward
+                    </small>
+
+                </div>
+
+                <span class="badge text-bg-primary">
+                    {{ upcoming_event_count }}
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="card-body">
+
+            {% if upcoming_events %}
+
+                <div class="row g-3">
+
+                    {% for event in upcoming_events %}
+
+                        <div class="col-md-6 col-xl-4">
+
+                            <div class="border rounded-4 p-4 h-100">
+
+                                <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+
+                                    <div>
+
+                                        <div class="text-muted small fw-semibold">
+                                            {{ event.event_date|date:"l" }}
+                                        </div>
+
+                                        <div class="fs-5 fw-bold">
+                                            {{ event.event_date|date:"F j, Y" }}
+                                        </div>
+
+                                    </div>
+
+                                    {% if event.event_date == today %}
+
+                                        <span class="badge text-bg-success">
+                                            Today
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="badge text-bg-light border">
+                                            Upcoming
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                <h5 class="fw-bold mb-2">
+                                    {{ event.title }}
+                                </h5>
+
+
+                                {% if event.start_time %}
+
+                                    <div class="text-muted small mb-2">
+
+                                        🕒 {{ event.start_time|time:"g:i A" }}
+
+                                        {% if event.end_time %}
+                                            – {{ event.end_time|time:"g:i A" }}
+                                        {% endif %}
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                {% if event.location %}
+
+                                    <div class="text-muted small mb-2">
+                                        📍 {{ event.location }}
+                                    </div>
+
+                                {% endif %}
+
+
+                                {% if event.description %}
+
+                                    <div class="small mt-3">
+                                        {{ event.description|linebreaksbr }}
+                                    </div>
+
+                                {% endif %}
+
+
+                                {% if event.created_by %}
+
+                                    <div class="text-muted small mt-3 pt-3 border-top">
+
+                                        Created by
+
+                                        {{ event.created_by.get_full_name|default:event.created_by.username }}
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                <div class="d-flex flex-wrap gap-2 mt-4">
+
+                                    <a
+                                        href="{% url 'edit_gym_event' event.id %}"
+                                        class="btn btn-outline-primary btn-sm"
+                                    >
+                                        Edit
+                                    </a>
+
+                                    <a
+                                        href="{% url 'delete_gym_event' event.id %}"
+                                        class="btn btn-outline-danger btn-sm"
+                                    >
+                                        Delete
+                                    </a>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="text-center py-5">
+
+                    <div class="fs-1 mb-3">
+                        📅
+                    </div>
+
+                    <h5 class="fw-bold">
+                        No Upcoming Events
+                    </h5>
+
+                    <p class="text-muted">
+                        Create an event to keep your gym community informed.
+                    </p>
+
+                    <a
+                        href="{% url 'add_event' %}"
+                        class="btn btn-primary"
+                    >
+                        + Create Event
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- Past Events -->
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-header bg-white border-0 pt-4 px-4">
+
+            <h5 class="fw-bold mb-1">
+                Past Events
+            </h5>
+
+            <small class="text-muted">
+                The most recent 25 completed events
+            </small>
+
+        </div>
+
+
+        <div class="card-body">
+
+            {% if past_events %}
+
+                <div class="table-responsive">
+
+                    <table class="table align-middle">
+
+                        <thead>
+
+                            <tr>
+                                <th>Event</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Location</th>
+                                <th>Created By</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for event in past_events %}
+
+                                <tr>
+
+                                    <td>
+
+                                        <div class="fw-semibold">
+                                            {{ event.title }}
+                                        </div>
+
+                                        {% if event.description %}
+
+                                            <div class="text-muted small">
+                                                {{ event.description|truncatechars:80 }}
+                                            </div>
+
+                                        {% endif %}
+
+                                    </td>
+
+                                    <td>
+                                        {{ event.event_date|date:"M j, Y" }}
+                                    </td>
+
+                                    <td>
+
+                                        {% if event.start_time %}
+
+                                            {{ event.start_time|time:"g:i A" }}
+
+                                        {% else %}
+
+                                            <span class="text-muted">
+                                                —
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+                                    <td>
+
+                                        {% if event.location %}
+
+                                            {{ event.location }}
+
+                                        {% else %}
+
+                                            <span class="text-muted">
+                                                —
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+                                    <td>
+
+                                        {% if event.created_by %}
+
+                                            {{ event.created_by.get_full_name|default:event.created_by.username }}
+
+                                        {% else %}
+
+                                            <span class="text-muted">
+                                                Unknown
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+                                    <td class="text-end">
+
+                                        <div class="d-flex justify-content-end gap-2">
+
+                                            <a
+                                                href="{% url 'edit_gym_event' event.id %}"
+                                                class="btn btn-outline-primary btn-sm"
+                                            >
+                                                Edit
+                                            </a>
+
+                                            <a
+                                                href="{% url 'delete_gym_event' event.id %}"
+                                                class="btn btn-outline-danger btn-sm"
+                                            >
+                                                Delete
+                                            </a>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            {% else %}
+
+                <div class="text-center text-muted py-4">
+                    No past events are available.
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

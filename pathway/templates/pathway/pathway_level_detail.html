@@ -1,0 +1,694 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ level.name }} HP Pathway
+{% endblock %}
+
+{% block page_header %}
+HP Pathway
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .level-shell {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .level-hero {
+        padding: 32px;
+        color: white;
+        border-radius: 24px;
+        background:
+            linear-gradient(
+                135deg,
+                #111827,
+                #1e40af,
+                #4f46e5
+            );
+        box-shadow:
+            0 16px 45px
+            rgba(15, 23, 42, 0.16);
+    }
+
+    .pathway-navigation {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .level-summary-card {
+        height: 100%;
+        padding: 18px;
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        background: white;
+    }
+
+    .event-section {
+        overflow: hidden;
+        border: 0;
+        border-radius: 22px;
+        box-shadow:
+            0 8px 24px
+            rgba(15, 23, 42, 0.06);
+    }
+
+    .event-icon {
+        width: 54px;
+        height: 54px;
+        min-width: 54px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        background: #eef4ff;
+        font-size: 1.6rem;
+    }
+
+    .requirement-item {
+        padding: 18px;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        background: white;
+    }
+
+    .requirement-item + .requirement-item {
+        margin-top: 12px;
+    }
+
+    .bonus-item {
+        border-color: #ffe69c;
+        background: #fffdf2;
+    }
+
+    .requirement-number {
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 11px;
+        background: #eef4ff;
+        color: #0d6efd;
+        font-weight: 800;
+    }
+
+    .bonus-number {
+        background: #fff3cd;
+        color: #997404;
+    }
+
+    .requirement-title {
+        color: #172033;
+        font-weight: 750;
+    }
+
+    .requirement-description {
+        color: #667085;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    .requirement-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .level-flow {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .level-flow-item {
+        padding: 7px 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 999px;
+        background: white;
+        color: #64748b;
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+
+    .level-flow-item.current {
+        border-color: #0d6efd;
+        background: #0d6efd;
+        color: white;
+    }
+
+    .level-flow-arrow {
+        color: #94a3b8;
+        font-weight: 800;
+    }
+
+    .information-card {
+        border: 1px solid #dbeafe;
+        border-radius: 18px;
+        background: #eff6ff;
+    }
+
+    @media (max-width: 767px) {
+        .level-hero {
+            padding: 24px;
+        }
+
+        .level-flow-arrow {
+            display: none;
+        }
+    }
+</style>
+
+
+<div class="container-fluid py-4">
+
+    <div class="level-shell">
+
+        <!-- =====================================================
+             HERO
+             ===================================================== -->
+
+        <section class="level-hero mb-4">
+
+            <div class="row align-items-center g-4">
+
+                <div class="col-12 col-lg-8">
+
+                    <div class="small text-uppercase fw-semibold opacity-75 mb-2">
+                        High Performance Pathway
+                    </div>
+
+                    <h1 class="display-6 fw-bold mb-2">
+                        {{ level.name }}
+                    </h1>
+
+
+                    {% if level.minimum_age %}
+
+                        <div class="mb-2 opacity-75">
+
+                            Ages
+                            {{ level.minimum_age }}
+
+                            {% if level.maximum_age %}
+                                –
+                                {{ level.maximum_age }}
+                            {% endif %}
+
+                        </div>
+
+                    {% endif %}
+
+
+                    {% if level.description %}
+
+                        <p class="lead mb-0 opacity-75">
+                            {{ level.description }}
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="col-12 col-lg-4">
+
+                    <div
+                        class="p-3 rounded-4"
+                        style="background: rgba(255,255,255,0.12);"
+                    >
+
+                        <div class="small opacity-75 mb-2">
+                            Events
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2">
+
+                            <span class="badge text-bg-light">
+                                🏃 Vault
+                            </span>
+
+                            <span class="badge text-bg-light">
+                                🤸 Bars
+                            </span>
+
+                            <span class="badge text-bg-light">
+                                ⚖️ Beam
+                            </span>
+
+                            <span class="badge text-bg-light">
+                                🎵 Floor
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             LEVEL FLOW
+             ===================================================== -->
+
+        <section class="card border-0 shadow-sm rounded-4 mb-4">
+
+            <div class="card-body p-4">
+
+                <div class="small text-uppercase fw-semibold text-muted mb-3">
+                    HP Progression
+                </div>
+
+                <div class="level-flow">
+
+                    <span
+                        class="
+                            level-flow-item
+                            {% if level.code == 'aspire' %}
+                                current
+                            {% endif %}
+                        "
+                    >
+                        Aspire
+                    </span>
+
+                    <span class="level-flow-arrow">
+                        →
+                    </span>
+
+                    <span
+                        class="
+                            level-flow-item
+                            {% if level.code == 'youth_1' %}
+                                current
+                            {% endif %}
+                        "
+                    >
+                        Youth 1
+                    </span>
+
+                    <span class="level-flow-arrow">
+                        →
+                    </span>
+
+                    <span
+                        class="
+                            level-flow-item
+                            {% if level.code == 'youth_2' %}
+                                current
+                            {% endif %}
+                        "
+                    >
+                        Youth 2
+                    </span>
+
+                    <span class="level-flow-arrow">
+                        →
+                    </span>
+
+                    <span
+                        class="
+                            level-flow-item
+                            {% if level.code == 'youth_3' %}
+                                current
+                            {% endif %}
+                        "
+                    >
+                        Novice / Youth 3
+                    </span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             NAVIGATION
+             ===================================================== -->
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+
+            <a
+                href="{% url 'pathway:pathway_overview' %}"
+                class="btn btn-outline-secondary"
+            >
+                ← Full Pathway Overview
+            </a>
+
+
+            <div class="pathway-navigation">
+
+                {% if previous_level %}
+
+                    <a
+                        href="{% url 'pathway:pathway_level_detail' previous_level.id %}"
+                        class="btn btn-outline-primary"
+                    >
+                        ← {{ previous_level.name }}
+                    </a>
+
+                {% endif %}
+
+
+                {% if next_level %}
+
+                    <a
+                        href="{% url 'pathway:pathway_level_detail' next_level.id %}"
+                        class="btn btn-primary"
+                    >
+                        {{ next_level.name }} →
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             INTRODUCTION
+             ===================================================== -->
+
+        <section class="information-card mb-4">
+
+            <div class="p-4">
+
+                <div class="d-flex gap-3">
+
+                    <div class="fs-4">
+                        💡
+                    </div>
+
+                    <div>
+
+                        <h2 class="h6 mb-1">
+                            What does this page show?
+                        </h2>
+
+                        <p class="small text-muted mb-0">
+                            These are the technical requirements
+                            associated with the {{ level.name }}
+                            stage of the High Performance pathway.
+                            Core requirements describe the main
+                            expectations for the level, while bonus
+                            opportunities show additional elements
+                            that can increase the athlete's routine
+                            value.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             EVENT SECTIONS
+             ===================================================== -->
+
+        {% for section in event_sections %}
+
+            <section class="card event-section mb-4">
+
+                <!-- =============================================
+                     EVENT HEADER
+                     ============================================= -->
+
+                <div class="card-header bg-white border-0 p-4">
+
+                    <div class="d-flex align-items-center gap-3">
+
+                        <div class="event-icon">
+
+                            {% if section.event.code == 'vault' %}
+                                🏃
+                            {% elif section.event.code == 'bars' %}
+                                🤸
+                            {% elif section.event.code == 'beam' %}
+                                ⚖️
+                            {% elif section.event.code == 'floor' %}
+                                🎵
+                            {% else %}
+                                ⭐
+                            {% endif %}
+
+                        </div>
+
+
+                        <div>
+
+                            <div class="small text-uppercase fw-semibold text-primary">
+                                Event
+                            </div>
+
+                            <h2 class="h4 mb-0">
+                                {{ section.event.name }}
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =============================================
+                     EVENT REQUIREMENTS
+                     ============================================= -->
+
+                <div class="card-body p-4 pt-0">
+
+                    {% for requirement in section.requirements %}
+
+                        <article
+                            class="
+                                requirement-item
+
+                                {% if requirement.requirement_type == 'bonus' %}
+                                    bonus-item
+                                {% endif %}
+                            "
+                        >
+
+                            <div class="d-flex align-items-start gap-3">
+
+
+                                <!-- =============================
+                                     NUMBER / BONUS ICON
+                                     ============================= -->
+
+                                {% if requirement.requirement_type == 'bonus' %}
+
+                                    <div class="requirement-number bonus-number">
+                                        ★
+                                    </div>
+
+                                {% elif requirement.requirement_number %}
+
+                                    <div class="requirement-number">
+                                        {{ requirement.requirement_number }}
+                                    </div>
+
+                                {% else %}
+
+                                    <div class="requirement-number">
+                                        ✓
+                                    </div>
+
+                                {% endif %}
+
+
+                                <!-- =============================
+                                     REQUIREMENT CONTENT
+                                     ============================= -->
+
+                                <div class="flex-grow-1">
+
+                                    <div class="small text-uppercase fw-semibold text-muted mb-1">
+
+                                        {% if requirement.requirement_type == 'bonus' %}
+
+                                            Bonus Opportunity
+
+                                        {% else %}
+
+                                            {{ requirement.get_requirement_type_display }}
+
+                                        {% endif %}
+
+                                    </div>
+
+
+                                    <h3 class="h6 requirement-title mb-2">
+                                        {{ requirement.title }}
+                                    </h3>
+
+
+                                    {% if requirement.description %}
+
+                                        <div class="requirement-description">
+                                            {{ requirement.description }}
+                                        </div>
+
+                                    {% endif %}
+
+
+                                    <!-- =========================
+                                         META
+                                         ========================= -->
+
+                                    <div class="requirement-meta mt-3">
+
+                                        {% if requirement.value %}
+
+                                            <span class="badge text-bg-light border">
+                                                Value:
+                                                {{ requirement.value }}
+                                            </span>
+
+                                        {% endif %}
+
+
+                                        {% if requirement.bonus_value %}
+
+                                            <span class="badge text-bg-warning">
+                                                Bonus:
+                                                +{{ requirement.bonus_value }}
+                                            </span>
+
+                                        {% endif %}
+
+
+                                        {% if requirement.is_required %}
+
+                                            <span class="badge text-bg-primary">
+                                                Core Requirement
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="badge text-bg-light border">
+                                                Optional
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </article>
+
+                    {% empty %}
+
+                        <div class="text-muted">
+                            No requirements have been added
+                            for this event yet.
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </section>
+
+        {% empty %}
+
+            <div class="alert alert-warning">
+                No pathway requirements have been configured
+                for {{ level.name }} yet.
+            </div>
+
+        {% endfor %}
+
+
+        <!-- =====================================================
+             BOTTOM NAVIGATION
+             ===================================================== -->
+
+        <section class="card border-0 shadow-sm rounded-4 mt-4">
+
+            <div class="card-body p-4">
+
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+
+                    <div>
+
+                        <h3 class="h5 mb-1">
+                            Continue Exploring the Pathway
+                        </h3>
+
+                        <p class="text-muted mb-0">
+                            Compare levels to see how the technical
+                            expectations progress over time.
+                        </p>
+
+                    </div>
+
+
+                    <div class="d-flex flex-wrap gap-2">
+
+                        {% if previous_level %}
+
+                            <a
+                                href="{% url 'pathway:pathway_level_detail' previous_level.id %}"
+                                class="btn btn-outline-primary"
+                            >
+                                ← {{ previous_level.name }}
+                            </a>
+
+                        {% endif %}
+
+
+                        {% if next_level %}
+
+                            <a
+                                href="{% url 'pathway:pathway_level_detail' next_level.id %}"
+                                class="btn btn-primary"
+                            >
+                                Next:
+                                {{ next_level.name }}
+                                →
+                            </a>
+
+                        {% else %}
+
+                            <a
+                                href="{% url 'pathway:pathway_overview' %}"
+                                class="btn btn-primary"
+                            >
+                                View Full Pathway
+                            </a>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</div>
+
+{% endblock %}

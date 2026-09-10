@@ -14,6 +14,12 @@ urlpatterns = [
     ),
 
     path(
+        'my-videos/',
+        views.family_video_library,
+        name='family_library',
+    ),
+
+    path(
         'library/',
         views.video_list,
         name='video_list',
@@ -184,6 +190,7 @@ urlpatterns = [
         name='toggle_personal_best',
     ),
 
+
     path(
         'video/<int:video_id>/reference-attempt/',
         views.toggle_reference_attempt,
@@ -195,4 +202,21 @@ urlpatterns = [
         views.toggle_coaching_example,
         name='toggle_coaching_example',
     ),
+
+    path(
+        'athlete/<int:athlete_id>/skill-goal/create/',
+        views.create_skill_goal,
+        name='create_skill_goal',
+    ),
+
+    path(
+        'skill-goal/<int:goal_id>/status/',
+        views.update_skill_goal_status,
+        name='update_skill_goal_status',
+    ),
+ path(
+     'video/<int:video_id>/sharing/',
+     views.update_video_sharing,
+     name='update_video_sharing',
+ ),
 ]

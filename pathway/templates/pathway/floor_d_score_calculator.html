@@ -1,0 +1,961 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ athlete.get_full_name|default:athlete.username }} Floor D Score
+{% endblock %}
+
+{% block page_header %}
+D-Score Calculator
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .calculator-shell {
+        max-width: 1450px;
+        margin: 0 auto;
+    }
+
+    .calculator-hero {
+        padding: 30px;
+        color: white;
+        border-radius: 24px;
+        background:
+            linear-gradient(
+                135deg,
+                #111827,
+                #1e40af,
+                #4f46e5
+            );
+        box-shadow:
+            0 16px 45px
+            rgba(15, 23, 42, 0.16);
+    }
+
+    .calculator-card {
+        border: 0;
+        border-radius: 20px;
+        box-shadow:
+            0 8px 24px
+            rgba(15, 23, 42, 0.06);
+    }
+
+    .score-card {
+        padding: 24px;
+        border-radius: 20px;
+        background: #111827;
+        color: white;
+        box-shadow:
+            0 14px 34px
+            rgba(15, 23, 42, 0.18);
+    }
+
+    .score-total {
+        font-size: 3.2rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .score-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 11px 0;
+        border-bottom:
+            1px solid
+            rgba(255, 255, 255, 0.12);
+    }
+
+    .score-row:last-child {
+        border-bottom: 0;
+    }
+
+    .composition-card {
+        margin-top: 20px;
+        padding: 18px;
+        border-radius: 18px;
+        background:
+            rgba(255, 255, 255, 0.08);
+    }
+
+    .composition-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        padding: 10px 0;
+        border-bottom:
+            1px solid
+            rgba(255, 255, 255, 0.10);
+    }
+
+    .composition-row:last-child {
+        border-bottom: 0;
+    }
+
+    .composition-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 700;
+    }
+
+    .element-row {
+        padding: 16px;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        background: white;
+    }
+
+    .difficulty-badge {
+        min-width: 42px;
+        display: inline-flex;
+        justify-content: center;
+    }
+
+    .requirement-row {
+        padding: 16px;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        background: white;
+    }
+
+    .bonus-row {
+        border-color: #ffe69c;
+        background: #fffdf2;
+    }
+
+    .requirement-score {
+        min-width: 58px;
+        text-align: center;
+    }
+
+    .pathway-status {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+
+    .pathway-ready {
+        color: #0f5132;
+        background: #d1e7dd;
+    }
+
+    .pathway-achieved {
+        color: #0f5132;
+        background: #e8f6ef;
+        border: 1px solid #badbcc;
+    }
+
+    .pathway-developing {
+        color: #984c0c;
+        background: #ffe5d0;
+    }
+
+    .pathway-not-started {
+        color: #495057;
+        background: #e9ecef;
+    }
+
+    .pathway-no-status {
+        color: #667085;
+        background: #f1f5f9;
+    }
+
+    .section-eyebrow {
+        color: #0d6efd;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+    }
+
+    .calculator-note {
+        padding: 16px;
+        border: 1px solid #dbeafe;
+        border-radius: 16px;
+        background: #eff6ff;
+    }
+
+    .routine-summary {
+        padding: 18px;
+        border-radius: 16px;
+        background:
+            rgba(255, 255, 255, 0.12);
+    }
+
+    .empty-state {
+        padding: 34px 20px;
+        text-align: center;
+        color: #667085;
+    }
+
+    @media (max-width: 767px) {
+        .calculator-hero {
+            padding: 22px;
+        }
+
+        .score-total {
+            font-size: 2.6rem;
+        }
+    }
+</style>
+
+
+<div class="container-fluid py-4">
+
+    <div class="calculator-shell">
+
+        <!-- =====================================================
+             HERO
+             ===================================================== -->
+
+        <section class="calculator-hero mb-4">
+
+            <div class="row align-items-center g-4">
+
+                <div class="col-12 col-lg-8">
+
+                    <div class="small text-uppercase fw-semibold opacity-75 mb-2">
+                        Floor Routine Builder
+                    </div>
+
+                    <h1 class="h2 fw-bold mb-1">
+                        {{ athlete.get_full_name|default:athlete.username }}
+                    </h1>
+
+                    <div class="opacity-75">
+
+                        {% if routine.pathway_level %}
+                            {{ routine.pathway_level.name }}
+                        {% else %}
+                            No pathway level assigned
+                        {% endif %}
+
+                        ·
+
+                        {{ routine.name }}
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-12 col-lg-4">
+
+                    <div class="routine-summary">
+
+                        <div class="small opacity-75 mb-1">
+                            Event
+                        </div>
+
+                        <div class="fw-bold mb-2">
+                            Floor Exercise
+                        </div>
+
+                        <div class="small opacity-75">
+                            {{ elements|length }}
+                            routine element{{ elements|length|pluralize }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             NAVIGATION
+             ===================================================== -->
+
+        <div class="d-flex flex-wrap gap-2 mb-4">
+
+            <a
+                href="{% url 'pathway:athlete_pathway_requirements' athlete.id %}"
+                class="btn btn-outline-secondary"
+            >
+                ← Skill Tree
+            </a>
+
+            <a
+                href="{% url 'pathway:athlete_pathway_editor' athlete.id %}"
+                class="btn btn-outline-primary"
+            >
+                Pathway Setup
+            </a>
+
+        </div>
+
+
+        <div class="row g-4">
+
+            <!-- =================================================
+                 LEFT SIDE
+                 ================================================= -->
+
+            <div class="col-12 col-xl-8">
+
+                <!-- =============================================
+                     ROUTINE ELEMENTS
+                     ============================================= -->
+
+                <section class="card calculator-card mb-4">
+
+                    <div class="card-header bg-white border-0 p-4">
+
+                        <div class="section-eyebrow">
+                            Routine Construction
+                        </div>
+
+                        <h2 class="h4 mb-1">
+                            🎵 Floor Routine Elements
+                        </h2>
+
+                        <p class="text-muted mb-0">
+                            Add the skills planned for this routine.
+                            The calculator uses the seven highest
+                            element values for the projected score.
+                        </p>
+
+                    </div>
+
+
+                    <div class="card-body p-4 pt-0">
+
+                        <div class="d-grid gap-3 mb-4">
+
+                            {% for element in elements %}
+
+                                <div class="element-row">
+
+                                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+
+                                        <div class="d-flex align-items-center gap-3">
+
+                                            <div class="fw-bold text-muted">
+                                                {{ element.order }}
+                                            </div>
+
+
+                                            <span class="badge text-bg-primary difficulty-badge">
+                                                {{ element.difficulty }}
+                                            </span>
+
+
+                                            <div>
+
+                                                <div class="fw-semibold">
+                                                    {{ element.skill_name }}
+                                                </div>
+
+                                                <div class="small text-muted">
+
+                                                    DV:
+                                                    {{ element.difficulty_value }}
+
+                                                    ·
+
+                                                    {{ element.get_element_type_display }}
+
+                                                    {% if element.is_dismount %}
+                                                        · Dismount
+                                                    {% endif %}
+
+                                                </div>
+
+
+                                                {% if element.notes %}
+
+                                                    <div class="small text-muted mt-1">
+                                                        {{ element.notes }}
+                                                    </div>
+
+                                                {% endif %}
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <form
+                                            method="post"
+                                            action="{% url 'pathway:delete_routine_element' element.id %}"
+                                        >
+
+                                            {% csrf_token %}
+
+                                            <button
+                                                type="submit"
+                                                class="btn btn-sm btn-outline-danger"
+                                                onclick="return confirm(
+                                                    'Remove this Floor element?'
+                                                );"
+                                            >
+                                                Remove
+                                            </button>
+
+                                        </form>
+
+                                    </div>
+
+                                </div>
+
+                            {% empty %}
+
+                                <div class="empty-state">
+
+                                    <div class="fs-2 mb-2">
+                                        🎵
+                                    </div>
+
+                                    <div class="fw-semibold">
+                                        No Floor elements yet
+                                    </div>
+
+                                    <div class="small mt-1">
+                                        Add the athlete's planned
+                                        Floor elements below.
+                                    </div>
+
+                                </div>
+
+                            {% endfor %}
+
+                        </div>
+
+
+                        <hr class="my-4">
+
+
+                        <!-- =====================================
+                             ADD ELEMENT
+                             ===================================== -->
+
+                        <div class="section-eyebrow mb-1">
+                            Add Skill
+                        </div>
+
+                        <h3 class="h5 mb-3">
+                            Add Floor Element
+                        </h3>
+
+
+                        <form method="post">
+
+                            {% csrf_token %}
+
+                            <input
+                                type="hidden"
+                                name="action"
+                                value="add_element"
+                            >
+
+
+                            <div class="row g-3">
+
+                                <div class="col-12 col-md-6">
+
+                                    <label class="form-label fw-semibold">
+                                        Skill
+                                    </label>
+
+                                    {{ element_form.skill_name }}
+
+                                </div>
+
+
+                                <div class="col-6 col-md-3">
+
+                                    <label class="form-label fw-semibold">
+                                        Difficulty
+                                    </label>
+
+                                    {{ element_form.difficulty }}
+
+                                </div>
+
+
+                                <div class="col-6 col-md-3">
+
+                                    <label class="form-label fw-semibold">
+                                        Order
+                                    </label>
+
+                                    {{ element_form.order }}
+
+                                </div>
+
+
+                                <div class="col-12 col-md-4">
+
+                                    <label class="form-label fw-semibold">
+                                        Element Type
+                                    </label>
+
+                                    {{ element_form.element_type }}
+
+                                    <div class="form-text">
+                                        Choose Acro or Dance carefully.
+                                        Floor composition uses both.
+                                    </div>
+
+                                </div>
+
+
+                                <div class="col-12 col-md-4 d-flex align-items-end">
+
+                                    <div class="form-check mb-2">
+
+                                        {{ element_form.is_dismount }}
+
+                                        <label class="form-check-label">
+                                            Dismount
+                                        </label>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="col-12">
+
+                                    <label class="form-label fw-semibold">
+                                        Notes
+                                    </label>
+
+                                    {{ element_form.notes }}
+
+                                </div>
+
+
+                                <div class="col-12">
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-primary"
+                                    >
+                                        + Add Floor Element
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </section>
+
+
+                <!-- =============================================
+                     HP REQUIREMENTS
+                     ============================================= -->
+
+                <section class="card calculator-card">
+
+                    <div class="card-header bg-white border-0 p-4">
+
+                        <div class="section-eyebrow">
+                            High Performance Pathway
+                        </div>
+
+                        <h2 class="h4 mb-1">
+                            Floor Requirements & Bonuses
+                        </h2>
+
+                        <p class="text-muted mb-0">
+                            Compare the planned routine against the
+                            athlete's HP pathway status and select
+                            the CRs and bonuses this routine satisfies.
+                        </p>
+
+                    </div>
+
+
+                    <div class="card-body p-4 pt-0">
+
+                        <div class="calculator-note mb-4">
+
+                            <div class="d-flex gap-3">
+
+                                <div class="fs-5">
+                                    💡
+                                </div>
+
+                                <div class="small text-muted">
+                                    The pathway status shows whether
+                                    the athlete has developed the requirement.
+                                    The checkbox tells the calculator whether
+                                    the requirement is actually satisfied
+                                    in this planned Floor routine.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <form method="post">
+
+                            {% csrf_token %}
+
+                            <input
+                                type="hidden"
+                                name="action"
+                                value="save_requirements"
+                            >
+
+
+                            <div class="d-grid gap-3">
+
+                                {% for row in requirement_rows %}
+
+                                    {% with item=row.routine_requirement %}
+
+                                        <div
+                                            class="
+                                                requirement-row
+
+                                                {% if item.requirement.requirement_type == 'bonus' %}
+                                                    bonus-row
+                                                {% endif %}
+                                            "
+                                        >
+
+                                            <div class="form-check">
+
+                                                <input
+                                                    type="checkbox"
+                                                    name="requirement_{{ item.id }}"
+                                                    value="yes"
+                                                    class="form-check-input"
+                                                    id="requirement-{{ item.id }}"
+                                                    {% if item.is_met %}
+                                                        checked
+                                                    {% endif %}
+                                                >
+
+
+                                                <label
+                                                    class="form-check-label w-100"
+                                                    for="requirement-{{ item.id }}"
+                                                >
+
+                                                    <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
+
+                                                        <div class="flex-grow-1">
+
+                                                            <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+
+                                                                <div class="fw-semibold">
+                                                                    {{ item.requirement.title }}
+                                                                </div>
+
+
+                                                                {% if item.requirement.requirement_type == 'bonus' %}
+
+                                                                    <span class="badge text-bg-warning">
+                                                                        Bonus
+                                                                    </span>
+
+                                                                {% else %}
+
+                                                                    <span class="badge text-bg-light border">
+                                                                        CR
+                                                                    </span>
+
+                                                                {% endif %}
+
+                                                            </div>
+
+
+                                                            {% if item.requirement.description %}
+
+                                                                <div class="small text-muted mb-2">
+                                                                    {{ item.requirement.description }}
+                                                                </div>
+
+                                                            {% endif %}
+
+
+                                                            <!-- =========================
+                                                                 ATHLETE PATHWAY STATUS
+                                                                 ========================= -->
+
+                                                            {% if row.athlete_requirement %}
+
+                                                                {% if row.athlete_requirement.status == 'competition_ready' %}
+
+                                                                    <span class="pathway-status pathway-ready">
+                                                                        🏆 Competition Ready
+                                                                    </span>
+
+                                                                {% elif row.athlete_requirement.status == 'achieved' %}
+
+                                                                    <span class="pathway-status pathway-achieved">
+                                                                        ✓ Achieved
+                                                                    </span>
+
+                                                                {% elif row.athlete_requirement.status == 'developing' %}
+
+                                                                    <span class="pathway-status pathway-developing">
+                                                                        ◐ Developing
+                                                                    </span>
+
+                                                                {% else %}
+
+                                                                    <span class="pathway-status pathway-not-started">
+                                                                        ○ Not Started
+                                                                    </span>
+
+                                                                {% endif %}
+
+
+                                                                {% if row.athlete_requirement.coach_note %}
+
+                                                                    <div class="small text-muted mt-2">
+                                                                        Skill Tree Note:
+                                                                        {{ row.athlete_requirement.coach_note }}
+                                                                    </div>
+
+                                                                {% endif %}
+
+                                                            {% else %}
+
+                                                                <span class="pathway-status pathway-no-status">
+                                                                    No athlete status recorded
+                                                                </span>
+
+                                                            {% endif %}
+
+                                                        </div>
+
+
+                                                        <!-- =========================
+                                                             SCORE VALUE
+                                                             ========================= -->
+
+                                                        <div class="requirement-score">
+
+                                                            {% if item.requirement.requirement_type == 'bonus' %}
+
+                                                                <span class="badge text-bg-warning fs-6">
+                                                                    +{{ item.requirement.bonus_value }}
+                                                                </span>
+
+                                                            {% else %}
+
+                                                                <span class="badge text-bg-primary fs-6">
+                                                                    +{{ item.requirement.value }}
+                                                                </span>
+
+                                                            {% endif %}
+
+                                                        </div>
+
+                                                    </div>
+
+                                                </label>
+
+                                            </div>
+
+                                        </div>
+
+                                    {% endwith %}
+
+                                {% empty %}
+
+                                    <div class="empty-state">
+                                        No Floor HP requirements
+                                        are attached to this routine yet.
+                                    </div>
+
+                                {% endfor %}
+
+                            </div>
+
+
+                            <div class="mt-4">
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-outline-primary"
+                                >
+                                    Save Floor Requirements
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+
+            <!-- =================================================
+                 RIGHT SIDE
+                 ================================================= -->
+
+            <div class="col-12 col-xl-4">
+
+                <!-- =============================================
+                     SCORE
+                     ============================================= -->
+
+                <div class="score-card">
+
+                    <div class="small text-uppercase fw-semibold opacity-75 mb-2">
+                        Projected Floor D Score
+                    </div>
+
+                    <div class="score-total mb-4">
+                        {{ projected_d_score }}
+                    </div>
+
+
+                    <div class="score-row">
+
+                        <span>
+                            Element DV
+                        </span>
+
+                        <strong>
+                            {{ element_dv }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="score-row">
+
+                        <span>
+                            Composition Requirements
+                        </span>
+
+                        <strong>
+                            +{{ cr_total }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="score-row">
+
+                        <span>
+                            Bonuses
+                        </span>
+
+                        <strong>
+                            +{{ bonus_total }}
+                        </strong>
+
+                    </div>
+
+
+                    <!-- =========================================
+                         COMPOSITION
+                         ========================================= -->
+
+                    <div class="composition-card">
+
+                        <div class="small text-uppercase fw-semibold opacity-75 mb-2">
+                            Routine Composition
+                        </div>
+
+
+                        <div class="composition-row">
+
+                            <span>
+                                Acro Elements
+                            </span>
+
+
+                            <span class="composition-status">
+
+                                {{ acro_count }} / 3
+
+                                {% if acro_requirement_met %}
+                                    ✅
+                                {% else %}
+                                    ⚠️
+                                {% endif %}
+
+                            </span>
+
+                        </div>
+
+
+                        <div class="composition-row">
+
+                            <span>
+                                Dance Elements
+                            </span>
+
+
+                            <span class="composition-status">
+
+                                {{ dance_count }} / 3
+
+                                {% if dance_requirement_met %}
+                                    ✅
+                                {% else %}
+                                    ⚠️
+                                {% endif %}
+
+                            </span>
+
+                        </div>
+
+
+                        <div class="composition-row">
+
+                            <span>
+                                Total Elements
+                            </span>
+
+
+                            <span class="composition-status">
+
+                                {{ total_element_count }} / 7
+
+                                {% if optional_requirement_met %}
+                                    ✅
+                                {% else %}
+                                    ⚠️
+                                {% endif %}
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="small opacity-75 mt-4">
+                        Planning estimate only.
+                        Final competition D score remains
+                        subject to official judging,
+                        element recognition and connection credit.
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

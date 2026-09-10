@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block title %}
+My Athlete Videos
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .parent-video-shell {
+        max-width: 1500px;
+        margin: 0 auto;
+    }
+
+    .parent-video-hero {
+        padding: 30px;
+        color: white;
+        border-radius: 24px;
+        background:
+            linear-gradient(
+                135deg,
+                rgba(17, 24, 39, 0.98),
+                rgba(30, 64, 175, 0.95),
+                rgba(79, 70, 229, 0.92)
+            );
+        box-shadow:
+            0 16px 45px
+            rgba(15, 23, 42, 0.16);
+    }
+
+    .parent-video-card {
+        height: 100%;
+        overflow: hidden;
+        border: 0;
+        border-radius: 18px;
+        background: #fff;
+        box-shadow:
+            0 8px 24px
+            rgba(15, 23, 42, 0.07);
+    }
+
+    .parent-video-preview {
+        position: relative;
+        height: 240px;
+        overflow: hidden;
+        background: #0f172a;
+    }
+
+    .parent-video-preview img,
+    .parent-video-preview video {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        background: #0f172a;
+    }
+
+    .parent-video-placeholder {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255, 255, 255, 0.75);
+        font-size: 2.5rem;
+    }
+
+    .parent-video-body {
+        padding: 20px;
+    }
+
+    .parent-video-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-bottom: 10px;
+    }
+
+    @media (max-width: 767px) {
+        .parent-video-hero {
+            padding: 22px;
+        }
+
+        .parent-video-preview {
+            height: 220px;
+        }
+    }
+</style>
+
+
+<div class="container-fluid py-4">
+
+    <div class="parent-video-shell">
+
+        <section class="parent-video-hero mb-4">
+
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+
+                <div>
+
+                    <div class="small text-uppercase fw-semibold opacity-75 mb-2">
+                        Parent Portal
+                    </div>
+
+                    <h1 class="h2 fw-bold mb-2">
+                        My Athlete Videos
+                    </h1>
+
+                    <p class="mb-0 opacity-75">
+                        Videos shared by your athlete's coaching team.
+                    </p>
+
+                </div>
+
+                <div>
+
+                    <span class="badge text-bg-light">
+                        {{ video_count }}
+                        video{{ video_count|pluralize }}
+                    </span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        {% if videos %}
+
+            <div class="row g-4">
+
+                {% for video in videos %}
+
+                    <div class="col-12 col-md-6 col-xl-4">
+
+                        <article class="parent-video-card">
+
+                            <div class="parent-video-preview">
+
+                                {% if video.thumbnail %}
+
+                                    <img
+                                        src="{{ video.thumbnail.url }}"
+                                        alt="{{ video.title }}"
+                                        loading="lazy"
+                                    >
+
+                                {% elif video.video_file %}
+
+                                    <video
+                                        controls
+                                        playsinline
+                                        preload="metadata"
+                                    >
+                                        <source
+                                            src="{{ video.video_file.url }}"
+                                        >
+                                    </video>
+
+                                {% else %}
+
+                                    <div class="parent-video-placeholder">
+                                        🎥
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <div class="parent-video-body">
+
+                                <h2 class="h5 mb-2">
+                                    {{ video.title }}
+                                </h2>
+
+
+                                <div class="parent-video-badges">
+
+                                    {% if video.skill_name %}
+
+                                        <span class="badge text-bg-light border">
+                                            {{ video.skill_name }}
+                                        </span>
+
+                                    {% endif %}
+
+
+                                    <span class="badge text-bg-primary">
+                                        {{ video.get_event_display }}
+                                    </span>
+
+
+                                    {% if video.is_personal_best %}
+
+                                        <span class="badge text-bg-warning">
+                                            ⭐ Personal Best
+                                        </span>
+
+                                    {% endif %}
+
+
+                                    {% if video.is_reference_attempt %}
+
+                                        <span class="badge text-bg-primary">
+                                            🎯 Reference
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                {% if video.primary_athlete %}
+
+                                    <div class="small mb-1">
+
+                                        <strong>
+                                            Athlete:
+                                        </strong>
+
+                                        {{ video.primary_athlete.get_full_name|default:video.primary_athlete.username }}
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                <div class="small text-muted">
+
+                                    {% if video.recorded_at %}
+
+                                        {{ video.recorded_at|date:"M j, Y" }}
+
+                                    {% else %}
+
+                                        Uploaded
+                                        {{ video.uploaded_at|date:"M j, Y" }}
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                {% if video.notes %}
+
+                                    <p class="small text-muted mt-3 mb-0">
+                                        {{ video.notes }}
+                                    </p>
+
+                                {% endif %}
+
+                            </div>
+
+                        </article>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+
+        {% else %}
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body p-5 text-center">
+
+                    <div class="display-4 mb-3">
+                        🎥
+                    </div>
+
+                    <h2 class="h4">
+                        No shared videos yet
+                    </h2>
+
+                    <p class="text-muted mb-0">
+                        Videos your athlete's coaches share with parents
+                        will appear here.
+                    </p>
+
+                </div>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

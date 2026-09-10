@@ -244,6 +244,290 @@
                     </div>
 
                 </section>
+            <!-- =====================================================
+     VIDEO SHARING
+     ===================================================== -->
+
+<section class="card border-0 shadow-sm rounded-4 mb-4">
+
+    <div class="card-header bg-white border-0 p-4 pb-2">
+
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-3">
+
+            <div>
+
+                <div class="small text-uppercase fw-semibold text-primary mb-1">
+                    Sharing
+                </div>
+
+                <h2 class="h4 mb-1">
+                    Video Access
+                </h2>
+
+                <p class="text-muted mb-0">
+                    Choose who can view this video.
+                </p>
+
+            </div>
+
+
+            {% if video.visibility == 'parents' %}
+
+                <span class="badge text-bg-success">
+                    Shared with Parents
+                </span>
+
+            {% elif video.visibility == 'athlete' %}
+
+                <span class="badge text-bg-primary">
+                    Shared with Athlete
+                </span>
+
+            {% elif video.visibility == 'coaches' %}
+
+                <span class="badge text-bg-secondary">
+                    Coaches Only
+                </span>
+
+            {% else %}
+
+                <span class="badge text-bg-dark">
+                    Private
+                </span>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <div class="card-body p-4">
+
+        <!-- ATHLETES INCLUDED -->
+
+        <div class="mb-4">
+
+            <div class="small text-muted mb-2">
+                Athletes included in this video
+            </div>
+
+
+            <div class="d-flex flex-wrap gap-2">
+
+                {% if video.primary_athlete %}
+
+                    <span class="badge text-bg-light border">
+                        ✓ Primary:
+                        {{ video.primary_athlete.get_full_name|default:video.primary_athlete.username }}
+                    </span>
+
+                {% endif %}
+
+
+                {% for athlete in video.tagged_athletes.all %}
+
+                    <span class="badge text-bg-light border">
+                        ✓ Tagged:
+                        {{ athlete.get_full_name|default:athlete.username }}
+                    </span>
+
+                {% empty %}
+
+                    {% if not video.primary_athlete %}
+
+                        <span class="text-muted small">
+                            No athletes are attached to this video yet.
+                        </span>
+
+                    {% endif %}
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+
+        <form
+            method="post"
+            action="{% url 'video_library:update_video_sharing' video.id %}"
+        >
+
+            {% csrf_token %}
+
+
+            <div class="row g-3">
+
+                <!-- COACHES ONLY -->
+
+                <div class="col-12 col-lg-6">
+
+                    <label class="card border rounded-4 p-3 h-100">
+
+                        <div class="d-flex gap-3">
+
+                            <input
+                                type="radio"
+                                name="visibility"
+                                value="coaches"
+                                class="form-check-input mt-1"
+                                {% if video.visibility == 'coaches' %}
+                                    checked
+                                {% endif %}
+                            >
+
+                            <div>
+
+                                <div class="fw-semibold">
+                                    Coaches Only
+                                </div>
+
+                                <div class="small text-muted">
+                                    Only coaches with access to this video
+                                    can view it.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </label>
+
+                </div>
+
+
+                <!-- ATHLETE -->
+
+                <div class="col-12 col-lg-6">
+
+                    <label class="card border rounded-4 p-3 h-100">
+
+                        <div class="d-flex gap-3">
+
+                            <input
+                                type="radio"
+                                name="visibility"
+                                value="athlete"
+                                class="form-check-input mt-1"
+                                {% if video.visibility == 'athlete' %}
+                                    checked
+                                {% endif %}
+                            >
+
+                            <div>
+
+                                <div class="fw-semibold">
+                                    Athlete + Coaches
+                                </div>
+
+                                <div class="small text-muted">
+                                    The primary and tagged athletes
+                                    can view this video.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </label>
+
+                </div>
+
+
+                <!-- PARENTS -->
+
+                <div class="col-12 col-lg-6">
+
+                    <label class="card border rounded-4 p-3 h-100">
+
+                        <div class="d-flex gap-3">
+
+                            <input
+                                type="radio"
+                                name="visibility"
+                                value="parents"
+                                class="form-check-input mt-1"
+                                {% if video.visibility == 'parents' %}
+                                    checked
+                                {% endif %}
+                            >
+
+                            <div>
+
+                                <div class="fw-semibold">
+                                    Athlete + Parents + Coaches
+                                </div>
+
+                                <div class="small text-muted">
+                                    Athletes and their linked parents
+                                    can view this video.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </label>
+
+                </div>
+
+
+                <!-- PRIVATE -->
+
+                <div class="col-12 col-lg-6">
+
+                    <label class="card border rounded-4 p-3 h-100">
+
+                        <div class="d-flex gap-3">
+
+                            <input
+                                type="radio"
+                                name="visibility"
+                                value="private"
+                                class="form-check-input mt-1"
+                                {% if video.visibility == 'private' %}
+                                    checked
+                                {% endif %}
+                            >
+
+                            <div>
+
+                                <div class="fw-semibold">
+                                    Private
+                                </div>
+
+                                <div class="small text-muted">
+                                    Only the uploader can access this video.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <div class="mt-4">
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    Save Sharing
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</section>
 
 
                 <!-- ANALYSIS -->

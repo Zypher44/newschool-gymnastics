@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+
+{% block title %}
+HP Pathway Overview
+{% endblock %}
+
+{% block page_header %}
+HP Pathway
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .overview-shell {
+        max-width: 1450px;
+        margin: 0 auto;
+    }
+
+    .overview-hero {
+        padding: 34px;
+        color: white;
+        border-radius: 26px;
+        background:
+            linear-gradient(
+                135deg,
+                #111827,
+                #1e40af,
+                #4f46e5
+            );
+        box-shadow:
+            0 16px 45px
+            rgba(15, 23, 42, 0.16);
+    }
+
+    .pathway-flow {
+        display: grid;
+        grid-template-columns:
+            repeat(
+                4,
+                minmax(0, 1fr)
+            );
+        gap: 18px;
+    }
+
+    .level-card {
+        position: relative;
+        height: 100%;
+        padding: 24px;
+        border: 1px solid #e5e7eb;
+        border-radius: 22px;
+        background: white;
+        box-shadow:
+            0 8px 24px
+            rgba(15, 23, 42, 0.06);
+        transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+    }
+
+    .level-card:hover {
+        transform: translateY(-5px);
+        box-shadow:
+            0 14px 34px
+            rgba(15, 23, 42, 0.11);
+    }
+
+    .level-number {
+        width: 44px;
+        height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        background: #eef4ff;
+        color: #0d6efd;
+        font-weight: 800;
+    }
+
+    .level-arrow {
+        position: absolute;
+        top: 50%;
+        right: -25px;
+        z-index: 5;
+        color: #94a3b8;
+        font-size: 1.8rem;
+        transform: translateY(-50%);
+    }
+
+    .level-stat {
+        padding: 10px 12px;
+        border-radius: 12px;
+        background: #f8fafc;
+    }
+
+    .event-pill {
+        display: inline-flex;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: #f1f5f9;
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+
+    @media (max-width: 1100px) {
+        .pathway-flow {
+            grid-template-columns:
+                repeat(
+                    2,
+                    minmax(0, 1fr)
+                );
+        }
+
+        .level-arrow {
+            display: none;
+        }
+    }
+
+    @media (max-width: 700px) {
+        .pathway-flow {
+            grid-template-columns: 1fr;
+        }
+
+        .overview-hero {
+            padding: 24px;
+        }
+    }
+</style>
+
+
+<div class="container-fluid py-4">
+
+    <div class="overview-shell">
+
+        <section class="overview-hero mb-4">
+
+            <div class="small text-uppercase fw-semibold opacity-75 mb-2">
+                GymCan High Performance Pathway
+            </div>
+
+            <h1 class="display-6 fw-bold mb-2">
+                See Where the Path Leads
+            </h1>
+
+            <p class="lead mb-0 opacity-75">
+                Explore each stage of the High Performance pathway
+                and understand the skills and requirements athletes
+                work toward on Vault, Bars, Beam and Floor.
+            </p>
+
+        </section>
+
+
+        <div class="mb-4">
+
+            <h2 class="h4 mb-1">
+                High Performance Progression
+            </h2>
+
+            <p class="text-muted mb-0">
+                Select any level to see what is required
+                to compete at that stage.
+            </p>
+
+        </div>
+
+
+        <div class="pathway-flow">
+
+            {% for card in level_cards %}
+
+                <div>
+
+                    <article class="level-card">
+
+                        <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
+
+                            <div class="level-number">
+                                {{ forloop.counter }}
+                            </div>
+
+                            {% if not forloop.last %}
+                                <span class="level-arrow">
+                                    →
+                                </span>
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="small text-uppercase fw-semibold text-primary mb-1">
+                            HP Level
+                        </div>
+
+                        <h2 class="h3 fw-bold mb-2">
+                            {{ card.level.name }}
+                        </h2>
+
+
+                        {% if card.level.minimum_age %}
+
+                            <div class="text-muted mb-3">
+
+                                Ages
+                                {{ card.level.minimum_age }}
+
+                                {% if card.level.maximum_age %}
+                                    –
+                                    {{ card.level.maximum_age }}
+                                {% endif %}
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if card.level.description %}
+
+                            <p class="text-muted">
+                                {{ card.level.description }}
+                            </p>
+
+                        {% endif %}
+
+
+                        <div class="d-flex flex-wrap gap-2 mb-4">
+
+                            <span class="event-pill">
+                                🏃 Vault
+                            </span>
+
+                            <span class="event-pill">
+                                🤸 Bars
+                            </span>
+
+                            <span class="event-pill">
+                                ⚖️ Beam
+                            </span>
+
+                            <span class="event-pill">
+                                🎵 Floor
+                            </span>
+
+                        </div>
+
+
+                        <div class="row g-2 mb-4">
+
+                            <div class="col-6">
+
+                                <div class="level-stat">
+
+                                    <div class="fw-bold">
+                                        {{ card.requirement_count }}
+                                    </div>
+
+                                    <div class="small text-muted">
+                                        Core Requirements
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="col-6">
+
+                                <div class="level-stat">
+
+                                    <div class="fw-bold">
+                                        {{ card.bonus_count }}
+                                    </div>
+
+                                    <div class="small text-muted">
+                                        Bonus Opportunities
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <a
+                            href="{% url 'pathway:pathway_level_detail' card.level.id %}"
+                            class="btn btn-primary w-100"
+                        >
+                            View Level Requirements →
+                        </a>
+
+                    </article>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+
+        <section class="card border-0 shadow-sm rounded-4 mt-4">
+
+            <div class="card-body p-4">
+
+                <h3 class="h5 mb-2">
+                    How to Use the Pathway
+                </h3>
+
+                <p class="text-muted mb-0">
+                    The pathway shows the technical requirements
+                    associated with each HP level. Individual athlete
+                    progress is managed separately by the Head Coach,
+                    so this page is designed simply to help athletes
+                    and families understand what each stage requires
+                    and what comes next.
+                </p>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</div>
+
+{% endblock %}

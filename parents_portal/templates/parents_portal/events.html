@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+
+{% block title %}
+Upcoming Events
+{% endblock %}
+
+{% block page_header %}
+Family Calendar
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .events-shell {
+        max-width: 1300px;
+        margin: 0 auto;
+    }
+
+    .events-hero {
+        padding: 30px;
+        color: white;
+        border-radius: 24px;
+        background:
+            linear-gradient(
+                135deg,
+                #111827,
+                #1e40af,
+                #4f46e5
+            );
+        box-shadow:
+            0 16px 45px
+            rgba(15, 23, 42, 0.16);
+    }
+
+    .events-card {
+        border: 0;
+        border-radius: 20px;
+        box-shadow:
+            0 8px 24px
+            rgba(15, 23, 42, 0.06);
+    }
+
+    .event-row {
+        padding: 20px;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        background: white;
+    }
+
+    .event-date-box {
+        width: 70px;
+        min-width: 70px;
+        padding: 10px;
+        text-align: center;
+        border-radius: 14px;
+        background: #eef4ff;
+    }
+
+    .event-month {
+        color: #0d6efd;
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .event-day {
+        color: #172033;
+        font-size: 1.7rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+</style>
+
+
+<div class="container-fluid py-4">
+
+    <div class="events-shell">
+
+        <section class="events-hero mb-4">
+
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+
+                <div>
+
+                    <div class="small text-uppercase fw-semibold opacity-75 mb-2">
+                        Parent Portal
+                    </div>
+
+                    <h1 class="h2 fw-bold mb-2">
+                        Upcoming Events
+                    </h1>
+
+                    <p class="mb-0 opacity-75">
+                        Practices, competitions and team events
+                        from your gymnastics program.
+                    </p>
+
+                </div>
+
+                <span class="badge text-bg-light fs-6">
+                    {{ upcoming_event_count }}
+                    Upcoming
+                </span>
+
+            </div>
+
+        </section>
+
+
+        <section class="card events-card mb-4">
+
+            <div class="card-header bg-white border-0 p-4">
+
+                <h2 class="h4 mb-1">
+                    📅 What's Coming Up
+                </h2>
+
+                <p class="text-muted mb-0">
+                    Upcoming gym and team events.
+                </p>
+
+            </div>
+
+
+            <div class="card-body p-4 pt-0">
+
+                {% if upcoming_events %}
+
+                    <div class="d-grid gap-3">
+
+                        {% for event in upcoming_events %}
+
+                            <article class="event-row">
+
+                                <div class="d-flex gap-3">
+
+                                    <div class="event-date-box">
+
+                                        <div class="event-month">
+                                            {{ event.event_date|date:"M" }}
+                                        </div>
+
+                                        <div class="event-day">
+                                            {{ event.event_date|date:"j" }}
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class="flex-grow-1">
+
+                                        <div class="d-flex flex-column flex-lg-row justify-content-between gap-2">
+
+                                            <div>
+
+                                                <h3 class="h5 mb-1">
+                                                    {{ event.title }}
+                                                </h3>
+
+                                                {% if event.location %}
+
+                                                    <div class="small text-muted mb-1">
+                                                        📍 {{ event.location }}
+                                                    </div>
+
+                                                {% endif %}
+
+
+                                                {% if event.start_time %}
+
+                                                    <div class="small text-muted">
+                                                        🕒
+                                                        {{ event.start_time|time:"g:i A" }}
+
+                                                        {% if event.end_time %}
+                                                            –
+                                                            {{ event.end_time|time:"g:i A" }}
+                                                        {% endif %}
+                                                    </div>
+
+                                                {% endif %}
+
+                                            </div>
+
+
+                                            <div class="text-lg-end">
+
+                                                <div class="fw-semibold">
+                                                    {{ event.event_date|date:"l" }}
+                                                </div>
+
+                                                <div class="small text-muted">
+                                                    {{ event.event_date|date:"F j, Y" }}
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        {% if event.notes %}
+
+                                            <div class="alert alert-light border mt-3 mb-0">
+                                                {{ event.notes }}
+                                            </div>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+
+                            </article>
+
+                        {% endfor %}
+
+                    </div>
+
+
+                {% else %}
+
+                    <div class="text-center py-5">
+
+                        <div class="display-5 mb-3">
+                            📅
+                        </div>
+
+                        <h3 class="h5">
+                            Nothing scheduled yet
+                        </h3>
+
+                        <p class="text-muted mb-0">
+                            New gym events will appear here
+                            when coaches add them.
+                        </p>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        {% if past_events %}
+
+            <section class="card events-card">
+
+                <div class="card-header bg-white border-0 p-4">
+
+                    <h2 class="h5 mb-1">
+                        Recent Events
+                    </h2>
+
+                    <p class="text-muted mb-0">
+                        Recently completed gym events.
+                    </p>
+
+                </div>
+
+
+                <div class="card-body p-4 pt-0">
+
+                    <div class="list-group list-group-flush">
+
+                        {% for event in past_events %}
+
+                            <div class="list-group-item px-0">
+
+                                <div class="d-flex justify-content-between gap-3">
+
+                                    <div>
+
+                                        <div class="fw-semibold">
+                                            {{ event.title }}
+                                        </div>
+
+                                        {% if event.location %}
+
+                                            <div class="small text-muted">
+                                                {{ event.location }}
+                                            </div>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                    <div class="small text-muted text-end">
+                                        {{ event.event_date|date:"M j, Y" }}
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        {% endif %}
+
+
+        <div class="mt-4">
+
+            <a
+                {% url 'parent_dashboard' %}
+                class="btn btn-outline-secondary"
+            >
+                ← Parent Dashboard
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

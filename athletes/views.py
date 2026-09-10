@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.utils import timezone
+from gyms.models import GymMembership
 
 from coaches.models import TeamEvent
 from performance_testing.models import AthleteTestingResult
@@ -103,13 +104,39 @@ def athlete_dashboard(request):
         survey_streak += 1
         streak_date -= timezone.timedelta(days=1)
 
-    upcoming_events = TeamEvent.objects.filter(
-        event_date__gte=today
-    ).order_by(
-        'event_date',
-        'start_time'
-    )[:5]
+    athlete_membership = (
+        GymMembership.objects
+        .filter(
+            user=athlete,
+            role='athlete',
+            is_active=True
+        )
+        .select_related('gym')
+        .first()
+    )
 
+    athlete_gym = (
+        athlete_membership.gym
+        if athlete_membership
+        else None
+    )
+
+    if athlete_gym:
+        upcoming_events = (
+            TeamEvent.objects
+            .filter(
+                gym=athlete_gym,
+                event_date__gte=today
+            )
+            .select_related('created_by')
+            .order_by(
+                'event_date',
+                'start_time'
+            )[:5]
+        )
+
+    else:
+        upcoming_events = TeamEvent.objects.none()
     recent_videos = AthleteVideo.objects.filter(
         athlete=athlete
     ).exclude(

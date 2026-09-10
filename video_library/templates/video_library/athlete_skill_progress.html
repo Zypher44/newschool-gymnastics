@@ -252,6 +252,135 @@
         background: #0f172a;
     }
 
+    /* ========================================================
+       VISUAL PROGRESS STORY
+       ======================================================== */
+
+    .story-section {
+        overflow: hidden;
+    }
+
+    .story-scroll {
+        overflow-x: auto;
+        padding-bottom: 8px;
+    }
+
+    .story-track {
+        display: flex;
+        align-items: stretch;
+        gap: 16px;
+        min-width: max-content;
+    }
+
+    .story-item {
+        position: relative;
+        width: 260px;
+        flex: 0 0 260px;
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        background: #fff;
+        overflow: hidden;
+        box-shadow:
+            0 6px 18px
+            rgba(15, 23, 42, 0.06);
+        transition:
+            border-color 0.2s ease,
+            box-shadow 0.2s ease,
+            transform 0.2s ease;
+    }
+
+    .story-item:hover {
+        transform: translateY(-2px);
+    }
+
+    .story-item-reference {
+        border: 2px solid #0d6efd;
+    }
+
+    .story-item-selected-a {
+        border: 3px solid #0d6efd;
+        box-shadow:
+            0 10px 28px
+            rgba(13, 110, 253, 0.18);
+    }
+
+    .story-item-selected-b {
+        border: 3px solid #198754;
+        box-shadow:
+            0 10px 28px
+            rgba(25, 135, 84, 0.18);
+    }
+
+    .story-image-wrap {
+        position: relative;
+        height: 220px;
+        background: #0f172a;
+        overflow: hidden;
+    }
+
+    .story-image {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        background: #0f172a;
+    }
+
+    .story-marker {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 3;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .story-body {
+        padding: 16px;
+    }
+
+    .story-date {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-bottom: 4px;
+    }
+
+    .story-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .story-arrow {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 34px;
+        font-size: 1.4rem;
+        color: #94a3b8;
+    }
+
+    .story-actions {
+        display: grid;
+        gap: 7px;
+        margin-top: 12px;
+    }
+
+    .story-compare-panel {
+        padding: 18px;
+        border: 1px solid #dbeafe;
+        border-radius: 16px;
+        background: #f8fafc;
+    }
+
+    .story-selection-box {
+        min-height: 52px;
+        padding: 10px 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: white;
+    }
+
     @media (max-width: 767px) {
         .progress-hero {
             padding: 22px;
@@ -272,6 +401,15 @@
 
         .consistency-score {
             font-size: 2.4rem;
+        }
+
+        .story-item {
+            width: 220px;
+            flex-basis: 220px;
+        }
+
+        .story-image-wrap {
+            height: 190px;
         }
     }
 </style>
@@ -415,6 +553,866 @@
 
         </section>
 
+    <!-- =====================================================
+     COACH PROGRESS SUMMARY
+     ===================================================== -->
+
+{% if progress_summary.has_enough_data %}
+
+    <section class="card progress-card mb-4">
+
+        <div class="card-header bg-white border-0 p-4 pb-2">
+
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+
+                <div>
+
+                    <div class="small text-uppercase fw-semibold text-primary mb-1">
+                        Coach Snapshot
+                    </div>
+
+                    <h2 class="h4 mb-1">
+                        {{ progress_summary.headline }}
+                    </h2>
+
+                    <p class="text-muted mb-0">
+                        Plain-language summary of the athlete's measured
+                        progress across analyzed attempts.
+                    </p>
+
+                </div>
+
+                <span class="badge text-bg-light border">
+                    {{ analyzed_attempt_count }}
+                    analyzed attempts
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="card-body p-4">
+
+            <div class="row g-4">
+
+                {% if progress_summary.largest_change %}
+
+                    <div class="col-12 col-md-6 col-xl-4">
+
+                        <div class="consistency-summary-box h-100">
+
+                            <div class="small text-muted mb-1">
+                                Largest Change
+                            </div>
+
+                            <div class="h5 mb-1">
+                                {{ progress_summary.largest_change.label }}
+                            </div>
+
+                            <div class="display-6 fw-semibold">
+                                {{ progress_summary.largest_change.absolute_change }}°
+                            </div>
+
+                            <div class="small text-muted">
+                                First to latest
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+
+                {% if progress_summary.most_stable %}
+
+                    <div class="col-12 col-md-6 col-xl-4">
+
+                        <div class="consistency-summary-box h-100">
+
+                            <div class="small text-muted mb-1">
+                                Most Similar
+                            </div>
+
+                            <div class="h5 mb-1">
+                                {{ progress_summary.most_stable.label }}
+                            </div>
+
+                            <div class="display-6 fw-semibold">
+                                {{ progress_summary.most_stable.absolute_change }}°
+                            </div>
+
+                            <div class="small text-muted">
+                                First to latest
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+
+                {% if progress_summary.reference_match %}
+
+                    <div class="col-12 col-md-6 col-xl-4">
+
+                        <div class="consistency-summary-box h-100">
+
+                            <div class="small text-muted mb-1">
+                                Latest vs Reference
+                            </div>
+
+                            <div class="display-6 fw-semibold">
+                                {{ progress_summary.reference_match.average_difference }}°
+                            </div>
+
+                            <div class="small text-muted">
+                                Average difference across available measurements
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            {% if progress_summary.statements %}
+
+                <div class="mt-4">
+
+                    <h3 class="h6 mb-3">
+                        What the data is showing
+                    </h3>
+
+                    <div class="list-group">
+
+                        {% for statement in progress_summary.statements %}
+
+                            <div class="list-group-item border rounded-3 mb-2">
+                                {{ statement }}
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+
+            <div class="small text-muted mt-4">
+                These statements describe measured change and repeatability.
+                They do not assume that a higher or lower joint angle is
+                technically better.
+            </div>
+
+        </div>
+
+    </section>
+
+{% endif %}
+
+
+    <section class="card progress-card mb-4">
+
+    <div class="card-header bg-white border-0 p-4 pb-2">
+
+        <div class="d-flex justify-content-between align-items-start gap-3">
+
+            <div>
+
+                <h2 class="h4 mb-1">
+                    Coaching Goals
+                </h2>
+
+                <p class="text-muted mb-0">
+                    Set a simple technical focus for future
+                    {{ skill_name }} attempts.
+                </p>
+
+            </div>
+
+            <span class="badge text-bg-light border">
+                {{ active_goals|length }} Active
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div class="card-body p-4">
+
+        {% if active_goals %}
+
+            <div class="row g-3 mb-4">
+
+                {% for goal in active_goals %}
+
+                    <div class="col-12 col-lg-6">
+
+                        <div class="consistency-summary-box h-100">
+
+                            <div class="small text-uppercase text-success fw-semibold mb-1">
+                                Active Goal
+                            </div>
+
+                            <h3 class="h5 mb-2">
+                                {{ goal.title }}
+                            </h3>
+
+                            {% if goal.description %}
+
+                                <p class="text-muted mb-2">
+                                    {{ goal.description }}
+                                </p>
+
+                            {% endif %}
+
+                        {% if paused_goals %}
+
+    <div class="mt-4">
+
+        <h3 class="h6 mb-3">
+            Paused Goals
+        </h3>
+
+        <div class="row g-3">
+
+            {% for goal in paused_goals %}
+
+                <div class="col-12 col-lg-6">
+
+                    <div class="consistency-summary-box h-100">
+
+                        <div class="small text-uppercase text-muted fw-semibold mb-1">
+                            Paused
+                        </div>
+
+                        <h4 class="h6 mb-2">
+                            {{ goal.title }}
+                        </h4>
+
+                        {% if goal.description %}
+                            <p class="small text-muted mb-3">
+                                {{ goal.description }}
+                            </p>
+                        {% endif %}
+
+                        <form
+                            method="post"
+                            action="{% url 'video_library:update_skill_goal_status' goal.id %}"
+                        >
+                            {% csrf_token %}
+
+                            <input
+                                type="hidden"
+                                name="action"
+                                value="reactivate"
+                            >
+
+                            <button
+                                type="submit"
+                                class="btn btn-sm btn-outline-primary"
+                            >
+                                ↻ Reactivate
+                            </button>
+                        </form>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+{% if completed_goals %}
+
+    <div class="mt-4">
+
+        <h3 class="h6 mb-3">
+            Completed Goals
+        </h3>
+
+        <div class="row g-3">
+
+            {% for goal in completed_goals %}
+
+                <div class="col-12 col-lg-6">
+
+                    <div class="consistency-summary-box h-100">
+
+                        <div class="small text-uppercase text-success fw-semibold mb-1">
+                            ✓ Completed
+                        </div>
+
+                        <h4 class="h6 mb-2">
+                            {{ goal.title }}
+                        </h4>
+
+                        {% if goal.completed_at %}
+
+                            <div class="small text-muted mb-2">
+                                Completed
+                                {{ goal.completed_at|date:"M j, Y" }}
+                            </div>
+
+                        {% endif %}
+
+                        {% if goal.description %}
+
+                            <p class="small text-muted mb-3">
+                                {{ goal.description }}
+                            </p>
+
+                        {% endif %}
+
+                        <form
+                            method="post"
+                            action="{% url 'video_library:update_skill_goal_status' goal.id %}"
+                        >
+                            {% csrf_token %}
+
+                            <input
+                                type="hidden"
+                                name="action"
+                                value="reactivate"
+                            >
+
+                            <button
+                                type="submit"
+                                class="btn btn-sm btn-outline-primary"
+                            >
+                                ↻ Reopen Goal
+                            </button>
+                        </form>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+{% endif %}
+{% endif %}
+
+                            {% if goal.reference_video %}
+
+                                <div class="small text-primary">
+                                    🎯 Tracking against:
+                                    {{ goal.reference_video.title }}
+                                </div>
+
+                                <div class="d-flex flex-wrap gap-2 mt-3">
+
+    <form
+        method="post"
+        action="{% url 'video_library:update_skill_goal_status' goal.id %}"
+    >
+        {% csrf_token %}
+
+        <input
+            type="hidden"
+            name="action"
+            value="complete"
+        >
+
+        <button
+            type="submit"
+            class="btn btn-sm btn-success"
+        >
+            ✓ Complete
+        </button>
+    </form>
+
+
+    <form
+        method="post"
+        action="{% url 'video_library:update_skill_goal_status' goal.id %}"
+    >
+        {% csrf_token %}
+
+        <input
+            type="hidden"
+            name="action"
+            value="pause"
+        >
+
+        <button
+            type="submit"
+            class="btn btn-sm btn-outline-secondary"
+        >
+            ⏸ Pause
+        </button>
+    </form>
+
+</div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+
+        <form
+            method="post"
+            action="{% url 'video_library:create_skill_goal' athlete.id %}"
+        >
+
+            {% csrf_token %}
+
+            <input
+                type="hidden"
+                name="skill_name"
+                value="{{ skill_name }}"
+            >
+
+
+            <div class="row g-3">
+
+                <div class="col-12 col-lg-6">
+
+                    <label class="form-label fw-semibold">
+                        Coaching Goal
+                    </label>
+
+                    <input
+                        type="text"
+                        name="title"
+                        class="form-control"
+                        placeholder="Example: Improve shoulder position"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="col-12 col-lg-6">
+
+                    <label class="form-label fw-semibold">
+                        Coaching Notes
+                    </label>
+
+                    <input
+                        type="text"
+                        name="description"
+                        class="form-control"
+                        placeholder="Example: Match the reference through Peak"
+                    >
+
+                </div>
+
+
+                {% if reference_video %}
+
+                    <div class="col-12">
+
+                        <div class="form-check">
+
+                            <input
+                                class="form-check-input"
+                                type="checkbox"
+                                name="use_reference"
+                                value="yes"
+                                id="use-reference"
+                                checked
+                            >
+
+                            <label
+                                class="form-check-label"
+                                for="use-reference"
+                            >
+                                Track this goal against the current
+                                🎯 Reference Attempt
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+
+                <div class="col-12">
+
+                    <button
+                        type="submit"
+                        class="btn btn-success"
+                    >
+                        ＋ Add Coaching Goal
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</section>
+        <!-- =====================================================
+             VISUAL PROGRESS STORY
+             ===================================================== -->
+
+        {% if progress_story %}
+
+            <section class="card progress-card story-section mb-4">
+
+                <div class="card-header bg-white border-0 p-4 pb-2">
+
+                    <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-start gap-3">
+
+                        <div>
+
+                            <h2 class="h4 mb-1">
+                                Visual Progress Story
+                            </h2>
+
+                            <p class="text-muted mb-0">
+                                Peak positions across {{ progress_story_count }}
+                                analyzed {{ skill_name }}
+                                attempt{{ progress_story_count|pluralize }}.
+                            </p>
+
+
+                            {% if progress_story_count >= 2 %}
+
+                                <div class="d-flex flex-wrap gap-2 mt-3">
+
+                                    {% if first_story_attempt and latest_story_attempt %}
+
+                                        <a
+                                            href="{% url 'video_library:video_compare' %}?video_1={{ first_story_attempt.video.id }}&video_2={{ latest_story_attempt.video.id }}"
+                                            class="btn btn-sm btn-primary"
+                                        >
+                                            ↔ First vs Latest
+                                        </a>
+
+                                    {% endif %}
+
+
+                                    {% if reference_video and latest_story_attempt and reference_video.id != latest_story_attempt.video.id %}
+
+                                        <a
+                                            href="{% url 'video_library:video_compare' %}?video_1={{ reference_video.id }}&video_2={{ latest_story_attempt.video.id }}"
+                                            class="btn btn-sm btn-outline-primary"
+                                        >
+                                            🎯 Reference vs Latest
+                                        </a>
+
+                                    {% endif %}
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <span class="badge text-bg-light border">
+                            {{ progress_story_count }}
+                            frame{{ progress_story_count|pluralize }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card-body p-4">
+
+                    <div class="story-scroll">
+
+                        <div class="story-track">
+
+                            {% for story in progress_story %}
+
+                                <article
+                                    class="story-item {% if story.is_reference %}story-item-reference{% endif %}"
+                                    id="story-card-{{ story.video.id }}"
+                                >
+
+                                    <div class="story-image-wrap">
+
+                                        <div class="story-marker">
+
+                                            {% if story.is_reference %}
+
+                                                <span class="badge text-bg-primary">
+                                                    🎯 Reference
+                                                </span>
+
+                                            {% endif %}
+
+
+                                            {% if story.is_personal_best %}
+
+                                                <span class="badge text-bg-warning">
+                                                    ⭐ Best
+                                                </span>
+
+                                            {% endif %}
+
+
+                                            {% if story.is_coaching_example %}
+
+                                                <span class="badge text-bg-success">
+                                                    📌 Example
+                                                </span>
+
+                                            {% endif %}
+
+
+                                            {% if story.is_latest %}
+
+                                                <span class="badge text-bg-dark">
+                                                    Latest
+                                                </span>
+
+                                            {% endif %}
+
+                                        </div>
+
+
+                                        {% if story.peak.frame_image %}
+
+                                            <img
+                                                src="{{ story.peak.frame_image.url }}"
+                                                alt="{{ story.video.title }} peak frame"
+                                                class="story-image"
+                                                loading="lazy"
+                                            >
+
+                                        {% elif story.video.thumbnail %}
+
+                                            <img
+                                                src="{{ story.video.thumbnail.url }}"
+                                                alt="{{ story.video.title }}"
+                                                class="story-image"
+                                                loading="lazy"
+                                            >
+
+                                        {% else %}
+
+                                            <div class="attempt-placeholder">
+                                                🎥
+                                            </div>
+
+                                        {% endif %}
+
+                                    </div>
+
+
+                                    <div class="story-body">
+
+                                        <div class="story-date">
+
+                                            {% if story.video.recorded_at %}
+
+                                                {{ story.video.recorded_at|date:"M j, Y" }}
+
+                                            {% else %}
+
+                                                {{ story.video.uploaded_at|date:"M j, Y" }}
+
+                                            {% endif %}
+
+                                        </div>
+
+
+                                        <div class="story-title">
+                                            {{ story.video.title }}
+                                        </div>
+
+
+                                        <div class="small text-muted">
+
+                                            {% if story.peak.knee_angle != None %}
+
+                                                Knee
+                                                {{ story.peak.knee_angle }}°
+
+                                            {% endif %}
+
+
+                                            {% if story.peak.hip_angle != None %}
+
+                                                · Hip
+                                                {{ story.peak.hip_angle }}°
+
+                                            {% endif %}
+
+                                        </div>
+
+
+                                        <div class="story-actions">
+
+                                            <div class="row g-2">
+
+                                                <div class="col-6">
+
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-sm btn-outline-primary w-100 story-select-a"
+                                                        data-video-id="{{ story.video.id }}"
+                                                        data-video-title="{{ story.video.title|escape }}"
+                                                    >
+                                                        Select A
+                                                    </button>
+
+                                                </div>
+
+
+                                                <div class="col-6">
+
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-sm btn-outline-success w-100 story-select-b"
+                                                        data-video-id="{{ story.video.id }}"
+                                                        data-video-title="{{ story.video.title|escape }}"
+                                                    >
+                                                        Select B
+                                                    </button>
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <a
+                                                href="{% url 'video_library:video_detail' story.video.id %}"
+                                                class="btn btn-sm btn-outline-secondary"
+                                            >
+                                                Open Attempt
+                                            </a>
+
+
+                                            {% if reference_video and story.video.id != reference_video.id %}
+
+                                                <a
+                                                    href="{% url 'video_library:video_compare' %}?video_1={{ reference_video.id }}&video_2={{ story.video.id }}"
+                                                    class="btn btn-sm btn-outline-primary"
+                                                >
+                                                    🎯 Compare to Reference
+                                                </a>
+
+                                            {% endif %}
+
+                                        </div>
+
+                                    </div>
+
+                                </article>
+
+
+                                {% if not forloop.last %}
+
+                                    <div class="story-arrow">
+                                        →
+                                    </div>
+
+                                {% endif %}
+
+                            {% endfor %}
+
+                        </div>
+
+                    </div>
+
+
+                    {% if progress_story_count >= 2 %}
+
+                        <div
+                            class="story-compare-panel mt-4"
+                            id="story-compare-panel"
+                        >
+
+                            <div class="row g-3 align-items-center">
+
+                                <div class="col-12 col-lg-4">
+
+                                    <div class="small text-muted mb-1">
+                                        Attempt A
+                                    </div>
+
+                                    <div
+                                        class="story-selection-box"
+                                        id="story-selected-a"
+                                    >
+                                        Select a Peak frame.
+                                    </div>
+
+                                </div>
+
+
+                                <div class="col-12 col-lg-4">
+
+                                    <div class="small text-muted mb-1">
+                                        Attempt B
+                                    </div>
+
+                                    <div
+                                        class="story-selection-box"
+                                        id="story-selected-b"
+                                    >
+                                        Select another Peak frame.
+                                    </div>
+
+                                </div>
+
+
+                                <div class="col-12 col-lg-4">
+
+                                    <a
+                                        href="#"
+                                        id="story-compare-button"
+                                        class="btn btn-primary w-100 disabled"
+                                        aria-disabled="true"
+                                    >
+                                        ↔ Compare Selected
+                                    </a>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <div class="small text-muted mt-3">
+                        This story shows the athlete's detected Peak position
+                        over time. It does not yet classify technique as better
+                        or worse.
+                    </div>
+
+                </div>
+
+            </section>
+
+        {% endif %}
+
 
         <!-- =====================================================
              REFERENCE ATTEMPT
@@ -515,26 +1513,6 @@
                                 {% endif %}
 
                             </div>
-
-
-                            {% if reference_video.reference_marked_by %}
-
-                                <div class="small text-muted mb-3">
-
-                                    Selected by
-
-                                    <strong>
-                                        {{ reference_video.reference_marked_by.get_full_name|default:reference_video.reference_marked_by.username }}
-                                    </strong>
-
-                                    {% if reference_video.reference_marked_at %}
-                                        on
-                                        {{ reference_video.reference_marked_at|date:"M j, Y" }}
-                                    {% endif %}
-
-                                </div>
-
-                            {% endif %}
 
 
                             <div class="d-flex flex-wrap gap-2">
@@ -689,11 +1667,6 @@
 
                                     </div>
 
-                                    <div class="small text-muted">
-                                        Combined consistency across available
-                                        Peak measurements.
-                                    </div>
-
                                 {% else %}
 
                                     <div class="text-muted">
@@ -731,12 +1704,6 @@
                                         {{ most_stable_metric.standard_deviation }}°
                                     </div>
 
-                                {% else %}
-
-                                    <div class="text-muted">
-                                        Not enough data.
-                                    </div>
-
                                 {% endif %}
 
                             </div>
@@ -766,12 +1733,6 @@
                                     <div class="small text-muted">
                                         Variation:
                                         {{ most_variable_metric.standard_deviation }}°
-                                    </div>
-
-                                {% else %}
-
-                                    <div class="text-muted">
-                                        Not enough data.
                                     </div>
 
                                 {% endif %}
@@ -859,13 +1820,6 @@
 
                         {% endfor %}
 
-                    </div>
-
-
-                    <div class="small text-muted mt-4">
-                        Consistency measures repeatability only.
-                        A position can be highly consistent without
-                        yet being technically ideal.
                     </div>
 
                 </div>
@@ -969,28 +1923,6 @@
 
                     </div>
 
-
-                    <div class="small text-muted mt-4">
-                        Trends show measured change only. They do not yet
-                        classify a higher or lower value as technically better.
-                    </div>
-
-                </div>
-
-            </section>
-
-
-        {% elif analyzed_attempt_count == 1 %}
-
-            <section class="card progress-card mb-4">
-
-                <div class="card-body p-4">
-
-                    <div class="alert alert-info mb-0">
-                        One usable analyzed attempt is available. Analyze one more
-                        {{ skill_name }} attempt to begin showing progress trends.
-                    </div>
-
                 </div>
 
             </section>
@@ -1029,8 +1961,6 @@
                                 class="attempt-card {% if reference_video and attempt.video.id == reference_video.id %}attempt-card-reference{% endif %}"
                             >
 
-                                <!-- FRAME -->
-
                                 {% if attempt.peak and attempt.peak.frame_image %}
 
                                     <img
@@ -1049,19 +1979,6 @@
                                         loading="lazy"
                                     >
 
-                                {% elif attempt.video.video_file %}
-
-                                    <video
-                                        class="attempt-frame"
-                                        muted
-                                        playsinline
-                                        preload="metadata"
-                                    >
-                                        <source
-                                            src="{{ attempt.video.video_file.url }}"
-                                        >
-                                    </video>
-
                                 {% else %}
 
                                     <div class="attempt-placeholder">
@@ -1073,131 +1990,56 @@
 
                                 <div class="p-3">
 
-                                    <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-
-                                        <div>
-
-                                            <div class="small text-muted">
-                                                Attempt {{ forloop.counter }}
-                                            </div>
-
-                                            <h3 class="h6 mb-0">
-                                                {{ attempt.video.title }}
-                                            </h3>
-
-                                        </div>
-
-
-                                        <div class="d-flex flex-wrap justify-content-end gap-1">
-
-                                            {% if latest_attempt and attempt.video.id == latest_attempt.video.id %}
-
-                                                <span class="latest-badge">
-                                                    Latest
-                                                </span>
-
-                                            {% endif %}
-
-
-                                            {% if reference_video and attempt.video.id == reference_video.id %}
-
-                                                <span class="reference-attempt-badge">
-                                                    🎯 Reference
-                                                </span>
-
-                                            {% endif %}
-
-
-                                            {% if attempt.video.is_personal_best %}
-
-                                                <span class="badge text-bg-warning">
-                                                    ⭐ Personal Best
-                                                </span>
-
-                                            {% endif %}
-
-
-                                            {% if attempt.video.is_coaching_example %}
-
-                                                <span class="badge text-bg-success">
-                                                    📌 Coaching Example
-                                                </span>
-
-                                            {% endif %}
-
-                                        </div>
-
+                                    <div class="small text-muted">
+                                        Attempt {{ forloop.counter }}
                                     </div>
 
+                                    <h3 class="h6">
+                                        {{ attempt.video.title }}
+                                    </h3>
 
-                                    <div class="small text-muted mb-3">
 
-                                        {% if attempt.video.recorded_at %}
+                                    <div class="d-flex flex-wrap gap-1 mb-3">
 
-                                            {{ attempt.video.recorded_at|date:"M j, Y" }}
+                                        {% if latest_attempt and attempt.video.id == latest_attempt.video.id %}
 
-                                        {% else %}
+                                            <span class="latest-badge">
+                                                Latest
+                                            </span>
 
-                                            Uploaded
-                                            {{ attempt.video.uploaded_at|date:"M j, Y" }}
+                                        {% endif %}
+
+
+                                        {% if reference_video and attempt.video.id == reference_video.id %}
+
+                                            <span class="reference-attempt-badge">
+                                                🎯 Reference
+                                            </span>
+
+                                        {% endif %}
+
+
+                                        {% if attempt.video.is_personal_best %}
+
+                                            <span class="badge text-bg-warning">
+                                                ⭐ Personal Best
+                                            </span>
+
+                                        {% endif %}
+
+
+                                        {% if attempt.video.is_coaching_example %}
+
+                                            <span class="badge text-bg-success">
+                                                📌 Coaching Example
+                                            </span>
 
                                         {% endif %}
 
                                     </div>
 
 
-                                    <!-- ANALYSIS STATUS -->
-
-                                    {% if attempt.analysis %}
-
-                                        <div class="mb-2">
-
-                                            <span class="analysis-badge analysis-badge-complete">
-                                                AI Analysis Completed
-                                            </span>
-
-                                        </div>
-
-                                    {% else %}
-
-                                        <div class="mb-2">
-
-                                            <span class="analysis-badge analysis-badge-missing">
-                                                Not Analyzed
-                                            </span>
-
-                                        </div>
-
-                                    {% endif %}
-
-
                                     {% if attempt.peak %}
-
-                                        <div class="mb-3">
-                                            <span class="badge text-bg-success">
-                                                Peak Detected
-                                            </span>
-                                        </div>
-
-                                    {% elif attempt.analysis %}
-
-                                        <div class="mb-3">
-                                            <span class="badge text-bg-warning">
-                                                No Peak Data
-                                            </span>
-                                        </div>
-
-                                    {% endif %}
-
-
-                                    <!-- MEASUREMENTS -->
-
-                                    {% if attempt.peak %}
-
-                                        <div class="small text-muted mb-2">
-                                            Peak Measurements
-                                        </div>
-
 
                                         <div class="measurement-grid">
 
@@ -1273,8 +2115,6 @@
                                     {% endif %}
 
 
-                                    <!-- ACTIONS -->
-
                                     <div class="attempt-actions">
 
                                         <a
@@ -1285,18 +2125,6 @@
                                         </a>
 
 
-                                        {% if latest_attempt and attempt.video.id != latest_attempt.video.id %}
-
-                                            <a
-                                                href="{% url 'video_library:video_compare' %}?video_1={{ attempt.video.id }}&video_2={{ latest_attempt.video.id }}"
-                                                class="btn btn-outline-success btn-sm"
-                                            >
-                                                ↔ Compare Latest
-                                            </a>
-
-                                        {% endif %}
-
-
                                         {% if reference_video and attempt.video.id != reference_video.id %}
 
                                             <a
@@ -1305,15 +2133,6 @@
                                             >
                                                 🎯 Compare to Reference
                                             </a>
-
-                                        {% endif %}
-
-
-                                        {% if reference_video and attempt.video.id == reference_video.id %}
-
-                                            <div class="alert alert-primary small mb-0 text-center">
-                                                🎯 This is the current reference attempt.
-                                            </div>
 
                                         {% endif %}
 
@@ -1338,7 +2157,7 @@
                         <div class="col-12">
 
                             <div class="alert alert-secondary">
-                                No videos were found for this skill.
+                                No attempts were found for this skill.
                             </div>
 
                         </div>
@@ -1380,7 +2199,7 @@
 
 
 <!-- =========================================================
-     TREND DATA
+     CHART DATA
      ========================================================= -->
 
 {{ trend_data.labels|json_script:"trend-labels" }}
@@ -1392,166 +2211,403 @@
 
 {% if analyzed_attempt_count >= 2 %}
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <script>
-        document.addEventListener(
-            'DOMContentLoaded',
-            function () {
+<script>
+    document.addEventListener(
+        'DOMContentLoaded',
+        function () {
 
-                const labels = JSON.parse(
+            const labels = JSON.parse(
+                document.getElementById(
+                    'trend-labels'
+                ).textContent
+            );
+
+            const kneeData = JSON.parse(
+                document.getElementById(
+                    'trend-knee'
+                ).textContent
+            );
+
+            const hipData = JSON.parse(
+                document.getElementById(
+                    'trend-hip'
+                ).textContent
+            );
+
+            const shoulderData = JSON.parse(
+                document.getElementById(
+                    'trend-shoulder'
+                ).textContent
+            );
+
+            const elbowData = JSON.parse(
+                document.getElementById(
+                    'trend-elbow'
+                ).textContent
+            );
+
+
+            function buildChart(
+                canvasId,
+                label,
+                values
+            ) {
+
+                const canvas = (
                     document.getElementById(
-                        'trend-labels'
-                    ).textContent
+                        canvasId
+                    )
                 );
 
-                const kneeData = JSON.parse(
-                    document.getElementById(
-                        'trend-knee'
-                    ).textContent
-                );
-
-                const hipData = JSON.parse(
-                    document.getElementById(
-                        'trend-hip'
-                    ).textContent
-                );
-
-                const shoulderData = JSON.parse(
-                    document.getElementById(
-                        'trend-shoulder'
-                    ).textContent
-                );
-
-                const elbowData = JSON.parse(
-                    document.getElementById(
-                        'trend-elbow'
-                    ).textContent
-                );
+                if (!canvas) {
+                    return;
+                }
 
 
-                function buildChart(
-                    canvasId,
-                    label,
-                    values
-                ) {
+                new Chart(
+                    canvas,
+                    {
+                        type: 'line',
 
-                    const canvas = (
-                        document.getElementById(
-                            canvasId
-                        )
-                    );
+                        data: {
+                            labels: labels,
 
-                    if (!canvas) {
-                        return;
-                    }
+                            datasets: [
+                                {
+                                    label: label,
+                                    data: values,
+                                    tension: 0.25,
+                                    spanGaps: true,
+                                }
+                            ]
+                        },
 
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
 
-                    new Chart(
-                        canvas,
-                        {
-                            type: 'line',
-
-                            data: {
-                                labels: labels,
-
-                                datasets: [
-                                    {
-                                        label: label,
-                                        data: values,
-                                        tension: 0.25,
-                                        spanGaps: true,
-                                    }
-                                ]
+                            interaction: {
+                                intersect: false,
+                                mode: 'index',
                             },
 
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-
-                                interaction: {
-                                    intersect: false,
-                                    mode: 'index',
+                            plugins: {
+                                legend: {
+                                    display: false,
                                 },
 
-                                plugins: {
-                                    legend: {
-                                        display: false,
-                                    },
-
-                                    tooltip: {
-                                        callbacks: {
-                                            label: function (
-                                                context
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (
+                                            context
+                                        ) {
+                                            if (
+                                                context.raw === null
+                                                ||
+                                                context.raw === undefined
                                             ) {
-
-                                                if (
-                                                    context.raw === null
-                                                    ||
-                                                    context.raw === undefined
-                                                ) {
-                                                    return 'No measurement';
-                                                }
-
-                                                return (
-                                                    `${label}: `
-                                                    + `${context.raw}°`
-                                                );
+                                                return 'No measurement';
                                             }
+
+                                            return (
+                                                `${label}: `
+                                                + `${context.raw}°`
+                                            );
                                         }
+                                    }
+                                }
+                            },
+
+                            scales: {
+                                y: {
+                                    beginAtZero: false,
+
+                                    title: {
+                                        display: true,
+                                        text: 'Degrees',
                                     }
                                 },
 
-                                scales: {
-                                    y: {
-                                        beginAtZero: false,
-
-                                        title: {
-                                            display: true,
-                                            text: 'Degrees',
-                                        }
-                                    },
-
-                                    x: {
-                                        title: {
-                                            display: true,
-                                            text: 'Attempt Date',
-                                        }
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: 'Attempt Date',
                                     }
                                 }
                             }
                         }
+                    }
+                );
+            }
+
+
+            buildChart(
+                'knee-chart',
+                'Knee Angle',
+                kneeData
+            );
+
+            buildChart(
+                'hip-chart',
+                'Hip Angle',
+                hipData
+            );
+
+            buildChart(
+                'shoulder-chart',
+                'Shoulder Angle',
+                shoulderData
+            );
+
+            buildChart(
+                'elbow-chart',
+                'Elbow Angle',
+                elbowData
+            );
+        }
+    );
+</script>
+
+{% endif %}
+
+
+<!-- =========================================================
+     VISUAL STORY COMPARISON
+     ========================================================= -->
+
+<script>
+    document.addEventListener(
+        'DOMContentLoaded',
+        function () {
+
+            let selectedA = null;
+            let selectedB = null;
+
+            const selectedALabel = (
+                document.getElementById(
+                    'story-selected-a'
+                )
+            );
+
+            const selectedBLabel = (
+                document.getElementById(
+                    'story-selected-b'
+                )
+            );
+
+            const compareButton = (
+                document.getElementById(
+                    'story-compare-button'
+                )
+            );
+
+
+            if (
+                !selectedALabel
+                || !selectedBLabel
+                || !compareButton
+            ) {
+                return;
+            }
+
+
+            function clearCardClasses() {
+
+                document.querySelectorAll(
+                    '.story-item'
+                ).forEach(
+                    function (card) {
+
+                        card.classList.remove(
+                            'story-item-selected-a'
+                        );
+
+                        card.classList.remove(
+                            'story-item-selected-b'
+                        );
+                    }
+                );
+            }
+
+
+            function refreshSelections() {
+
+                clearCardClasses();
+
+
+                if (selectedA) {
+
+                    selectedALabel.textContent = (
+                        selectedA.title
+                    );
+
+                    const cardA = (
+                        document.getElementById(
+                            `story-card-${selectedA.id}`
+                        )
+                    );
+
+                    if (cardA) {
+
+                        cardA.classList.add(
+                            'story-item-selected-a'
+                        );
+                    }
+
+                } else {
+
+                    selectedALabel.textContent = (
+                        'Select a Peak frame.'
                     );
                 }
 
 
-                buildChart(
-                    'knee-chart',
-                    'Knee Angle',
-                    kneeData
-                );
+                if (selectedB) {
 
-                buildChart(
-                    'hip-chart',
-                    'Hip Angle',
-                    hipData
-                );
+                    selectedBLabel.textContent = (
+                        selectedB.title
+                    );
 
-                buildChart(
-                    'shoulder-chart',
-                    'Shoulder Angle',
-                    shoulderData
-                );
+                    const cardB = (
+                        document.getElementById(
+                            `story-card-${selectedB.id}`
+                        )
+                    );
 
-                buildChart(
-                    'elbow-chart',
-                    'Elbow Angle',
-                    elbowData
-                );
+                    if (cardB) {
+
+                        cardB.classList.add(
+                            'story-item-selected-b'
+                        );
+                    }
+
+                } else {
+
+                    selectedBLabel.textContent = (
+                        'Select another Peak frame.'
+                    );
+                }
+
+
+                if (
+                    selectedA
+                    && selectedB
+                    && selectedA.id !== selectedB.id
+                ) {
+
+                    compareButton.classList.remove(
+                        'disabled'
+                    );
+
+                    compareButton.removeAttribute(
+                        'aria-disabled'
+                    );
+
+                    compareButton.href = (
+                        "{% url 'video_library:video_compare' %}"
+                        + `?video_1=${selectedA.id}`
+                        + `&video_2=${selectedB.id}`
+                    );
+
+                } else {
+
+                    compareButton.classList.add(
+                        'disabled'
+                    );
+
+                    compareButton.setAttribute(
+                        'aria-disabled',
+                        'true'
+                    );
+
+                    compareButton.href = '#';
+                }
             }
-        );
-    </script>
 
-{% endif %}
+
+            document.querySelectorAll(
+                '.story-select-a'
+            ).forEach(
+                function (button) {
+
+                    button.addEventListener(
+                        'click',
+                        function () {
+
+                            const id = (
+                                button.dataset.videoId
+                            );
+
+                            const title = (
+                                button.dataset.videoTitle
+                            );
+
+
+                            if (
+                                selectedB
+                                && selectedB.id === id
+                            ) {
+                                selectedB = null;
+                            }
+
+
+                            selectedA = {
+                                id: id,
+                                title: title,
+                            };
+
+
+                            refreshSelections();
+                        }
+                    );
+                }
+            );
+
+
+            document.querySelectorAll(
+                '.story-select-b'
+            ).forEach(
+                function (button) {
+
+                    button.addEventListener(
+                        'click',
+                        function () {
+
+                            const id = (
+                                button.dataset.videoId
+                            );
+
+                            const title = (
+                                button.dataset.videoTitle
+                            );
+
+
+                            if (
+                                selectedA
+                                && selectedA.id === id
+                            ) {
+                                selectedA = null;
+                            }
+
+
+                            selectedB = {
+                                id: id,
+                                title: title,
+                            };
+
+
+                            refreshSelections();
+                        }
+                    );
+                }
+            );
+
+
+            refreshSelections();
+        }
+    );
+</script>
 
 {% endblock %}

@@ -62,4 +62,6 @@ urlpatterns = [
         views.athlete_testing_result_detail,
         name='athlete_testing_result_detail'
     ),
+
+
 ]

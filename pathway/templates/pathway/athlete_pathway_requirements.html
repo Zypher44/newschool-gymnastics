@@ -1,0 +1,953 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ athlete.get_full_name|default:athlete.username }} Skill Tree
+{% endblock %}
+
+{% block page_header %}
+HP Skill Tree
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .tree-shell {
+        max-width: 1500px;
+        margin: 0 auto;
+    }
+
+    .tree-hero {
+        padding: 30px;
+        color: white;
+        border-radius: 24px;
+        background:
+            linear-gradient(
+                135deg,
+                #111827,
+                #1e40af,
+                #4f46e5
+            );
+        box-shadow:
+            0 16px 45px
+            rgba(15, 23, 42, 0.16);
+    }
+
+    .tree-card {
+        border: 0;
+        border-radius: 20px;
+        box-shadow:
+            0 8px 24px
+            rgba(15, 23, 42, 0.06);
+    }
+
+    .requirement-card {
+        height: 100%;
+        padding: 18px;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        background: white;
+        transition:
+            transform 0.18s ease,
+            box-shadow 0.18s ease;
+    }
+
+    .requirement-card:hover {
+        transform: translateY(-2px);
+        box-shadow:
+            0 10px 28px
+            rgba(15, 23, 42, 0.08);
+    }
+
+    .requirement-not-started {
+        border-left: 5px solid #adb5bd;
+    }
+
+    .requirement-developing {
+        border-left: 5px solid #fd7e14;
+    }
+
+    .requirement-achieved {
+        border-left: 5px solid #20c997;
+    }
+
+    .requirement-ready {
+        border-left: 5px solid #198754;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .status-not-started {
+        color: #495057;
+        background: #e9ecef;
+    }
+
+    .status-developing {
+        color: #984c0c;
+        background: #ffe5d0;
+    }
+
+    .status-achieved {
+        color: #0f5132;
+        background: #d1e7dd;
+    }
+
+    .status-ready {
+        color: #0f5132;
+        background: #b7e4c7;
+    }
+
+    .event-progress {
+        height: 10px;
+        border-radius: 999px;
+        overflow: hidden;
+        background: #e9ecef;
+    }
+
+    .event-progress-bar {
+        height: 100%;
+        border-radius: 999px;
+        background:
+            linear-gradient(
+                90deg,
+                #0d6efd,
+                #198754
+            );
+    }
+
+    .requirement-level {
+        font-size: 0.73rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #64748b;
+    }
+
+    .requirement-type {
+        font-size: 0.72rem;
+        color: #6c757d;
+    }
+
+    .bonus-card {
+        background: #fffdf2;
+    }
+
+    .overall-progress {
+        padding: 18px;
+        border-radius: 16px;
+        background:
+            rgba(255, 255, 255, 0.13);
+        backdrop-filter: blur(8px);
+    }
+
+    .parent-hidden {
+        display: inline-flex;
+        padding: 4px 8px;
+        border-radius: 999px;
+        color: #842029;
+        background: #f8d7da;
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+
+    .pathway-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 10px;
+        border: 1px solid #e5e7eb;
+        border-radius: 999px;
+        background: white;
+        font-size: 0.78rem;
+        font-weight: 650;
+    }
+
+    .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+    }
+
+    .legend-not-started {
+        background: #adb5bd;
+    }
+
+    .legend-developing {
+        background: #fd7e14;
+    }
+
+    .legend-achieved {
+        background: #20c997;
+    }
+
+    .legend-ready {
+        background: #198754;
+    }
+
+    .requirement-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Save All
+    |--------------------------------------------------------------------------
+    |
+    | Intentionally NOT sticky.
+    | This section stays at the bottom of the skill tree.
+    |
+    */
+
+    .save-all-card {
+        border: 1px solid #d1e7dd;
+        border-radius: 20px;
+        background: white;
+        box-shadow:
+            0 10px 28px
+            rgba(15, 23, 42, 0.08);
+    }
+
+    .save-all-icon {
+        width: 52px;
+        height: 52px;
+        min-width: 52px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        background: #d1e7dd;
+        font-size: 1.4rem;
+    }
+
+    .save-all-button {
+        min-width: 210px;
+    }
+
+    @media (max-width: 767px) {
+        .tree-hero {
+            padding: 22px;
+        }
+
+        .status-pill {
+            font-size: 0.68rem;
+        }
+
+        .save-all-button {
+            width: 100%;
+        }
+    }
+</style>
+
+
+<div class="container-fluid py-4">
+
+    <div class="tree-shell">
+
+
+        <!-- =====================================================
+             HERO
+             ===================================================== -->
+
+        <section class="tree-hero mb-4">
+
+            <div class="row align-items-center g-4">
+
+                <div class="col-12 col-lg-8">
+
+                    <div class="small text-uppercase fw-semibold opacity-75 mb-2">
+                        Head Coach Skill Tree
+                    </div>
+
+                    <h1 class="h2 fw-bold mb-2">
+                        {{ athlete.get_full_name|default:athlete.username }}
+                    </h1>
+
+
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+
+                        <span>
+                            {% if athlete_pathway.current_level %}
+                                {{ athlete_pathway.current_level.name }}
+                            {% else %}
+                                No Current Level
+                            {% endif %}
+                        </span>
+
+                        <span class="opacity-50">
+                            →
+                        </span>
+
+                        <strong>
+                            {% if athlete_pathway.target_level %}
+                                {{ athlete_pathway.target_level.name }}
+                            {% else %}
+                                No Target Level
+                            {% endif %}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-12 col-lg-4">
+
+                    <div class="overall-progress">
+
+                        <div class="small opacity-75 mb-1">
+                            Competition Ready
+                        </div>
+
+                        <div class="display-6 fw-bold">
+                            {{ overall_percentage }}%
+                        </div>
+
+                        <div class="small opacity-75 mt-1">
+                            {{ total_completed }}
+                            of
+                            {{ total_required }}
+                            core requirements
+                            are Competition Ready
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             NAVIGATION / LEGEND
+             ===================================================== -->
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+
+            <div class="d-flex flex-wrap gap-2">
+
+                <a
+                    href="{% url 'pathway:pathway_manager' %}"
+                    class="btn btn-outline-secondary"
+                >
+                    ← All Athletes
+                </a>
+
+                <a
+                    href="{% url 'pathway:athlete_pathway_editor' athlete.id %}"
+                    class="btn btn-outline-primary"
+                >
+                    Pathway Setup
+                </a>
+
+            </div>
+
+
+            <div class="pathway-legend">
+
+                <span class="legend-item">
+                    <span class="legend-dot legend-not-started"></span>
+                    Not Started
+                </span>
+
+                <span class="legend-item">
+                    <span class="legend-dot legend-developing"></span>
+                    Developing
+                </span>
+
+                <span class="legend-item">
+                    <span class="legend-dot legend-achieved"></span>
+                    Achieved
+                </span>
+
+                <span class="legend-item">
+                    <span class="legend-dot legend-ready"></span>
+                    Competition Ready
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             ONE FORM FOR THE ENTIRE SKILL TREE
+             ===================================================== -->
+
+        <form
+            method="post"
+            action="{% url 'pathway:bulk_update_athlete_pathway_requirements' athlete.id %}"
+            id="pathway-bulk-form"
+        >
+
+            {% csrf_token %}
+
+
+            <!-- =================================================
+                 EVENT SECTIONS
+                 ================================================= -->
+
+            {% for section in event_sections %}
+
+                <section class="card tree-card mb-4">
+
+                    <!-- =========================================
+                         EVENT HEADER
+                         ========================================= -->
+
+                    <div class="card-header bg-white border-0 p-4">
+
+                        <div class="row align-items-center g-3">
+
+                            <div class="col-12 col-lg-6">
+
+                                <div class="d-flex align-items-center gap-3">
+
+                                    <div class="fs-2">
+
+                                        {% if section.event.code == 'vault' %}
+                                            🏃
+                                        {% elif section.event.code == 'bars' %}
+                                            🤸
+                                        {% elif section.event.code == 'beam' %}
+                                            ⚖️
+                                        {% elif section.event.code == 'floor' %}
+                                            🎵
+                                        {% else %}
+                                            ⭐
+                                        {% endif %}
+
+                                    </div>
+
+
+                                    <div>
+
+                                        <h2 class="h4 mb-1">
+                                            {{ section.event.name }}
+                                        </h2>
+
+                                        <div class="small text-muted">
+                                            {{ section.completed_count }}
+                                            of
+                                            {{ section.required_count }}
+                                            core requirements
+                                            Competition Ready
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="col-12 col-lg-6">
+
+                                <div class="d-flex justify-content-lg-end align-items-center gap-3">
+
+                                    <strong>
+                                        {{ section.completion_percentage }}%
+                                    </strong>
+
+                                    <div
+                                        class="event-progress"
+                                        style="width: 220px;"
+                                    >
+
+                                        <div
+                                            class="event-progress-bar"
+                                            style="width: {{ section.completion_percentage }}%;"
+                                        ></div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =========================================
+                         REQUIREMENTS
+                         ========================================= -->
+
+                    <div class="card-body p-4 pt-0">
+
+                        <div class="row g-3">
+
+                            {% for athlete_requirement in section.requirements %}
+
+                                <div class="col-12 col-xl-6">
+
+                                    <article
+                                        class="
+                                            requirement-card
+
+                                            {% if athlete_requirement.requirement.requirement_type == 'bonus' %}
+                                                bonus-card
+                                            {% endif %}
+
+                                            {% if athlete_requirement.status == 'competition_ready' %}
+                                                requirement-ready
+                                            {% elif athlete_requirement.status == 'achieved' %}
+                                                requirement-achieved
+                                            {% elif athlete_requirement.status == 'developing' %}
+                                                requirement-developing
+                                            {% else %}
+                                                requirement-not-started
+                                            {% endif %}
+                                        "
+                                    >
+
+
+                                        <!-- =====================
+                                             REQUIREMENT HEADER
+                                             ===================== -->
+
+                                        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+
+                                            <div>
+
+                                                <div class="requirement-level mb-1">
+
+                                                    {{ athlete_requirement.requirement.level.name }}
+
+                                                    ·
+
+                                                    {{ athlete_requirement.requirement.get_requirement_type_display }}
+
+                                                </div>
+
+
+                                                <h3 class="h6 mb-1">
+
+                                                    {% if athlete_requirement.custom_title %}
+
+                                                        {{ athlete_requirement.custom_title }}
+
+                                                    {% else %}
+
+                                                        {{ athlete_requirement.requirement.title }}
+
+                                                    {% endif %}
+
+                                                </h3>
+
+
+                                                {% if athlete_requirement.requirement.requirement_number %}
+
+                                                    <div class="requirement-type">
+                                                        Requirement
+                                                        #{{ athlete_requirement.requirement.requirement_number }}
+                                                    </div>
+
+                                                {% endif %}
+
+                                            </div>
+
+
+                                            <div>
+
+                                                {% if athlete_requirement.status == 'competition_ready' %}
+
+                                                    <span class="status-pill status-ready">
+                                                        🏆 Competition Ready
+                                                    </span>
+
+                                                {% elif athlete_requirement.status == 'achieved' %}
+
+                                                    <span class="status-pill status-achieved">
+                                                        ✓ Achieved
+                                                    </span>
+
+                                                {% elif athlete_requirement.status == 'developing' %}
+
+                                                    <span class="status-pill status-developing">
+                                                        ◐ Developing
+                                                    </span>
+
+                                                {% else %}
+
+                                                    <span class="status-pill status-not-started">
+                                                        ○ Not Started
+                                                    </span>
+
+                                                {% endif %}
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <!-- =====================
+                                             DESCRIPTION
+                                             ===================== -->
+
+                                        {% if athlete_requirement.requirement.description %}
+
+                                            <p class="small text-muted mb-3">
+                                                {{ athlete_requirement.requirement.description }}
+                                            </p>
+
+                                        {% endif %}
+
+
+                                        <!-- =====================
+                                             REQUIREMENT META
+                                             ===================== -->
+
+                                        <div class="requirement-meta mb-3">
+
+                                            {% if athlete_requirement.requirement.value %}
+
+                                                <span class="badge text-bg-light border">
+                                                    Value:
+                                                    {{ athlete_requirement.requirement.value }}
+                                                </span>
+
+                                            {% endif %}
+
+
+                                            {% if athlete_requirement.requirement.bonus_value %}
+
+                                                <span class="badge text-bg-warning">
+                                                    Bonus:
+                                                    +{{ athlete_requirement.requirement.bonus_value }}
+                                                </span>
+
+                                            {% endif %}
+
+
+                                            {% if athlete_requirement.requirement.is_required %}
+
+                                                <span class="badge text-bg-light border">
+                                                    Core Requirement
+                                                </span>
+
+                                            {% else %}
+
+                                                <span class="badge text-bg-light border">
+                                                    Optional
+                                                </span>
+
+                                            {% endif %}
+
+                                        </div>
+
+
+                                        <!-- =====================
+                                             PARENT VISIBILITY
+                                             ===================== -->
+
+                                        {% if athlete_requirement.is_hidden_from_parent %}
+
+                                            <div class="mb-3">
+
+                                                <span class="parent-hidden">
+                                                    🔒 Hidden from Parents
+                                                </span>
+
+                                            </div>
+
+                                        {% endif %}
+
+
+                                        <!-- =====================
+                                             BULK EDIT FIELDS
+                                             ===================== -->
+
+                                        <div class="row g-3">
+
+                                            <div class="col-12 col-md-6">
+
+                                                <label class="form-label small fw-semibold">
+                                                    Status
+                                                </label>
+
+                                                <select
+                                                    name="status_{{ athlete_requirement.id }}"
+                                                    class="form-select form-select-sm"
+                                                >
+
+                                                    {% for value, label in status_choices %}
+
+                                                        <option
+                                                            value="{{ value }}"
+                                                            {% if athlete_requirement.status == value %}
+                                                                selected
+                                                            {% endif %}
+                                                        >
+                                                            {{ label }}
+                                                        </option>
+
+                                                    {% endfor %}
+
+                                                </select>
+
+                                            </div>
+
+
+                                            <div class="col-12 col-md-6">
+
+                                                <label class="form-label small fw-semibold">
+                                                    Target Date
+                                                </label>
+
+                                                <input
+                                                    type="date"
+                                                    name="target_date_{{ athlete_requirement.id }}"
+                                                    value="{% if athlete_requirement.target_date %}{{ athlete_requirement.target_date|date:'Y-m-d' }}{% endif %}"
+                                                    class="form-control form-control-sm"
+                                                >
+
+                                            </div>
+
+
+                                            <div class="col-12">
+
+                                                <label class="form-label small fw-semibold">
+                                                    Head Coach Note
+                                                </label>
+
+                                                <textarea
+                                                    name="coach_note_{{ athlete_requirement.id }}"
+                                                    rows="2"
+                                                    class="form-control form-control-sm"
+                                                    placeholder="Technical focus, progression note, or next step..."
+                                                >{{ athlete_requirement.coach_note }}</textarea>
+
+                                            </div>
+
+
+                                            <div class="col-12">
+
+                                                <div class="form-check">
+
+                                                    <input
+                                                        type="checkbox"
+                                                        name="hidden_{{ athlete_requirement.id }}"
+                                                        value="yes"
+                                                        class="form-check-input"
+                                                        id="hide-parent-{{ athlete_requirement.id }}"
+                                                        {% if athlete_requirement.is_hidden_from_parent %}
+                                                            checked
+                                                        {% endif %}
+                                                    >
+
+                                                    <label
+                                                        class="form-check-label small"
+                                                        for="hide-parent-{{ athlete_requirement.id }}"
+                                                    >
+                                                        Hide this requirement from parents
+                                                    </label>
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <div class="col-12">
+
+                                                <div class="small text-muted">
+                                                    Changes will be saved when you select
+                                                    <strong>
+                                                        Save All Changes
+                                                    </strong>
+                                                    at the bottom.
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <!-- =====================
+                                             LAST UPDATE
+                                             ===================== -->
+
+                                        {% if athlete_requirement.updated_by %}
+
+                                            <div class="small text-muted mt-3">
+
+                                                Last updated by
+                                                {{ athlete_requirement.updated_by.get_full_name|default:athlete_requirement.updated_by.username }}
+
+                                                ·
+
+                                                {{ athlete_requirement.updated_at|date:"M j, Y" }}
+
+                                            </div>
+
+                                        {% endif %}
+
+                                    </article>
+
+                                </div>
+
+                            {% endfor %}
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+            {% empty %}
+
+                <div class="alert alert-warning">
+
+                    This athlete does not have any pathway requirements yet.
+
+                    Return to
+
+                    <a
+                        href="{% url 'pathway:athlete_pathway_editor' athlete.id %}"
+                        class="alert-link"
+                    >
+                        Pathway Setup
+                    </a>
+
+                    and assign a Current and Target Level.
+
+                </div>
+
+            {% endfor %}
+
+
+            <!-- =================================================
+                 SAVE ALL
+                 NORMAL PAGE SECTION — NOT STICKY
+                 ================================================= -->
+
+            {% if event_sections %}
+
+                <section class="save-all-card mt-4">
+
+                    <div class="p-4">
+
+                        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-4">
+
+                            <div class="d-flex align-items-start gap-3">
+
+                                <div class="save-all-icon">
+                                    ✓
+                                </div>
+
+
+                                <div>
+
+                                    <div class="small text-uppercase fw-semibold text-success mb-1">
+                                        Head Coach Updates
+                                    </div>
+
+                                    <h3 class="h5 mb-1">
+                                        Save the Entire Skill Tree
+                                    </h3>
+
+                                    <p class="text-muted mb-0">
+                                        Save all statuses, target dates,
+                                        coaching notes and parent visibility
+                                        settings at once.
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+
+                            <button
+                                type="submit"
+                                class="btn btn-success btn-lg save-all-button"
+                            >
+                                ✓ Save All Changes
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            {% endif %}
+
+        </form>
+
+
+        <!-- =====================================================
+             BOTTOM NAVIGATION
+             ===================================================== -->
+
+        <div class="d-flex flex-wrap gap-2 mt-4">
+
+            <a
+                href="{% url 'pathway:pathway_manager' %}"
+                class="btn btn-outline-secondary"
+            >
+                ← All Athlete Pathways
+            </a>
+
+            <a
+                href="{% url 'pathway:athlete_pathway_editor' athlete.id %}"
+                class="btn btn-outline-primary"
+            >
+                Pathway Setup
+            </a>
+
+            <a
+        href="{% url 'pathway:bars_d_score_calculator' athlete.id %}"
+        class="btn btn-success"
+        >
+        🧮 Bars D-Score
+        py</a>
+            <a
+    href="{% url 'pathway:beam_d_score_calculator' athlete.id %}"
+    class="btn btn-success"
+>
+    🧮 Beam D-Score
+</a>
+
+            <a
+    href="{% url 'pathway:floor_d_score_calculator' athlete.id %}"
+    class="btn btn-success"
+>
+    🧮 Floor D-Score
+</a>
+            <a
+    href="{% url 'pathway:vault_d_score_calculator' athlete.id %}"
+    class="btn btn-success"
+>
+    🧮 Vault D-Score
+</a>
+
+        </div>
+    <a
+    href="{% url 'pathway:athlete_d_score_dashboard' athlete.id %}"
+    class="btn btn-dark"
+>
+    🧮 D-Score Dashboard
+</a>
+
+    </div>
+
+</div>
+
+{% endblock %}

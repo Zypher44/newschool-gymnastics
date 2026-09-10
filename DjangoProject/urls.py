@@ -4,6 +4,7 @@ from accounts import public_views
 from django.conf import settings
 from django.conf.urls.static import static
 
+
 urlpatterns = [
     path(
         '',
@@ -61,6 +62,25 @@ urlpatterns = [
     path(
         'videos/',
         include('video_library.urls'),
+    ),
+
+    path(
+        'pathway/',
+        include(
+        'pathway.urls'
+        ),
+    ),
+
+    path(
+        'routine-tracker/',
+        include(
+        'routine_tracker.urls'
+        ),
+    ),
+
+    path(
+        'gyms/',
+        include('gyms.urls')
     ),
 
 

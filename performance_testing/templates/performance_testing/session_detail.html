@@ -1,621 +1,1594 @@
 {% extends "base.html" %}
 
-{% block title %}{{ session.title }}{% endblock %}
-{% block page_header %}Testing Results{% endblock %}
+{% block title %}
+{{ session.title }}
+{% endblock %}
+
+{% block page_header %}
+Testing Results
+{% endblock %}
 
 {% block content %}
 
 <style>
+    .testing-page {
+        max-width: 1650px;
+        margin: 0 auto;
+    }
+
+    /* =========================================================
+       HERO
+       ========================================================= */
+
+    .testing-hero {
+        padding: 30px;
+        border-radius: 24px;
+        color: white;
+        background:
+            linear-gradient(
+                135deg,
+                #111827,
+                #1e40af,
+                #4f46e5
+            );
+        box-shadow:
+            0 16px 45px
+            rgba(15, 23, 42, 0.15);
+    }
+
+    .hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+    }
+
+    .hero-pill {
+        padding: 7px 11px;
+        border-radius: 999px;
+        background:
+            rgba(255, 255, 255, 0.12);
+        font-size: 0.8rem;
+        font-weight: 650;
+    }
+
+    /* =========================================================
+       STAT CARDS
+       ========================================================= */
+
+    .testing-stat-card {
+        height: 100%;
+        padding: 20px;
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        background: white;
+        box-shadow:
+            0 6px 20px
+            rgba(15, 23, 42, 0.05);
+    }
+
+    .testing-stat-icon {
+        width: 44px;
+        height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 13px;
+        background: #eef4ff;
+        font-size: 1.3rem;
+    }
+
+    .testing-stat-value {
+        margin-top: 12px;
+        color: #172033;
+        font-size: 1.8rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .testing-stat-label {
+        margin-top: 5px;
+        color: #667085;
+        font-size: 0.8rem;
+        font-weight: 650;
+    }
+
+    /* =========================================================
+       GENERAL CARDS
+       ========================================================= */
+
+    .testing-card {
+        border: 0;
+        border-radius: 20px;
+        box-shadow:
+            0 8px 24px
+            rgba(15, 23, 42, 0.06);
+    }
+
+    .section-eyebrow {
+        color: #0d6efd;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+    }
+
+    /* =========================================================
+       VERIFICATION
+       ========================================================= */
+
+    .verification-banner {
+        padding: 22px;
+        border: 1px solid #dbeafe;
+        border-radius: 18px;
+        background: #eff6ff;
+    }
+
+    .verification-banner.ready {
+        border-color: #badbcc;
+        background: #ecf8f1;
+    }
+
+    .verification-icon {
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        background: white;
+        font-size: 1.35rem;
+        box-shadow:
+            0 4px 12px
+            rgba(15, 23, 42, 0.06);
+    }
+
+    /* =========================================================
+       PUBLISHING
+       ========================================================= */
+
+    .publish-card {
+        height: 100%;
+        padding: 20px;
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        background: #fff;
+    }
+
+    .publish-icon {
+        width: 44px;
+        height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 13px;
+        background: #f1f5f9;
+        font-size: 1.25rem;
+    }
+
+    /* =========================================================
+       RESULTS GRID
+       ========================================================= */
+
     .testing-grid-wrapper {
-        max-height: 70vh;
+        max-height: 68vh;
         overflow: auto;
+        border-top: 1px solid #e5e7eb;
     }
 
     .testing-grid {
-        min-width: 1200px;
+        min-width: 1250px;
+        margin-bottom: 0;
     }
 
-    .testing-grid th {
-        background-color: #f8f9fa;
-        white-space: nowrap;
+    .testing-grid thead th {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        padding: 14px 10px;
+        border-color: #e5e7eb;
+        background: #f8fafc;
+        color: #475467;
+        font-size: 0.78rem;
+        font-weight: 750;
         vertical-align: middle;
+        white-space: nowrap;
     }
 
     .testing-grid td {
+        padding: 12px 10px;
+        border-color: #eef0f3;
         vertical-align: middle;
+    }
+
+    .testing-grid tbody tr:hover td {
+        background: #fafcff;
     }
 
     .sticky-athlete {
         position: sticky;
         left: 0;
-        background-color: white !important;
         z-index: 2;
-        min-width: 170px;
+        min-width: 190px;
+        background: white !important;
+        box-shadow:
+            5px 0 8px
+            rgba(15, 23, 42, 0.025);
     }
 
     .testing-grid thead .sticky-athlete {
-        background-color: #f8f9fa !important;
-        z-index: 4;
+        z-index: 5;
+        background: #f8fafc !important;
     }
 
     .exercise-column {
-        min-width: 190px;
+        min-width: 210px;
+    }
+
+    .exercise-name {
+        color: #172033;
+        font-weight: 750;
     }
 
     .score-input {
-        min-width: 80px;
+        min-width: 75px;
     }
 
     .raw-input {
         min-width: 105px;
     }
+
+    .result-cell {
+        min-width: 190px;
+    }
+
+    .not-completed-label {
+        color: #667085;
+        font-size: 0.72rem;
+    }
+
+    .total-score {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #172033;
+    }
+
+    /* =========================================================
+       ACTION BAR
+       ========================================================= */
+
+    .results-actions {
+        padding: 18px 20px;
+        border-top: 1px solid #e5e7eb;
+        background: #fff;
+    }
+
+    .verify-button {
+        min-width: 225px;
+    }
+
+    /* =========================================================
+       ROUTINE DEVELOPMENT
+       ========================================================= */
+
+    .routine-athlete-card {
+        padding: 22px;
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        background: white;
+    }
+
+    .routine-summary-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 7px 10px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .routine-attempts {
+        color: #344054;
+        background: #f2f4f7;
+    }
+
+    .routine-hit-rate {
+        color: #0f5132;
+        background: #d1e7dd;
+    }
+
+    .routine-quality {
+        color: #084298;
+        background: #cfe2ff;
+    }
+
+    .routine-event-card {
+        height: 100%;
+        padding: 16px;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        background: #fafcff;
+    }
+
+    .routine-event-icon {
+        width: 42px;
+        height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 13px;
+        background: #eef4ff;
+        font-size: 1.2rem;
+    }
+
+    .routine-metric-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 6px 0;
+        color: #667085;
+        font-size: 0.8rem;
+    }
+
+    .routine-metric-row strong {
+        color: #172033;
+    }
+
+    .routine-quality-value {
+        color: #0d6efd !important;
+    }
+
+    .routine-hit-value {
+        color: #198754 !important;
+    }
+
+    .routine-empty {
+        padding: 20px;
+        border: 1px dashed #cbd5e1;
+        border-radius: 15px;
+        background: #f8fafc;
+        text-align: center;
+        color: #667085;
+    }
+
+    /* =========================================================
+       GUIDELINES
+       ========================================================= */
+
+    .accordion-button:not(.collapsed) {
+        color: #0d6efd;
+        background: #f4f8ff;
+        box-shadow: none;
+    }
+
+    @media (max-width: 767px) {
+        .testing-hero {
+            padding: 22px;
+        }
+
+        .verify-button {
+            width: 100%;
+        }
+
+        .results-actions .btn {
+            width: 100%;
+        }
+    }
 </style>
 
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-    <div>
-        <h1 class="mb-1">{{ session.title }}</h1>
 
-        <p class="text-muted mb-0">
-            {{ session.testing_date|date:"l, F j, Y" }}
-        </p>
-    </div>
+<div class="container-fluid py-4">
 
-    <a
-        href="{% url 'testing_session_list' %}"
-        class="btn btn-outline-secondary"
-    >
-        ← Testing Sessions
-    </a>
-</div>
+    <div class="testing-page">
 
-{% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags|default:'success' }}">
-            {{ message }}
-        </div>
-    {% endfor %}
-{% endif %}
+        <!-- =====================================================
+             HERO
+             ===================================================== -->
 
-<div class="row mb-4">
-    <div class="col-md-3 mb-3">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <h3>👥</h3>
-                <h6 class="text-muted">Athletes</h6>
-                <h2>{{ grid_rows|length }}</h2>
-            </div>
-        </div>
-    </div>
+        <section class="testing-hero mb-4">
 
-    <div class="col-md-3 mb-3">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <h3>🏋️</h3>
-                <h6 class="text-muted">Exercises</h6>
-                <h2>{{ exercises|length }}</h2>
-            </div>
-        </div>
-    </div>
+            <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-4">
 
-    <div class="col-md-3 mb-3">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <h3>✅</h3>
-                <h6 class="text-muted">Verified</h6>
-                <h2>{{ verified_count }}</h2>
-            </div>
-        </div>
-    </div>
+                <div>
 
-  <div class="col-md-3 mb-3">
-    <div class="card text-center h-100">
-        <div class="card-body">
-            <h3>📤</h3>
-            <h6 class="text-muted">Publishing</h6>
+                    <div class="small text-uppercase fw-semibold opacity-75 mb-2">
+                        Performance Testing
+                    </div>
 
-            {% if session.published_to_athletes and session.published_to_parents %}
-                <h5 class="text-success">Everyone</h5>
-            {% elif session.published_to_athletes %}
-                <h5 class="text-primary">Athletes</h5>
-            {% elif session.published_to_parents %}
-                <h5 class="text-primary">Parents</h5>
-            {% else %}
-                <h5 class="text-secondary">Not Published</h5>
-            {% endif %}
-        </div>
-    </div>
-</div>
+                    <h1 class="display-6 fw-bold mb-1">
+                        {{ session.title }}
+                    </h1>
 
-<div class="alert alert-info">
-    Enter the athlete’s actual result in the <strong>Result</strong>
-    box and the points earned in the <strong>Pts</strong> box.
+                    <div class="opacity-75">
+                        {{ session.testing_date|date:"l, F j, Y" }}
+                    </div>
 
-    Use <strong>X</strong> when an exercise was not completed.
-</div>
 
-<form method="post" id="testing-grid-form">
-    {% csrf_token %}
+                    <div class="hero-meta">
 
-    <div class="card mb-4">
-        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
-            <div>
-                <strong>Testing Results Grid</strong>
+                        <span class="hero-pill">
+                            👥 {{ grid_rows|length }}
+                            Athlete{{ grid_rows|length|pluralize }}
+                        </span>
 
-                <div class="small text-muted">
-                    Use Tab to move across the grid like Excel.
+                        <span class="hero-pill">
+                            🏋️ {{ exercises|length }}
+                            Exercise{{ exercises|length|pluralize }}
+                        </span>
+
+                        <span class="hero-pill">
+                            ✅ {{ verified_count }}
+                            Verified
+                        </span>
+
+                    </div>
+
                 </div>
-            </div>
 
-            <div class="d-flex gap-2">
-                <button
-                    type="submit"
-                    name="action"
-                    value="save_draft"
-                    class="btn btn-outline-primary"
+
+                <a
+                    href="{% url 'testing_session_list' %}"
+                    class="btn btn-light"
                 >
-                    Save Draft
-                </button>
+                    ← Testing Sessions
+                </a>
 
-                <button
-                    type="submit"
-                    name="action"
-                    value="verify"
-                    class="btn btn-success"
-                    onclick="return confirm(
-                        'Verify all results and calculate rankings?'
-                    );"
-                >
-                    Verify & Calculate Rankings
-                </button>
             </div>
-        </div>
 
-        <div class="testing-grid-wrapper">
-            <table class="table table-bordered testing-grid mb-0">
-                <thead>
-                    <tr>
-                        <th class="sticky-athlete">
-                            Athlete
-                        </th>
+        </section>
 
-                        {% for exercise in exercises %}
-                            <th class="exercise-column text-center">
-                                <div>{{ exercise.name }}</div>
 
-                                <small class="text-muted">
-                                    {{ exercise.get_unit_display }}
-                                </small>
+        <!-- =====================================================
+             SUMMARY
+             ===================================================== -->
 
-                                <div class="card mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <div>
-            <strong>Publishing</strong>
+        <section class="row g-3 mb-4">
 
-            <div class="small text-muted">
-                Results must be verified before they can be published.
+            <div class="col-6 col-lg-3">
+
+                <div class="testing-stat-card">
+
+                    <div class="testing-stat-icon">
+                        👥
+                    </div>
+
+                    <div class="testing-stat-value">
+                        {{ grid_rows|length }}
+                    </div>
+
+                    <div class="testing-stat-label">
+                        Athletes
+                    </div>
+
+                </div>
+
             </div>
-        </div>
+
+
+            <div class="col-6 col-lg-3">
+
+                <div class="testing-stat-card">
+
+                    <div class="testing-stat-icon">
+                        🏋️
+                    </div>
+
+                    <div class="testing-stat-value">
+                        {{ exercises|length }}
+                    </div>
+
+                    <div class="testing-stat-label">
+                        Exercises
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-6 col-lg-3">
+
+                <div class="testing-stat-card">
+
+                    <div class="testing-stat-icon">
+                        ✅
+                    </div>
+
+                    <div class="testing-stat-value">
+                        {{ verified_count }}
+                    </div>
+
+                    <div class="testing-stat-label">
+                        Verified Results
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-6 col-lg-3">
+
+                <div class="testing-stat-card">
+
+                    <div class="testing-stat-icon">
+                        📤
+                    </div>
+
+                    {% if session.published_to_athletes and session.published_to_parents %}
+
+                        <div class="testing-stat-value text-success">
+                            Live
+                        </div>
+
+                        <div class="testing-stat-label">
+                            Athletes + Parents
+                        </div>
+
+                    {% elif session.published_to_athletes %}
+
+                        <div class="testing-stat-value text-primary">
+                            Live
+                        </div>
+
+                        <div class="testing-stat-label">
+                            Athletes Only
+                        </div>
+
+                    {% elif session.published_to_parents %}
+
+                        <div class="testing-stat-value text-primary">
+                            Live
+                        </div>
+
+                        <div class="testing-stat-label">
+                            Parents Only
+                        </div>
+
+                    {% else %}
+
+                        <div class="testing-stat-value text-secondary">
+                            Hidden
+                        </div>
+
+                        <div class="testing-stat-label">
+                            Not Published
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             VERIFICATION STATUS
+             ===================================================== -->
 
         {% if verified_count == grid_rows|length and grid_rows %}
-            <span class="badge bg-success">
-                Ready to Publish
-            </span>
+
+            <section class="verification-banner ready mb-4">
+
+                <div class="d-flex flex-column flex-md-row align-items-md-center gap-3">
+
+                    <div class="verification-icon">
+                        ✅
+                    </div>
+
+                    <div class="flex-grow-1">
+
+                        <div class="section-eyebrow text-success">
+                            Verification Complete
+                        </div>
+
+                        <h2 class="h5 mb-1">
+                            Results are ready to publish
+                        </h2>
+
+                        <p class="text-muted mb-0">
+                            All athlete results have been verified
+                            and rankings have been calculated.
+                        </p>
+
+                    </div>
+
+                    <span class="badge text-bg-success fs-6">
+                        Ready to Publish
+                    </span>
+
+                </div>
+
+            </section>
+
         {% else %}
-            <span class="badge bg-warning text-dark">
-                Verification Required
-            </span>
+
+            <section class="verification-banner mb-4">
+
+                <div class="d-flex flex-column flex-md-row align-items-md-center gap-3">
+
+                    <div class="verification-icon">
+                        🔎
+                    </div>
+
+                    <div class="flex-grow-1">
+
+                        <div class="section-eyebrow">
+                            Verification Required
+                        </div>
+
+                        <h2 class="h5 mb-1">
+                            Enter and verify the testing results
+                        </h2>
+
+                        <p class="text-muted mb-0">
+                            Enter each athlete's result and points below.
+                            When everything is correct, use
+                            <strong>Verify & Calculate Rankings</strong>.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
         {% endif %}
-    </div>
 
-    <div class="card-body">
-        <div class="row">
-            <div class="col-lg-6 mb-3">
-                <div class="border rounded p-3 h-100">
-                    <div class="d-flex justify-content-between align-items-start gap-3">
-                        <div>
-                            <h5 class="mb-1">🤸 Athlete Access</h5>
 
-                            <p class="text-muted small mb-3">
-                                Athletes can view their own results, score,
-                                ranking, and progress.
-                            </p>
+        <!-- =====================================================
+             PUBLISHING
+             ===================================================== -->
 
-                            {% if session.published_to_athletes %}
-                                <span class="badge bg-success">
-                                    Published
-                                </span>
-                            {% else %}
-                                <span class="badge bg-secondary">
-                                    Hidden
-                                </span>
-                            {% endif %}
+        <section class="card testing-card mb-4">
+
+            <div class="card-header bg-white border-0 p-4 pb-2">
+
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+
+                    <div>
+
+                        <div class="section-eyebrow">
+                            Visibility
                         </div>
 
-                        <form
-                            method="post"
-                            action="{% url 'publish_testing_session' session.id %}"
-                        >
-                            {% csrf_token %}
+                        <h2 class="h4 mb-1">
+                            Publish Results
+                        </h2>
 
-                            {% if session.published_to_athletes %}
-                                <button
-                                    type="submit"
-                                    name="publish_target"
-                                    value="unpublish_athletes"
-                                    class="btn btn-outline-danger"
-                                >
-                                    Unpublish
-                                </button>
-                            {% else %}
-                                <button
-                                    type="submit"
-                                    name="publish_target"
-                                    value="athletes"
-                                    class="btn btn-outline-primary"
-                                    {% if verified_count != grid_rows|length or not grid_rows %}
-                                        disabled
-                                    {% endif %}
-                                >
-                                    Publish
-                                </button>
-                            {% endif %}
-                        </form>
+                        <p class="text-muted mb-0">
+                            Results must be verified before they
+                            can be shared.
+                        </p>
+
                     </div>
-                </div>
-            </div>
 
-            <div class="col-lg-6 mb-3">
-                <div class="border rounded p-3 h-100">
-                    <div class="d-flex justify-content-between align-items-start gap-3">
-                        <div>
-                            <h5 class="mb-1">👨‍👩‍👧 Parent Access</h5>
 
-                            <p class="text-muted small mb-3">
-                                Parents can view the weekly testing report,
-                                score changes, and coach feedback.
-                            </p>
+                    {% if verified_count == grid_rows|length and grid_rows %}
 
-                            {% if session.published_to_parents %}
-                                <span class="badge bg-success">
-                                    Published
-                                </span>
-                            {% else %}
-                                <span class="badge bg-secondary">
-                                    Hidden
-                                </span>
-                            {% endif %}
-                        </div>
+                        <span class="badge text-bg-success">
+                            Ready to Publish
+                        </span>
 
-                        <form
-                            method="post"
-                            action="{% url 'publish_testing_session' session.id %}"
-                        >
-                            {% csrf_token %}
+                    {% else %}
 
-                            {% if session.published_to_parents %}
-                                <button
-                                    type="submit"
-                                    name="publish_target"
-                                    value="unpublish_parents"
-                                    class="btn btn-outline-danger"
-                                >
-                                    Unpublish
-                                </button>
-                            {% else %}
-                                <button
-                                    type="submit"
-                                    name="publish_target"
-                                    value="parents"
-                                    class="btn btn-outline-primary"
-                                    {% if verified_count != grid_rows|length or not grid_rows %}
-                                        disabled
-                                    {% endif %}
-                                >
-                                    Publish
-                                </button>
-                            {% endif %}
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
+                        <span class="badge text-bg-warning">
+                            Verification Required
+                        </span>
 
-        {% if not session.published_to_athletes or not session.published_to_parents %}
-            <form
-                method="post"
-                action="{% url 'publish_testing_session' session.id %}"
-                class="mt-2"
-            >
-                {% csrf_token %}
-
-                <button
-                    type="submit"
-                    name="publish_target"
-                    value="both"
-                    class="btn btn-success"
-                    {% if verified_count != grid_rows|length or not grid_rows %}
-                        disabled
                     {% endif %}
-                    onclick="return confirm(
-                        'Publish these results to athletes and parents?'
-                    );"
-                >
-                    Publish to Athletes & Parents
-                </button>
-            </form>
-        {% endif %}
-    </div>
-</div>
 
-                                {% if exercise.guidelines %}
-                                    <button
-                                        type="button"
-                                        class="btn btn-sm btn-link p-0 ms-1"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-placement="top"
-                                        title="{{ exercise.guidelines }}"
-                                    >
-                                        ℹ️
-                                    </button>
-                                {% endif %}
-                            </th>
-                        {% endfor %}
+                </div>
 
-                        <th class="text-center">Total</th>
-                        <th class="text-center">Previous</th>
-                        <th class="text-center">Change</th>
-                        <th class="text-center">Rank</th>
-                        <th class="text-center">Status</th>
-                    </tr>
-                </thead>
+            </div>
 
-                <tbody>
-                    {% for row in grid_rows %}
-                        <tr
-                            class="testing-row"
-                            data-result-id="{{ row.athlete_result.id }}"
-                        >
-                            <td class="sticky-athlete">
-                                <div class="fw-semibold">
-                                    {% if row.athlete_result.athlete.first_name or row.athlete_result.athlete.last_name %}
-                                        {{ row.athlete_result.athlete.first_name }}
-                                        {{ row.athlete_result.athlete.last_name }}
-                                    {% else %}
-                                        {{ row.athlete_result.athlete.username }}
-                                    {% endif %}
+
+            <div class="card-body p-4">
+
+                <div class="row g-3">
+
+                    <!-- ATHLETES -->
+
+                    <div class="col-12 col-lg-6">
+
+                        <div class="publish-card">
+
+                            <div class="d-flex justify-content-between align-items-start gap-3">
+
+                                <div class="d-flex gap-3">
+
+                                    <div class="publish-icon">
+                                        🤸
+                                    </div>
+
+                                    <div>
+
+                                        <h3 class="h5 mb-1">
+                                            Athlete Access
+                                        </h3>
+
+                                        <p class="small text-muted mb-3">
+                                            Athletes can view their own
+                                            results, score, ranking and progress.
+                                        </p>
+
+
+                                        {% if session.published_to_athletes %}
+
+                                            <span class="badge text-bg-success">
+                                                Published
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="badge text-bg-secondary">
+                                                Hidden
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
                                 </div>
 
-                                <small class="text-muted">
-                                    {{ row.athlete_result.athlete.username }}
-                                </small>
-                            </td>
 
-                            {% for cell in row.cells %}
-                                <td>
-                                    <div class="row g-1">
-                                        <div class="col-7">
-                                            <input
-                                                type="text"
-                                                name="raw_{{ row.athlete_result.id }}_{{ cell.exercise.id }}"
-                                                value="{{ cell.result.raw_result }}"
-                                                class="form-control form-control-sm raw-input"
-                                                placeholder="Result"
-                                                {% if cell.result.not_completed %}
-                                                    disabled
-                                                {% endif %}
-                                            >
-                                        </div>
+                                <form
+                                    method="post"
+                                    action="{% url 'publish_testing_session' session.id %}"
+                                >
 
-                                        <div class="col-5">
-                                            <input
-                                                type="number"
-                                                step="0.01"
-                                                min="0"
-                                                name="score_{{ row.athlete_result.id }}_{{ cell.exercise.id }}"
-                                                value="{{ cell.result.score }}"
-                                                class="form-control form-control-sm score-input score-cell"
-                                                placeholder="Pts"
-                                                data-result-id="{{ row.athlete_result.id }}"
-                                                {% if cell.result.not_completed %}
-                                                    disabled
-                                                {% endif %}
-                                            >
-                                        </div>
-                                    </div>
+                                    {% csrf_token %}
 
-                                    <div class="form-check mt-2">
-                                        <input
-                                            type="checkbox"
-                                            name="not_completed_{{ row.athlete_result.id }}_{{ cell.exercise.id }}"
-                                            class="form-check-input not-completed-toggle"
-                                            data-result-id="{{ row.athlete_result.id }}"
-                                            {% if cell.result.not_completed %}
-                                                checked
+
+                                    {% if session.published_to_athletes %}
+
+                                        <button
+                                            type="submit"
+                                            name="publish_target"
+                                            value="unpublish_athletes"
+                                            class="btn btn-sm btn-outline-danger"
+                                        >
+                                            Unpublish
+                                        </button>
+
+                                    {% else %}
+
+                                        <button
+                                            type="submit"
+                                            name="publish_target"
+                                            value="athletes"
+                                            class="btn btn-sm btn-outline-primary"
+                                            {% if verified_count != grid_rows|length or not grid_rows %}
+                                                disabled
                                             {% endif %}
                                         >
+                                            Publish
+                                        </button>
 
-                                        <label class="form-check-label small">
-                                            X / Not completed
-                                        </label>
+                                    {% endif %}
+
+                                </form>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- PARENTS -->
+
+                    <div class="col-12 col-lg-6">
+
+                        <div class="publish-card">
+
+                            <div class="d-flex justify-content-between align-items-start gap-3">
+
+                                <div class="d-flex gap-3">
+
+                                    <div class="publish-icon">
+                                        👨‍👩‍👧
                                     </div>
-                                </td>
+
+                                    <div>
+
+                                        <h3 class="h5 mb-1">
+                                            Parent Access
+                                        </h3>
+
+                                        <p class="small text-muted mb-3">
+                                            Parents can view published testing
+                                            results and athlete progress.
+                                        </p>
+
+
+                                        {% if session.published_to_parents %}
+
+                                            <span class="badge text-bg-success">
+                                                Published
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="badge text-bg-secondary">
+                                                Hidden
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+
+
+                                <form
+                                    method="post"
+                                    action="{% url 'publish_testing_session' session.id %}"
+                                >
+
+                                    {% csrf_token %}
+
+
+                                    {% if session.published_to_parents %}
+
+                                        <button
+                                            type="submit"
+                                            name="publish_target"
+                                            value="unpublish_parents"
+                                            class="btn btn-sm btn-outline-danger"
+                                        >
+                                            Unpublish
+                                        </button>
+
+                                    {% else %}
+
+                                        <button
+                                            type="submit"
+                                            name="publish_target"
+                                            value="parents"
+                                            class="btn btn-sm btn-outline-primary"
+                                            {% if verified_count != grid_rows|length or not grid_rows %}
+                                                disabled
+                                            {% endif %}
+                                        >
+                                            Publish
+                                        </button>
+
+                                    {% endif %}
+
+                                </form>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                {% if not session.published_to_athletes or not session.published_to_parents %}
+
+                    <div class="border-top mt-4 pt-4">
+
+                        <form
+                            method="post"
+                            action="{% url 'publish_testing_session' session.id %}"
+                        >
+
+                            {% csrf_token %}
+
+                            <button
+                                type="submit"
+                                name="publish_target"
+                                value="both"
+                                class="btn btn-success"
+                                {% if verified_count != grid_rows|length or not grid_rows %}
+                                    disabled
+                                {% endif %}
+                            >
+                                📤 Publish to Athletes & Parents
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             TESTING RESULTS FORM
+             ===================================================== -->
+
+        <form
+            method="post"
+            id="testing-grid-form"
+        >
+
+            {% csrf_token %}
+
+            <section class="card testing-card mb-4">
+
+                <div class="card-header bg-white border-0 p-4">
+
+                    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+
+                        <div>
+
+                            <div class="section-eyebrow">
+                                Coach Entry
+                            </div>
+
+                            <h2 class="h4 mb-1">
+                                Testing Results Grid
+                            </h2>
+
+                            <p class="small text-muted mb-0">
+                                Use Tab to move across the grid
+                                like a spreadsheet.
+                            </p>
+
+                        </div>
+
+
+                        <div class="d-flex flex-wrap gap-2">
+
+                            <button
+                                type="submit"
+                                name="action"
+                                value="save_draft"
+                                class="btn btn-outline-primary"
+                            >
+                                💾 Save Draft
+                            </button>
+
+                            <button
+                                type="submit"
+                                name="action"
+                                value="verify"
+                                class="btn btn-success verify-button"
+                            >
+                                ✓ Verify & Calculate Rankings
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="testing-grid-wrapper">
+
+                    <table class="table testing-grid">
+
+                        <thead>
+
+                            <tr>
+
+                                <th class="sticky-athlete">
+                                    Athlete
+                                </th>
+
+                                {% for exercise in exercises %}
+
+                                    <th class="exercise-column text-center">
+
+                                        <div class="exercise-name">
+                                            {{ exercise.name }}
+                                        </div>
+
+                                        <div class="small text-muted">
+                                            {{ exercise.get_unit_display }}
+                                        </div>
+
+                                    </th>
+
+                                {% endfor %}
+
+                                <th class="text-center">
+                                    Total
+                                </th>
+
+                                <th class="text-center">
+                                    Previous
+                                </th>
+
+                                <th class="text-center">
+                                    Change
+                                </th>
+
+                                <th class="text-center">
+                                    Rank
+                                </th>
+
+                                <th class="text-center">
+                                    Status
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for row in grid_rows %}
+
+                                <tr
+                                    class="testing-row"
+                                    data-result-id="{{ row.athlete_result.id }}"
+                                >
+
+                                    <td class="sticky-athlete">
+
+                                        <div class="fw-semibold">
+
+                                            {% if row.athlete_result.athlete.first_name or row.athlete_result.athlete.last_name %}
+
+                                                {{ row.athlete_result.athlete.first_name }}
+                                                {{ row.athlete_result.athlete.last_name }}
+
+                                            {% else %}
+
+                                                {{ row.athlete_result.athlete.username }}
+
+                                            {% endif %}
+
+                                        </div>
+
+                                        <div class="small text-muted">
+                                            {{ row.athlete_result.athlete.username }}
+                                        </div>
+
+                                    </td>
+
+
+                                    {% for cell in row.cells %}
+
+                                        <td class="result-cell">
+
+                                            <div class="row g-1">
+
+                                                <div class="col-7">
+
+                                                    <input
+                                                        type="text"
+                                                        name="raw_{{ row.athlete_result.id }}_{{ cell.exercise.id }}"
+                                                        value="{{ cell.result.raw_result }}"
+                                                        class="form-control form-control-sm raw-input"
+                                                        placeholder="Result"
+                                                        {% if cell.result.not_completed %}
+                                                            disabled
+                                                        {% endif %}
+                                                    >
+
+                                                </div>
+
+
+                                                <div class="col-5">
+
+                                                    <input
+                                                        type="number"
+                                                        step="0.01"
+                                                        min="0"
+                                                        name="score_{{ row.athlete_result.id }}_{{ cell.exercise.id }}"
+                                                        value="{{ cell.result.score }}"
+                                                        class="form-control form-control-sm score-input score-cell"
+                                                        placeholder="Pts"
+                                                        data-result-id="{{ row.athlete_result.id }}"
+                                                        {% if cell.result.not_completed %}
+                                                            disabled
+                                                        {% endif %}
+                                                    >
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <div class="form-check mt-2">
+
+                                                <input
+                                                    type="checkbox"
+                                                    name="not_completed_{{ row.athlete_result.id }}_{{ cell.exercise.id }}"
+                                                    class="form-check-input not-completed-toggle"
+                                                    data-result-id="{{ row.athlete_result.id }}"
+                                                    id="not-completed-{{ row.athlete_result.id }}-{{ cell.exercise.id }}"
+                                                    {% if cell.result.not_completed %}
+                                                        checked
+                                                    {% endif %}
+                                                >
+
+                                                <label
+                                                    class="form-check-label not-completed-label"
+                                                    for="not-completed-{{ row.athlete_result.id }}-{{ cell.exercise.id }}"
+                                                >
+                                                    X / Not completed
+                                                </label>
+
+                                            </div>
+
+                                        </td>
+
+                                    {% endfor %}
+
+
+                                    <td class="text-center">
+
+                                        <span
+                                            class="total-score row-total"
+                                            id="total-{{ row.athlete_result.id }}"
+                                        >
+                                            {{ row.athlete_result.total_score }}
+                                        </span>
+
+                                    </td>
+
+
+                                    <td class="text-center">
+
+                                        {% if row.previous_score is not None %}
+                                            {{ row.previous_score }}
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <td class="text-center">
+
+                                        {% if row.score_change is not None %}
+
+                                            {% if row.score_change > 0 %}
+                                                <span class="text-success fw-semibold">
+                                                    ▲ +{{ row.score_change }}
+                                                </span>
+                                            {% elif row.score_change < 0 %}
+                                                <span class="text-danger fw-semibold">
+                                                    ▼ {{ row.score_change }}
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">—</span>
+                                            {% endif %}
+
+                                        {% else %}
+
+                                            <span class="text-muted">—</span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <td class="text-center">
+
+                                        {% if row.athlete_result.rank %}
+                                            <span class="badge text-bg-primary">
+                                                #{{ row.athlete_result.rank }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <td class="text-center">
+
+                                        {% if row.athlete_result.status == 'verified' %}
+                                            <span class="badge text-bg-success">
+                                                ✓ Verified
+                                            </span>
+                                        {% elif row.athlete_result.status == 'pending' %}
+                                            <span class="badge text-bg-warning">
+                                                Pending
+                                            </span>
+                                        {% else %}
+                                            <span class="badge text-bg-secondary">
+                                                Draft
+                                            </span>
+                                        {% endif %}
+
+                                    </td>
+
+                                </tr>
+
+                            {% empty %}
+
+                                <tr>
+
+                                    <td
+                                        colspan="20"
+                                        class="text-center text-muted py-5"
+                                    >
+                                        No athletes have been selected
+                                        for this testing session.
+                                    </td>
+
+                                </tr>
+
                             {% endfor %}
 
-                            <td class="text-center">
-                                <strong
-                                    class="row-total"
-                                    id="total-{{ row.athlete_result.id }}"
-                                >
-                                    {{ row.athlete_result.total_score }}
-                                </strong>
-                            </td>
+                        </tbody>
 
-                            <td class="text-center">
-                                {% if row.previous_score is not None %}
-                                    {{ row.previous_score }}
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
+                    </table>
 
-                            <td class="text-center">
-                                {% if row.score_change is not None %}
-                                    {% if row.score_change > 0 %}
-                                        <span class="text-success fw-semibold">
-                                            +{{ row.score_change }}
-                                        </span>
-                                    {% elif row.score_change < 0 %}
-                                        <span class="text-danger fw-semibold">
-                                            {{ row.score_change }}
-                                        </span>
-                                    {% else %}
-                                        <span class="text-muted">
-                                            0
-                                        </span>
-                                    {% endif %}
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
-
-                            <td class="text-center">
-                                {% if row.athlete_result.rank %}
-                                    <span class="badge bg-primary">
-                                        #{{ row.athlete_result.rank }}
-                                    </span>
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
-
-                            <td class="text-center">
-                                {% if row.athlete_result.status == 'verified' %}
-                                    <span class="badge bg-success">
-                                        Verified
-                                    </span>
-
-                                {% elif row.athlete_result.status == 'pending' %}
-                                    <span class="badge bg-warning text-dark">
-                                        Pending
-                                    </span>
-
-                                {% else %}
-                                    <span class="badge bg-secondary">
-                                        Draft
-                                    </span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% empty %}
-                        <tr>
-                            <td
-                                colspan="20"
-                                class="text-center text-muted py-5"
-                            >
-                                No athletes have been selected for this session.
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <div class="card-footer d-flex flex-wrap justify-content-between align-items-center gap-2">
-            <small class="text-muted">
-                Totals update automatically as point values are entered.
-            </small>
-
-            <div class="d-flex gap-2">
-                <button
-                    type="submit"
-                    name="action"
-                    value="save_draft"
-                    class="btn btn-outline-primary"
-                >
-                    Save Draft
-                </button>
-
-                <button
-                    type="submit"
-                    name="action"
-                    value="verify"
-                    class="btn btn-success"
-                    onclick="return confirm(
-                        'Verify all results and calculate rankings?'
-                    );"
-                >
-                    Verify & Calculate Rankings
-                </button>
-            </div>
-        </div>
-    </div>
-</form>
-
-<div class="card">
-    <div class="card-header">
-        Testing Guidelines
-    </div>
-
-    <div class="card-body">
-        <div class="accordion" id="testing-guidelines">
-            {% for exercise in exercises %}
-                <div class="accordion-item">
-                    <h2
-                        class="accordion-header"
-                        id="heading-{{ exercise.id }}"
-                    >
-                        <button
-                            class="accordion-button collapsed"
-                            type="button"
-                            data-bs-toggle="collapse"
-                            data-bs-target="#guideline-{{ exercise.id }}"
-                        >
-                            {{ exercise.name }}
-                        </button>
-                    </h2>
-
-                    <div
-                        id="guideline-{{ exercise.id }}"
-                        class="accordion-collapse collapse"
-                        data-bs-parent="#testing-guidelines"
-                    >
-                        <div class="accordion-body">
-                            {% if exercise.guidelines %}
-                                {{ exercise.guidelines|linebreaks }}
-                            {% else %}
-                                <span class="text-muted">
-                                    No guidelines have been added.
-                                </span>
-                            {% endif %}
-                        </div>
-                    </div>
                 </div>
-            {% empty %}
+
+
+                <div class="results-actions">
+
+                    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+
+                        <div class="small text-muted">
+                            Totals update automatically as point
+                            values are entered.
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2">
+
+                            <button
+                                type="submit"
+                                name="action"
+                                value="save_draft"
+                                class="btn btn-outline-primary"
+                            >
+                                💾 Save Draft
+                            </button>
+
+                            <button
+                                type="submit"
+                                name="action"
+                                value="verify"
+                                class="btn btn-success verify-button"
+                            >
+                                ✓ Verify & Calculate Rankings
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </form>
+
+
+        <!-- =====================================================
+             7-DAY ROUTINE DEVELOPMENT
+             ===================================================== -->
+
+        <section class="card testing-card mb-4">
+
+            <div class="card-header bg-white border-0 p-4">
+
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+
+                    <div>
+
+                        <div class="section-eyebrow">
+                            Routine Development
+                        </div>
+
+                        <h2 class="h4 mb-1">
+                            7-Day Routine Consistency
+                        </h2>
+
+                        <p class="text-muted mb-0">
+                            {{ routine_start_date|date:"M j" }}
+                            –
+                            {{ routine_end_date|date:"M j, Y" }}
+
+                            ·
+
+                            Routine volume and consistency
+                            leading into this testing session.
+                        </p>
+
+                    </div>
+
+                    <span class="badge text-bg-light border p-2">
+                        Hit / Mid / Miss
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="card-body p-4 pt-0">
+
+                <div class="d-grid gap-4">
+
+                    {% for row in grid_rows %}
+
+                        <article class="routine-athlete-card">
+
+                            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+
+                                <div>
+
+                                    <h3 class="h5 mb-1">
+
+                                        {% if row.athlete_result.athlete.first_name or row.athlete_result.athlete.last_name %}
+
+                                            {{ row.athlete_result.athlete.first_name }}
+                                            {{ row.athlete_result.athlete.last_name }}
+
+                                        {% else %}
+
+                                            {{ row.athlete_result.athlete.username }}
+
+                                        {% endif %}
+
+                                    </h3>
+
+                                    <div class="small text-muted">
+                                        Routine consistency during the
+                                        seven days leading into testing.
+                                    </div>
+
+                                </div>
+
+
+                                <div class="d-flex flex-wrap gap-2">
+
+                                    <span class="routine-summary-badge routine-attempts">
+                                        Attempts:
+                                        {{ row.routine_summary.overall.attempts }}
+                                    </span>
+
+                                    <span class="routine-summary-badge routine-hit-rate">
+                                        Hit Rate:
+                                        {{ row.routine_summary.overall.hit_rate }}%
+                                    </span>
+
+                                    <span class="routine-summary-badge routine-quality">
+                                        Quality:
+                                        {{ row.routine_summary.overall.quality }}%
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            {% if row.routine_summary.overall.attempts %}
+
+                                <div class="row g-3">
+
+                                    {% for event_row in row.routine_summary.events %}
+
+                                        <div class="col-12 col-md-6 col-xl-3">
+
+                                            <div class="routine-event-card">
+
+                                                <div class="d-flex align-items-center gap-2 mb-3">
+
+                                                    <div class="routine-event-icon">
+                                                        {{ event_row.icon }}
+                                                    </div>
+
+                                                    <strong>
+                                                        {{ event_row.name }}
+                                                    </strong>
+
+                                                </div>
+
+
+                                                <div class="routine-metric-row">
+                                                    <span>Attempts</span>
+                                                    <strong>{{ event_row.stats.attempts }}</strong>
+                                                </div>
+
+                                                <div class="routine-metric-row">
+                                                    <span>Hits</span>
+                                                    <strong class="routine-hit-value">
+                                                        {{ event_row.stats.hits }}
+                                                    </strong>
+                                                </div>
+
+                                                <div class="routine-metric-row">
+                                                    <span>Mids</span>
+                                                    <strong>{{ event_row.stats.mids }}</strong>
+                                                </div>
+
+                                                <div class="routine-metric-row">
+                                                    <span>Missed</span>
+                                                    <strong>{{ event_row.stats.missed }}</strong>
+                                                </div>
+
+                                                <hr>
+
+                                                <div class="routine-metric-row">
+                                                    <span>Hit Rate</span>
+                                                    <strong class="routine-hit-value">
+                                                        {{ event_row.stats.hit_rate }}%
+                                                    </strong>
+                                                </div>
+
+                                                <div class="routine-metric-row">
+                                                    <span>Quality</span>
+                                                    <strong class="routine-quality-value">
+                                                        {{ event_row.stats.quality }}%
+                                                    </strong>
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            {% else %}
+
+                                <div class="routine-empty">
+                                    No routine attempts were recorded
+                                    for this athlete during this 7-day window.
+                                </div>
+
+                            {% endif %}
+
+                        </article>
+
+                    {% empty %}
+
+                        <div class="routine-empty">
+                            No athlete routine data is available
+                            for this testing session.
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             TESTING GUIDELINES
+             ===================================================== -->
+
+        <section class="card testing-card">
+
+            <div class="card-header bg-white border-0 p-4 pb-2">
+
+                <div class="section-eyebrow">
+                    Reference
+                </div>
+
+                <h2 class="h4 mb-1">
+                    Testing Guidelines
+                </h2>
+
                 <p class="text-muted mb-0">
-                    No exercises are assigned to this session.
+                    Review the standards for each exercise.
                 </p>
-            {% endfor %}
-        </div>
+
+            </div>
+
+
+            <div class="card-body p-4">
+
+                <div
+                    class="accordion"
+                    id="testing-guidelines"
+                >
+
+                    {% for exercise in exercises %}
+
+                        <div class="accordion-item">
+
+                            <h2
+                                class="accordion-header"
+                                id="heading-{{ exercise.id }}"
+                            >
+
+                                <button
+                                    class="accordion-button collapsed"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#guideline-{{ exercise.id }}"
+                                    aria-expanded="false"
+                                    aria-controls="guideline-{{ exercise.id }}"
+                                >
+                                    {{ exercise.name }}
+
+                                    <span class="small text-muted ms-2">
+                                        {{ exercise.get_unit_display }}
+                                    </span>
+                                </button>
+
+                            </h2>
+
+
+                            <div
+                                id="guideline-{{ exercise.id }}"
+                                class="accordion-collapse collapse"
+                                aria-labelledby="heading-{{ exercise.id }}"
+                                data-bs-parent="#testing-guidelines"
+                            >
+
+                                <div class="accordion-body">
+
+                                    {% if exercise.guidelines %}
+
+                                        {{ exercise.guidelines|linebreaks }}
+
+                                    {% else %}
+
+                                        <span class="text-muted">
+                                            No guidelines have been added.
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    {% empty %}
+
+                        <p class="text-muted mb-0">
+                            No exercises are assigned to this session.
+                        </p>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        </section>
+
     </div>
+
 </div>
+
 
 <script>
     function calculateRowTotal(resultId) {
+
         const scoreInputs = document.querySelectorAll(
             `.score-cell[data-result-id="${resultId}"]`
         );
 
         let total = 0;
 
-        scoreInputs.forEach(function (input) {
-            if (!input.disabled) {
-                const value = parseFloat(input.value);
+        scoreInputs.forEach(
+            function (input) {
 
-                if (!Number.isNaN(value)) {
-                    total += value;
+                if (!input.disabled) {
+
+                    const value = parseFloat(
+                        input.value
+                    );
+
+                    if (!Number.isNaN(value)) {
+                        total += value;
+                    }
                 }
             }
-        });
+        );
 
         const totalElement = document.getElementById(
             `total-${resultId}`
@@ -626,51 +1599,82 @@
         }
     }
 
-    document.querySelectorAll('.score-cell').forEach(function (input) {
-        input.addEventListener('input', function () {
-            calculateRowTotal(input.dataset.resultId);
-        });
-    });
+
+    document.querySelectorAll(
+        '.score-cell'
+    ).forEach(
+        function (input) {
+
+            input.addEventListener(
+                'input',
+                function () {
+
+                    calculateRowTotal(
+                        input.dataset.resultId
+                    );
+                }
+            );
+        }
+    );
+
 
     document.querySelectorAll(
         '.not-completed-toggle'
-    ).forEach(function (checkbox) {
-        checkbox.addEventListener('change', function () {
-            const cell = checkbox.closest('td');
-            const rawInput = cell.querySelector('.raw-input');
-            const scoreInput = cell.querySelector('.score-cell');
+    ).forEach(
+        function (checkbox) {
 
-            if (checkbox.checked) {
-                rawInput.value = 'X';
-                rawInput.disabled = true;
+            checkbox.addEventListener(
+                'change',
+                function () {
 
-                scoreInput.value = '0';
-                scoreInput.disabled = true;
-            } else {
-                rawInput.value = '';
-                rawInput.disabled = false;
+                    const cell = checkbox.closest('td');
 
-                scoreInput.value = '';
-                scoreInput.disabled = false;
-            }
+                    const rawInput = cell.querySelector(
+                        '.raw-input'
+                    );
 
-            calculateRowTotal(
-                checkbox.dataset.resultId
+                    const scoreInput = cell.querySelector(
+                        '.score-cell'
+                    );
+
+
+                    if (checkbox.checked) {
+
+                        rawInput.value = 'X';
+                        rawInput.disabled = true;
+
+                        scoreInput.value = '0';
+                        scoreInput.disabled = true;
+
+                    } else {
+
+                        rawInput.value = '';
+                        rawInput.disabled = false;
+
+                        scoreInput.value = '';
+                        scoreInput.disabled = false;
+                    }
+
+
+                    calculateRowTotal(
+                        checkbox.dataset.resultId
+                    );
+                }
             );
-        });
-    });
-
-    document.querySelectorAll('.testing-row').forEach(function (row) {
-        calculateRowTotal(row.dataset.resultId);
-    });
-
-    const tooltipTriggers = document.querySelectorAll(
-        '[data-bs-toggle="tooltip"]'
+        }
     );
 
-    tooltipTriggers.forEach(function (tooltipTrigger) {
-        new bootstrap.Tooltip(tooltipTrigger);
-    });
+
+    document.querySelectorAll(
+        '.testing-row'
+    ).forEach(
+        function (row) {
+
+            calculateRowTotal(
+                row.dataset.resultId
+            );
+        }
+    );
 </script>
 
 {% endblock %}

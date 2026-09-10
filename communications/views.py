@@ -378,65 +378,164 @@ def conversation_archive(
         'communication_inbox'
     )
 
-
 @login_required
-def notification_list(request):
-    notification_filter = request.GET.get(
-        'filter',
-        'all'
+def notification_list(
+    request,
+):
+    # ========================================================
+    # FILTER
+    # ========================================================
+
+    notification_filter = (
+        request.GET.get(
+            'filter',
+            'all',
+        )
+        .strip()
+        .lower()
     )
 
-    notifications = Notification.objects.filter(
-        recipient=request.user
-    ).select_related(
-        'sender'
+    allowed_filters = {
+        'all',
+        'unread',
+        'read',
+    }
+
+    if (
+        notification_filter
+        not in allowed_filters
+    ):
+        notification_filter = (
+            'all'
+        )
+
+
+    # ========================================================
+    # ALL USER NOTIFICATIONS
+    # ========================================================
+
+    all_notifications = (
+        Notification.objects
+        .filter(
+            recipient=request.user,
+        )
+        .select_related(
+            'sender',
+        )
+        .order_by(
+            '-created_at',
+        )
     )
 
-    if notification_filter == 'unread':
-        notifications = notifications.filter(
-            is_read=False
+
+    total_count = (
+        all_notifications.count()
+    )
+
+
+    unread_count = (
+        all_notifications
+        .filter(
+            is_read=False,
+        )
+        .count()
+    )
+
+
+    # ========================================================
+    # APPLY FILTER
+    # ========================================================
+
+    if (
+        notification_filter
+        == 'unread'
+    ):
+
+        notifications = (
+            all_notifications
+            .filter(
+                is_read=False,
+            )
         )
 
-    elif notification_filter == 'read':
-        notifications = notifications.filter(
-            is_read=True
+
+    elif (
+        notification_filter
+        == 'read'
+    ):
+
+        notifications = (
+            all_notifications
+            .filter(
+                is_read=True,
+            )
         )
 
-    elif notification_filter != 'all':
-        notification_filter = 'all'
+
+    else:
+
+        notifications = (
+            all_notifications
+        )
+
+
+    # ========================================================
+    # PAGINATION
+    # ========================================================
 
     paginator = Paginator(
         notifications,
-        20
+        15,
     )
 
-    page_obj = paginator.get_page(
-        request.GET.get('page')
+
+    page_number = (
+        request.GET.get(
+            'page'
+        )
     )
 
-    unread_count = Notification.objects.filter(
-        recipient=request.user,
-        is_read=False
-    ).count()
 
-    total_count = Notification.objects.filter(
-        recipient=request.user
-    ).count()
+    page_obj = (
+        paginator.get_page(
+            page_number
+        )
+    )
+
+
+    # ========================================================
+    # CONTEXT
+    # ========================================================
+
+    context = {
+
+        'notifications': (
+            notifications
+        ),
+
+        'page_obj': (
+            page_obj
+        ),
+
+        'notification_filter': (
+            notification_filter
+        ),
+
+        'unread_count': (
+            unread_count
+        ),
+
+        'total_count': (
+            total_count
+        ),
+    }
+
 
     return render(
         request,
         'communications/notification_list.html',
-        {
-            'page_obj': page_obj,
-            'notification_filter': (
-                notification_filter
-            ),
-            'unread_count': unread_count,
-            'total_count': total_count,
-        }
+        context,
     )
-
-
 @login_required
 def notification_open(
     request,

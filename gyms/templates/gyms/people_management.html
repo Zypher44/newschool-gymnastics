@@ -1,0 +1,420 @@
+{% extends "base.html" %}
+
+{% block title %}
+People | {{ gym.name }}
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+
+        <div>
+
+            <a
+                href="{% url 'director_dashboard' %}"
+                class="text-decoration-none small"
+            >
+                ← Director Dashboard
+            </a>
+
+            <h2 class="fw-bold mt-2 mb-1">
+                People
+            </h2>
+
+            <div class="text-muted">
+                {{ gym.name }}
+            </div>
+
+        </div>
+
+        <a
+            href="{% url 'create_gym_person' %}"
+            class="btn btn-primary"
+        >
+            + Add Person
+        </a>
+
+    </div>
+
+
+    <!-- KPI COUNTS -->
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Athletes
+                    </div>
+
+                    <div class="fs-2 fw-bold">
+                        {{ athlete_count }}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Coaches
+                    </div>
+
+                    <div class="fs-2 fw-bold">
+                        {{ coach_count }}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Head Coaches
+                    </div>
+
+                    <div class="fs-2 fw-bold">
+                        {{ head_coach_count }}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Parents
+                    </div>
+
+                    <div class="fs-2 fw-bold">
+                        {{ parent_count }}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- ======================================================
+         ATHLETES
+         ====================================================== -->
+
+    <div class="card mb-4">
+
+        <div class="card-header bg-white border-0 pt-4 px-4">
+
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+
+                <div>
+
+                    <h5 class="fw-bold mb-1">
+                        Athletes
+                    </h5>
+
+                    <small class="text-muted">
+                        Competitive athlete accounts
+                    </small>
+
+                </div>
+
+                <a
+                    href="{% url 'create_gym_person' %}"
+                    class="btn btn-outline-primary btn-sm"
+                >
+                    + Add Athlete
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <div class="card-body">
+
+            {% for membership in athletes %}
+
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 border-bottom py-3">
+
+                    <div>
+
+                        <div class="fw-semibold">
+
+                            <a
+                                href="{% url 'director_athlete_profile' membership.user.id %}"
+                                class="text-decoration-none text-dark"
+                            >
+                                {{ membership.user.get_full_name|default:membership.user.username }}
+                            </a>
+
+                        </div>
+
+
+                        <div class="small text-muted">
+
+                            {% if membership.user.email %}
+                                {{ membership.user.email }}
+                            {% else %}
+                                No email
+                            {% endif %}
+
+                            {% if not membership.is_active %}
+
+                                ·
+                                <span class="text-danger">
+                                    Inactive
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="d-flex flex-wrap gap-2">
+
+                        {% if membership.is_active %}
+
+                            <a
+                                href="{% url 'director_athlete_profile' membership.user.id %}"
+                                class="btn btn-primary btn-sm"
+                            >
+                                View Profile
+                            </a>
+
+                        {% endif %}
+
+
+                        <a
+                            href="{% url 'edit_gym_person' membership.id %}"
+                            class="btn btn-outline-primary btn-sm"
+                        >
+                            Edit
+                        </a>
+
+
+                        <form
+                            method="post"
+                            action="{% url 'toggle_gym_person_status' membership.id %}"
+                        >
+
+                            {% csrf_token %}
+
+                            {% if membership.is_active %}
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-outline-danger btn-sm"
+                                >
+                                    Deactivate
+                                </button>
+
+                            {% else %}
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-outline-success btn-sm"
+                                >
+                                    Activate
+                                </button>
+
+                            {% endif %}
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            {% empty %}
+
+                <div class="text-center py-5">
+
+                    <div class="fs-2 mb-2">
+                        🤸
+                    </div>
+
+                    <div class="fw-semibold">
+                        No Athletes Yet
+                    </div>
+
+                    <div class="text-muted small mb-3">
+                        Add your first athlete to begin building your roster.
+                    </div>
+
+                    <a
+                        href="{% url 'create_gym_person' %}"
+                        class="btn btn-primary btn-sm"
+                    >
+                        + Add Athlete
+                    </a>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================================
+         COACHING STAFF
+         ====================================================== -->
+
+    <div class="card mb-4">
+
+        <div class="card-header bg-white border-0 pt-4 px-4">
+
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+
+                <div>
+
+                    <h5 class="fw-bold mb-1">
+                        Coaching Staff
+                    </h5>
+
+                    <small class="text-muted">
+                        Head coaches and coaches
+                    </small>
+
+                </div>
+
+                <a
+                    href="{% url 'create_gym_person' %}"
+                    class="btn btn-outline-primary btn-sm"
+                >
+                    + Add Coach
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <div class="card-body">
+
+            {% for membership in head_coaches %}
+
+                {% include "gyms/includes/person_row.html" %}
+
+            {% endfor %}
+
+
+            {% for membership in coaches %}
+
+                {% include "gyms/includes/person_row.html" %}
+
+            {% endfor %}
+
+
+            {% if not head_coaches and not coaches %}
+
+                <div class="text-center py-5">
+
+                    <div class="fs-2 mb-2">
+                        👤
+                    </div>
+
+                    <div class="fw-semibold">
+                        No Coaches Yet
+                    </div>
+
+                    <div class="text-muted small">
+                        Add coaching staff to your gym.
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================================
+         PARENTS
+         ====================================================== -->
+
+    <div class="card">
+
+        <div class="card-header bg-white border-0 pt-4 px-4">
+
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+
+                <div>
+
+                    <h5 class="fw-bold mb-1">
+                        Parents & Guardians
+                    </h5>
+
+                    <small class="text-muted">
+                        Family accounts connected to your gym
+                    </small>
+
+                </div>
+
+                <a
+                    href="{% url 'create_gym_person' %}"
+                    class="btn btn-outline-primary btn-sm"
+                >
+                    + Add Parent
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <div class="card-body">
+
+            {% for membership in parents %}
+
+                {% include "gyms/includes/person_row.html" %}
+
+            {% empty %}
+
+                <div class="text-center py-5">
+
+                    <div class="fs-2 mb-2">
+                        👨‍👩‍👧
+                    </div>
+
+                    <div class="fw-semibold">
+                        No Parents or Guardians Yet
+                    </div>
+
+                    <div class="text-muted small">
+                        Add parent accounts and link them to athletes next.
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,620 @@
+{% extends "base.html" %}
+
+{% block title %}
+Daily Routine Tracker
+{% endblock %}
+
+{% block page_header %}
+Daily Routine Tracker
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .tracker-shell {
+        max-width: 1650px;
+        margin: 0 auto;
+    }
+
+    .tracker-hero {
+        padding: 30px;
+        color: white;
+        border-radius: 24px;
+        background:
+            linear-gradient(
+                135deg,
+                #111827,
+                #1e40af,
+                #4f46e5
+            );
+        box-shadow:
+            0 16px 45px
+            rgba(15, 23, 42, 0.15);
+    }
+
+    .summary-card {
+        height: 100%;
+        padding: 18px;
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        background: white;
+        box-shadow:
+            0 6px 18px
+            rgba(15, 23, 42, 0.05);
+    }
+
+    .summary-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+    }
+
+    .tracker-card {
+        border: 0;
+        border-radius: 20px;
+        box-shadow:
+            0 8px 24px
+            rgba(15, 23, 42, 0.06);
+    }
+
+    .athlete-row {
+        padding: 20px;
+        border-bottom:
+            1px solid
+            #eef0f3;
+    }
+
+    .athlete-row:last-child {
+        border-bottom: 0;
+    }
+
+    .event-box {
+        height: 100%;
+        padding: 15px;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        background: #fafcff;
+    }
+
+    .attempt-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin: 2px;
+        padding: 5px 8px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+
+    .attempt-hit {
+        color: #0f5132;
+        background: #d1e7dd;
+    }
+
+    .attempt-mid {
+        color: #984c0c;
+        background: #ffe5d0;
+    }
+
+    .attempt-missed {
+        color: #842029;
+        background: #f8d7da;
+    }
+
+    .quick-buttons {
+        display: grid;
+        grid-template-columns:
+            repeat(3, 1fr);
+        gap: 5px;
+    }
+
+    .quick-buttons form {
+        margin: 0;
+    }
+
+    .quick-buttons button {
+        width: 100%;
+        font-size: 0.75rem;
+    }
+
+    .event-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 10px;
+        color: #667085;
+        font-size: 0.72rem;
+    }
+
+    .quality-score {
+        font-weight: 800;
+        color: #0d6efd;
+    }
+
+    @media (max-width: 767px) {
+        .tracker-hero {
+            padding: 22px;
+        }
+    }
+</style>
+
+
+<div class="container-fluid py-4">
+
+    <div class="tracker-shell">
+
+        <!-- HERO -->
+
+        <section class="tracker-hero mb-4">
+
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-4">
+
+                <div>
+
+                    <div class="small text-uppercase fw-semibold opacity-75 mb-2">
+                        Practice Consistency
+                    </div>
+
+                    <h1 class="h2 fw-bold mb-1">
+                        Daily Routine Tracker
+                    </h1>
+
+                    <div class="opacity-75">
+                        {{ practice_date|date:"l, F j, Y" }}
+                    </div>
+
+                </div>
+                <a
+    href="{% url 'routine_tracker:routine_consistency_summary' %}"
+    class="btn btn-outline-light"
+>
+    📊 7-Day Summary
+</a>
+
+                <form
+                    method="get"
+                    class="d-flex gap-2"
+                >
+
+                    <input
+                        type="date"
+                        name="date"
+                        value="{{ practice_date|date:'Y-m-d' }}"
+                        class="form-control"
+                    >
+
+                    <button
+                        type="submit"
+                        class="btn btn-light"
+                    >
+                        Go
+                    </button>
+
+                </form>
+
+            </div>
+
+        </section>
+
+
+        <!-- SUMMARY -->
+
+        <div class="row g-3 mb-4">
+
+            <div class="col-6 col-lg-3">
+
+                <div class="summary-card">
+
+                    <div class="text-muted small">
+                        Attempts
+                    </div>
+
+                    <div class="summary-value">
+                        {{ overall_stats.attempts }}
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-6 col-lg-3">
+
+                <div class="summary-card">
+
+                    <div class="text-muted small">
+                        Hits
+                    </div>
+
+                    <div class="summary-value text-success">
+                        {{ overall_stats.hits }}
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-6 col-lg-3">
+
+                <div class="summary-card">
+
+                    <div class="text-muted small">
+                        Hit Rate
+                    </div>
+
+                    <div class="summary-value">
+                        {{ overall_stats.hit_rate }}%
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-6 col-lg-3">
+
+                <div class="summary-card">
+
+                    <div class="text-muted small">
+                        Routine Quality
+                    </div>
+
+                    <div class="summary-value text-primary">
+                        {{ overall_stats.quality }}%
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ATHLETES -->
+
+        <section class="card tracker-card">
+
+            <div class="card-header bg-white border-0 p-4">
+
+                <h2 class="h4 mb-1">
+                    Routine Attempts
+                </h2>
+
+
+
+                <p class="text-muted mb-0">
+                    Record each full routine as
+                    Hit, Mid, or Missed.
+                </p>
+
+            </div>
+
+
+            <div class="card-body p-0">
+
+                {% for row in athlete_rows %}
+
+                    <div class="athlete-row">
+
+                        <div class="d-flex flex-column flex-xl-row gap-4">
+
+                            <!-- ATHLETE -->
+
+                            <div style="min-width: 190px;">
+
+                                <div class="fw-bold">
+
+                                    {% if row.athlete.first_name or row.athlete.last_name %}
+
+                                        {{ row.athlete.first_name }}
+                                        {{ row.athlete.last_name }}
+
+                                    {% else %}
+
+                                        {{ row.athlete.username }}
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                <div class="small text-muted">
+                                    {{ row.overall.attempts }}
+                                    attempts today
+                                </div>
+
+
+                                {% if row.overall.attempts %}
+
+                                    <div class="small mt-2">
+
+                                        Hit Rate:
+                                        <strong>
+                                            {{ row.overall.hit_rate }}%
+                                        </strong>
+
+                                    </div>
+
+                                    <div class="small">
+
+                                        Quality:
+                                        <span class="quality-score">
+                                            {{ row.overall.quality }}%
+                                        </span>
+
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <!-- EVENTS -->
+
+                            <div class="row g-3 flex-grow-1">
+
+                                {% for event_row in row.events %}
+
+                                    <div class="col-12 col-md-6 col-xl-3">
+
+                                        <div class="event-box">
+
+                                            <div class="fw-semibold mb-2">
+
+                                                {{ event_row.event.icon }}
+
+                                                {{ event_row.event.name }}
+
+                                            </div>
+
+
+                                            <!-- ATTEMPTS -->
+
+                                            <div class="mb-3">
+
+                                                {% for attempt in event_row.attempt_list %}
+
+                                                    <span
+                                                        class="
+                                                            attempt-chip
+
+                                                            {% if attempt.result == 'hit' %}
+                                                                attempt-hit
+                                                            {% elif attempt.result == 'mid' %}
+                                                                attempt-mid
+                                                            {% else %}
+                                                                attempt-missed
+                                                            {% endif %}
+                                                        "
+                                                    >
+
+                                                        #{{ attempt.attempt_number }}
+
+                                                        {{ attempt.get_result_display }}
+
+                                                        <form
+                                                            method="post"
+                                                            action="{% url 'routine_tracker:delete_routine_attempt' attempt.id %}"
+                                                            style="display:inline;"
+                                                        >
+
+                                                            {% csrf_token %}
+
+                                                            <button
+                                                                type="submit"
+                                                                class="btn btn-link p-0 text-reset"
+                                                                style="font-size: .65rem;"
+                                                                title="Remove attempt"
+                                                            >
+                                                                ×
+                                                            </button>
+
+                                                        </form>
+
+                                                    </span>
+
+                                                {% empty %}
+
+                                                    <span class="small text-muted">
+                                                        No attempts
+                                                    </span>
+
+                                                {% endfor %}
+
+                                            </div>
+
+
+                                            <!-- QUICK ADD -->
+
+                                            <div class="quick-buttons">
+
+                                                <form
+                                                    method="post"
+                                                    action="{% url 'routine_tracker:add_routine_attempt' %}"
+                                                >
+
+                                                    {% csrf_token %}
+
+                                                    <input
+                                                        type="hidden"
+                                                        name="session_id"
+                                                        value="{{ session.id }}"
+                                                    >
+
+                                                    <input
+                                                        type="hidden"
+                                                        name="athlete_id"
+                                                        value="{{ row.athlete.id }}"
+                                                    >
+
+                                                    <input
+                                                        type="hidden"
+                                                        name="event"
+                                                        value="{{ event_row.event.code }}"
+                                                    >
+
+                                                    <input
+                                                        type="hidden"
+                                                        name="result"
+                                                        value="hit"
+                                                    >
+
+                                                    <button
+                                                        type="submit"
+                                                        class="btn btn-success"
+                                                    >
+                                                        HIT
+                                                    </button>
+
+                                                </form>
+
+
+                                                <form
+                                                    method="post"
+                                                    action="{% url 'routine_tracker:add_routine_attempt' %}"
+                                                >
+
+                                                    {% csrf_token %}
+
+                                                    <input
+                                                        type="hidden"
+                                                        name="session_id"
+                                                        value="{{ session.id }}"
+                                                    >
+
+                                                    <input
+                                                        type="hidden"
+                                                        name="athlete_id"
+                                                        value="{{ row.athlete.id }}"
+                                                    >
+
+                                                    <input
+                                                        type="hidden"
+                                                        name="event"
+                                                        value="{{ event_row.event.code }}"
+                                                    >
+
+                                                    <input
+                                                        type="hidden"
+                                                        name="result"
+                                                        value="mid"
+                                                    >
+
+                                                    <button
+                                                        type="submit"
+                                                        class="btn btn-warning"
+                                                    >
+                                                        MID
+                                                    </button>
+
+                                                </form>
+
+
+                                                <form
+                                                    method="post"
+                                                    action="{% url 'routine_tracker:add_routine_attempt' %}"
+                                                >
+
+                                                    {% csrf_token %}
+
+                                                    <input
+                                                        type="hidden"
+                                                        name="session_id"
+                                                        value="{{ session.id }}"
+                                                    >
+
+                                                    <input
+                                                        type="hidden"
+                                                        name="athlete_id"
+                                                        value="{{ row.athlete.id }}"
+                                                    >
+
+                                                    <input
+                                                        type="hidden"
+                                                        name="event"
+                                                        value="{{ event_row.event.code }}"
+                                                    >
+
+                                                    <input
+                                                        type="hidden"
+                                                        name="result"
+                                                        value="missed"
+                                                    >
+
+                                                    <button
+                                                        type="submit"
+                                                        class="btn btn-danger"
+                                                    >
+                                                        MISS
+                                                    </button>
+
+                                                </form>
+
+                                            </div>
+
+
+                                            <!-- STATS -->
+
+                                            {% if event_row.stats.attempts %}
+
+                                                <div class="event-stats">
+
+                                                    <span>
+                                                        {{ event_row.stats.attempts }}
+                                                        attempts
+                                                    </span>
+
+                                                    <span>
+                                                        ·
+                                                    </span>
+
+                                                    <span>
+                                                        {{ event_row.stats.hit_rate }}%
+                                                        hit
+                                                    </span>
+
+                                                    <span>
+                                                        ·
+                                                    </span>
+
+                                                    <span>
+                                                        Q:
+                                                        {{ event_row.stats.quality }}%
+                                                    </span>
+
+                                                </div>
+
+                                            {% endif %}
+
+                                        </div>
+
+                                    </div>
+
+                                {% endfor %}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% empty %}
+
+
+
+                    <div class="text-center text-muted py-5">
+                        No active athletes found.
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+    </div>
+
+</div>
+
+{% endblock %}

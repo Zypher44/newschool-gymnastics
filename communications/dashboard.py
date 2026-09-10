@@ -1,11 +1,10 @@
-from django.db.models import Max, Q
+from django.db.models import Max
 
 from accounts.models import User
 from coaches.models import CoachAthleteAssignment
 from parents_portal.models import ParentAthleteLink
 
 from .models import (
-    Conversation,
     ConversationParticipant,
 )
 from .services import (
@@ -97,13 +96,16 @@ def get_coach_quick_message_options(coach):
     """
 
     if coach.role == 'head_coach':
-        athletes = User.objects.filter(
-            role='athlete'
-        ).order_by(
-            'first_name',
-            'last_name',
-            'username'
+        athletes = (
+            User.objects
+            .filter(role='athlete')
+            .order_by(
+                'first_name',
+                'last_name',
+                'username'
+            )
         )
+
     else:
         athlete_ids = (
             CoachAthleteAssignment.objects
@@ -114,13 +116,17 @@ def get_coach_quick_message_options(coach):
             )
         )
 
-        athletes = User.objects.filter(
-            id__in=athlete_ids,
-            role='athlete'
-        ).order_by(
-            'first_name',
-            'last_name',
-            'username'
+        athletes = (
+            User.objects
+            .filter(
+                id__in=athlete_ids,
+                role='athlete'
+            )
+            .order_by(
+                'first_name',
+                'last_name',
+                'username'
+            )
         )
 
     options = []
@@ -128,20 +134,27 @@ def get_coach_quick_message_options(coach):
     for athlete in athletes:
         parent_ids = (
             ParentAthleteLink.objects
-            .filter(athlete=athlete)
+            .filter(
+                athlete=athlete,
+                approved=True
+            )
             .values_list(
                 'parent_id',
                 flat=True
             )
         )
 
-        parents = User.objects.filter(
-            id__in=parent_ids,
-            role='parent'
-        ).order_by(
-            'first_name',
-            'last_name',
-            'username'
+        parents = (
+            User.objects
+            .filter(
+                id__in=parent_ids,
+                role='parent'
+            )
+            .order_by(
+                'first_name',
+                'last_name',
+                'username'
+            )
         )
 
         options.append({
@@ -169,27 +182,34 @@ def get_athlete_quick_message_options(athlete):
         )
     )
 
-    return User.objects.filter(
-        id__in=coach_ids,
-        role__in=[
-            'coach',
-            'head_coach',
-        ]
-    ).order_by(
-        'first_name',
-        'last_name',
-        'username'
+    return (
+        User.objects
+        .filter(
+            id__in=coach_ids,
+            role__in=[
+                'coach',
+                'head_coach',
+            ]
+        )
+        .order_by(
+            'first_name',
+            'last_name',
+            'username'
+        )
     )
 
 
 def get_parent_quick_message_options(parent):
     """
-    Return each linked athlete and their assigned coaches.
+    Return each approved linked athlete and their assigned coaches.
     """
 
     links = (
         ParentAthleteLink.objects
-        .filter(parent=parent)
+        .filter(
+            parent=parent,
+            approved=True
+        )
         .select_related('athlete')
     )
 
@@ -207,16 +227,20 @@ def get_parent_quick_message_options(parent):
             )
         )
 
-        coaches = User.objects.filter(
-            id__in=coach_ids,
-            role__in=[
-                'coach',
-                'head_coach',
-            ]
-        ).order_by(
-            'first_name',
-            'last_name',
-            'username'
+        coaches = (
+            User.objects
+            .filter(
+                id__in=coach_ids,
+                role__in=[
+                    'coach',
+                    'head_coach',
+                ]
+            )
+            .order_by(
+                'first_name',
+                'last_name',
+                'username'
+            )
         )
 
         options.append({
@@ -230,6 +254,17 @@ def get_parent_quick_message_options(parent):
     return options
 
 
+def get_director_quick_message_options(director):
+    """
+    Return the gym members the director is allowed to message.
+
+    Gym scoping and active-membership checks are handled by
+    get_allowed_message_recipients().
+    """
+
+    return get_allowed_message_recipients(director)
+
+
 def get_dashboard_communication_data(user):
     """
     Return role-specific data used by the shared dashboard card.
@@ -239,12 +274,18 @@ def get_dashboard_communication_data(user):
         'recent_conversations': (
             get_recent_conversations(user)
         ),
+        'director_options': [],
         'coach_options': [],
         'athlete_coaches': [],
         'parent_options': [],
     }
 
-    if user.role in [
+    if user.role == 'director':
+        data['director_options'] = (
+            get_director_quick_message_options(user)
+        )
+
+    elif user.role in [
         'coach',
         'head_coach',
     ]:

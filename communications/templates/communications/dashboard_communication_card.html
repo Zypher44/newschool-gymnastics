@@ -79,7 +79,125 @@
                 value="{{ request.get_full_path }}"
             >
 
-            {% if user.role == 'coach' or user.role == 'head_coach' %}
+            {% if user.role == 'director' %}
+
+    <div class="mb-3">
+
+        <label class="form-label fw-semibold">
+            Recipient
+        </label>
+
+        <select
+            name="recipient"
+            class="form-select"
+            required
+        >
+            <option value="">
+                Choose a gym member
+            </option>
+
+            {% regroup dashboard_communication.director_options by role as recipient_roles %}
+
+            {% for role_group in recipient_roles %}
+
+                <optgroup label="{{ role_group.grouper|title }}">
+
+                    {% for recipient in role_group.list %}
+
+                        <option value="{{ recipient.id }}">
+
+                            {% if recipient.role == 'head_coach' %}
+                                🧭
+                            {% elif recipient.role == 'coach' %}
+                                📋
+                            {% elif recipient.role == 'athlete' %}
+                                🤸
+                            {% elif recipient.role == 'parent' %}
+                                👨‍👩‍👧
+                            {% else %}
+                                👤
+                            {% endif %}
+
+                            {% if recipient.get_full_name %}
+                                {{ recipient.get_full_name }}
+                            {% else %}
+                                {{ recipient.username }}
+                            {% endif %}
+
+                            —
+                            {{ recipient.get_role_display }}
+
+                        </option>
+
+                    {% endfor %}
+
+                </optgroup>
+
+            {% endfor %}
+
+        </select>
+
+    </div>
+
+{% elif user.role == 'coach' or user.role == 'head_coach' %}
+
+    <div class="mb-3">
+        <label class="form-label fw-semibold">
+            Recipient
+        </label>
+
+        <select
+            name="recipient"
+            id="communication-recipient"
+            class="form-select"
+            required
+        >
+            <option value="">
+                Choose an athlete or parent
+            </option>
+
+            {% for option in dashboard_communication.coach_options %}
+
+                <optgroup label="{{ option.athlete_name }}">
+
+                    <option
+                        value="{{ option.athlete.id }}"
+                        data-athlete="{{ option.athlete.id }}"
+                    >
+                        🤸 {{ option.athlete_name }}
+                    </option>
+
+                    {% for parent in option.parents %}
+
+                        <option
+                            value="{{ parent.id }}"
+                            data-athlete="{{ option.athlete.id }}"
+                        >
+                            👨‍👩‍👧
+
+                            {% if parent.get_full_name %}
+                                {{ parent.get_full_name }}
+                            {% else %}
+                                {{ parent.username }}
+                            {% endif %}
+
+                            — Parent
+                        </option>
+
+                    {% endfor %}
+
+                </optgroup>
+
+            {% endfor %}
+
+        </select>
+    </div>
+
+    <input
+        type="hidden"
+        name="related_athlete"
+        id="communication-related-athlete"
+    >
 
                 <div class="mb-3">
                     <label class="form-label fw-semibold">

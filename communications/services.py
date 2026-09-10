@@ -12,6 +12,8 @@ from .models import (
     Notification,
 )
 
+from gyms.models import GymMembership
+
 
 def create_notification(
     *,
@@ -133,22 +135,74 @@ def get_athletes_for_coach(coach):
 def get_allowed_message_recipients(user):
     """
     Return users that the current user may message.
+
+    Directors may message active members belonging to their gym.
     """
 
+    if user.role == 'director':
+        director_membership = (
+            GymMembership.objects
+            .filter(
+                user=user,
+                role='director',
+                is_active=True
+            )
+            .select_related('gym')
+            .first()
+        )
+
+        if not director_membership:
+            return User.objects.none()
+
+        recipient_ids = (
+            GymMembership.objects
+            .filter(
+                gym=director_membership.gym,
+                is_active=True,
+                role__in=[
+                    'head_coach',
+                    'coach',
+                    'athlete',
+                    'parent',
+                ]
+            )
+            .exclude(user=user)
+            .values_list(
+                'user_id',
+                flat=True
+            )
+        )
+
+        return (
+            User.objects
+            .filter(id__in=recipient_ids)
+            .exclude(id=user.id)
+            .distinct()
+            .order_by(
+                'role',
+                'first_name',
+                'last_name',
+                'username'
+            )
+        )
+
     if user.role == 'head_coach':
-        return User.objects.exclude(
-            id=user.id
-        ).filter(
-            role__in=[
-                'coach',
-                'head_coach',
-                'athlete',
-                'parent',
-            ]
-        ).order_by(
-            'role',
-            'first_name',
-            'username'
+        return (
+            User.objects
+            .exclude(id=user.id)
+            .filter(
+                role__in=[
+                    'coach',
+                    'head_coach',
+                    'athlete',
+                    'parent',
+                ]
+            )
+            .order_by(
+                'role',
+                'first_name',
+                'username'
+            )
         )
 
     if user.role == 'coach':
@@ -159,52 +213,76 @@ def get_allowed_message_recipients(user):
             flat=True
         )
 
-        parent_ids = ParentAthleteLink.objects.filter(
-            athlete_id__in=athlete_ids
-        ).values_list(
-            'parent_id',
-            flat=True
+        parent_ids = (
+            ParentAthleteLink.objects
+            .filter(
+                athlete_id__in=athlete_ids,
+                approved=True
+            )
+            .values_list(
+                'parent_id',
+                flat=True
+            )
         )
 
-        return User.objects.filter(
-            id__in=list(athlete_ids) + list(parent_ids)
-        ).exclude(
-            id=user.id
-        ).distinct().order_by(
-            'role',
-            'first_name',
-            'username'
+        return (
+            User.objects
+            .filter(
+                id__in=list(athlete_ids) + list(parent_ids)
+            )
+            .exclude(id=user.id)
+            .distinct()
+            .order_by(
+                'role',
+                'first_name',
+                'username'
+            )
         )
 
     if user.role == 'athlete':
-        return get_coaches_for_athlete(user).exclude(
-            id=user.id
+        return (
+            get_coaches_for_athlete(user)
+            .exclude(id=user.id)
         )
 
     if user.role == 'parent':
-        linked_athlete_ids = ParentAthleteLink.objects.filter(
-            parent=user
-        ).values_list(
-            'athlete_id',
-            flat=True
+        linked_athlete_ids = (
+            ParentAthleteLink.objects
+            .filter(
+                parent=user,
+                approved=True
+            )
+            .values_list(
+                'athlete_id',
+                flat=True
+            )
         )
 
-        coach_ids = CoachAthleteAssignment.objects.filter(
-            athlete_id__in=linked_athlete_ids
-        ).values_list(
-            'coach_id',
-            flat=True
+        coach_ids = (
+            CoachAthleteAssignment.objects
+            .filter(
+                athlete_id__in=linked_athlete_ids
+            )
+            .values_list(
+                'coach_id',
+                flat=True
+            )
         )
 
-        return User.objects.filter(
-            id__in=coach_ids,
-            role__in=[
-                'coach',
-                'head_coach',
-            ]
-        ).distinct().order_by(
-            'first_name',
-            'username'
+        return (
+            User.objects
+            .filter(
+                id__in=coach_ids,
+                role__in=[
+                    'coach',
+                    'head_coach',
+                ]
+            )
+            .distinct()
+            .order_by(
+                'first_name',
+                'username'
+            )
         )
 
     return User.objects.none()

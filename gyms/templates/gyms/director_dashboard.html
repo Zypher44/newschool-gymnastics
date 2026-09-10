@@ -1,0 +1,1134 @@
+{% extends "base.html" %}
+
+{% block title %}
+Director Dashboard | {{ gym.name }}
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- =====================================================
+         HEADER
+         ===================================================== -->
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+
+        <div>
+            <div class="text-muted small mb-1">
+                Director Command Centre
+            </div>
+
+            <h2 class="fw-bold mb-1">
+                {{ gym.name }}
+            </h2>
+
+            <div class="text-muted">
+                {{ today|date:"l, F j, Y" }}
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+
+            <a
+                href="{% url 'people_management' %}"
+                class="btn btn-outline-primary"
+            >
+                👥 Manage People
+            </a>
+
+            <a
+                href="{% url 'add_event' %}"
+                class="btn btn-outline-primary"
+            >
+                📅 Create Event
+            </a>
+
+            <a
+            href="{% url 'director_event_list' %}"
+            class="btn btn-outline-primary"
+            >
+                📅 Manage Events
+            </a>
+
+            <a
+                href="{% url 'create_training_group' %}"
+                class="btn btn-primary"
+            >
+                + Create Training Group
+            </a>
+
+
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         MAIN KPI CARDS
+         ===================================================== -->
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-6 col-lg-3">
+
+            <div class="card h-100 border-0 shadow-sm">
+
+                <div class="card-body">
+
+                    <div class="text-muted small mb-1">
+                        Active Athletes
+                    </div>
+
+                    <div class="fs-2 fw-bold">
+                        {{ athlete_count }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-6 col-lg-3">
+
+            <div class="card h-100 border-0 shadow-sm">
+
+                <div class="card-body">
+
+                    <div class="text-muted small mb-1">
+                        Training Groups
+                    </div>
+
+                    <div class="d-flex flex-wrap justify-content-between align-items-end gap-2">
+
+                        <div class="fs-2 fw-bold">
+                            {{ group_count }}
+                        </div>
+
+                        {% if groups_needing_attention %}
+
+                            <span class="badge text-bg-warning">
+                                {{ groups_needing_attention }}
+                                need attention
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-6 col-lg-3">
+
+            <div class="card h-100 border-0 shadow-sm">
+
+                <div class="card-body">
+
+                    <div class="text-muted small mb-1">
+                        Coaching Staff
+                    </div>
+
+                    <div class="fs-2 fw-bold">
+                        {{ head_coach_count|add:coach_count }}
+                    </div>
+
+                    <div class="text-muted small mt-1">
+                        {{ head_coach_count }}
+                        head coach{{ head_coach_count|pluralize }}
+                        ·
+                        {{ coach_count }}
+                        coach{{ coach_count|pluralize }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-6 col-lg-3">
+
+            <div class="card h-100 border-0 shadow-sm">
+
+                <div class="card-body">
+
+                    <div class="text-muted small mb-1">
+                        Pending Parent Requests
+                    </div>
+
+                    <div class="fs-2 fw-bold">
+                        {{ pending_parent_count }}
+                    </div>
+
+                    {% if pending_parent_count %}
+
+                        <span class="badge text-bg-warning">
+                            Review needed
+                        </span>
+
+                    {% else %}
+
+                        <span class="text-success small">
+                            All caught up
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         DAILY SIGNALS
+         ===================================================== -->
+
+    <div class="row g-3 mb-4">
+
+        <!-- Wellness -->
+
+        <div class="col-md-6 col-xl-4">
+
+            <div class="card h-100 border-0 shadow-sm">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+
+                        <div>
+
+                            <div class="text-muted small">
+                                Today's Wellness
+                            </div>
+
+                            <div class="fs-3 fw-bold mt-1">
+
+                                {{ survey_submitted_count }}
+
+                                <span class="fs-6 fw-normal text-muted">
+                                    of {{ athlete_count }} submitted
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        {% if wellness_alert_count %}
+
+                            <span class="badge text-bg-danger">
+                                {{ wellness_alert_count }}
+                                alert{{ wellness_alert_count|pluralize }}
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge text-bg-success">
+                                No alerts
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                    {% if survey_missing_count %}
+
+                        <div class="text-muted small mt-3">
+                            {{ survey_missing_count }}
+                            athlete{{ survey_missing_count|pluralize }}
+                            still missing a survey.
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Attendance -->
+
+        <div class="col-md-6 col-xl-4">
+
+            <div class="card h-100 border-0 shadow-sm">
+
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Today's Attendance
+                    </div>
+
+                    <div class="fs-3 fw-bold mt-1">
+
+                        {{ attendance_recorded_count }}
+
+                        <span class="fs-6 fw-normal text-muted">
+                            of {{ athlete_count }} recorded
+                        </span>
+
+                    </div>
+
+                    {% if attendance_missing_count %}
+
+                        <div class="text-muted small mt-3">
+                            {{ attendance_missing_count }}
+                            athlete{{ attendance_missing_count|pluralize }}
+                            without an attendance record.
+                        </div>
+
+                    {% else %}
+
+                        <div class="text-success small mt-3">
+                            Attendance is fully recorded.
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Events -->
+
+        <div class="col-md-6 col-xl-4">
+
+            <div class="card h-100 border-0 shadow-sm">
+
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Upcoming Events
+                    </div>
+
+                    <div class="fs-3 fw-bold mt-1">
+                        {{ upcoming_event_count }}
+                    </div>
+
+                    <div class="mt-3">
+
+                        <a
+                            href="{% url 'add_event' %}"
+                            class="small text-decoration-none"
+                        >
+                            + Create a gym event
+                        </a>
+
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         COMMUNICATION CENTER
+         ===================================================== -->
+
+    <div class="row g-4 mb-4">
+
+        <div class="col-12">
+
+            {% include "communications/dashboard_communication_card.html" %}
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         WELLNESS AND PARENT REQUESTS
+         ===================================================== -->
+
+    <div class="row g-4 mb-4">
+
+        <!-- Wellness Alerts -->
+
+        <div class="col-xl-6">
+
+            <div class="card h-100 border-0 shadow-sm">
+
+                <div class="card-header bg-white border-0 pt-4 px-4">
+
+                    <div class="d-flex justify-content-between align-items-center gap-3">
+
+                        <div>
+
+                            <h5 class="fw-bold mb-1">
+                                Wellness Alerts
+                            </h5>
+
+                            <small class="text-muted">
+                                Athletes who may need attention today
+                            </small>
+
+                        </div>
+
+                        <span class="badge text-bg-danger">
+                            {{ wellness_alert_count }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card-body">
+
+                    {% for survey in wellness_alerts %}
+
+                        <div class="border rounded-3 p-3 mb-3">
+
+                            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+
+                                <div>
+
+                                    <a
+                                        href="{% url 'director_athlete_profile' survey.athlete.id %}"
+                                        class="fw-bold text-dark text-decoration-none"
+                                    >
+                                        {{ survey.athlete.get_full_name|default:survey.athlete.username }}
+                                    </a>
+
+                                    <div class="text-muted small mt-1">
+                                        Energy: {{ survey.energy }}
+                                        · Soreness: {{ survey.soreness }}
+                                        · Stress: {{ survey.stress }}
+                                    </div>
+
+                                </div>
+
+                                <a
+                                    href="{% url 'director_athlete_profile' survey.athlete.id %}"
+                                    class="btn btn-outline-danger btn-sm"
+                                >
+                                    Review Athlete
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    {% empty %}
+
+                        <div class="text-center py-4">
+
+                            <div class="fs-2 mb-2">
+                                ✅
+                            </div>
+
+                            <div class="fw-semibold">
+                                No wellness alerts today
+                            </div>
+
+                            <div class="text-muted small">
+                                No submitted surveys currently require attention.
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Pending Parent Requests -->
+
+        <div class="col-xl-6">
+
+            <div class="card h-100 border-0 shadow-sm">
+
+                <div class="card-header bg-white border-0 pt-4 px-4">
+
+                    <div class="d-flex justify-content-between align-items-center gap-3">
+
+                        <div>
+
+                            <h5 class="fw-bold mb-1">
+                                Parent Connection Requests
+                            </h5>
+
+                            <small class="text-muted">
+                                Review pending athlete connections
+                            </small>
+
+                        </div>
+
+                        <span class="badge text-bg-warning">
+                            {{ pending_parent_count }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card-body">
+
+                    {% for link in pending_parent_links %}
+
+                        <div class="border rounded-3 p-3 mb-3">
+
+                            <div class="mb-3">
+
+                                <div class="fw-bold">
+                                    {{ link.parent.get_full_name|default:link.parent.username }}
+                                </div>
+
+                                <div class="text-muted small">
+
+                                    Requesting access to
+
+                                    <a
+                                        href="{% url 'director_athlete_profile' link.athlete.id %}"
+                                        class="text-decoration-none"
+                                    >
+                                        {{ link.athlete.get_full_name|default:link.athlete.username }}
+                                    </a>
+
+                                    {% if link.relationship %}
+                                        · {{ link.relationship }}
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="d-flex flex-wrap gap-2">
+
+                                <form
+                                    method="post"
+                                    action="{% url 'approve_parent_link' link.id %}"
+                                >
+                                    {% csrf_token %}
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-success btn-sm"
+                                    >
+                                        Approve
+                                    </button>
+
+                                </form>
+
+
+                                <form
+                                    method="post"
+                                    action="{% url 'decline_parent_link' link.id %}"
+                                >
+                                    {% csrf_token %}
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-outline-danger btn-sm"
+                                        onclick="return confirm('Decline this parent connection request?');"
+                                    >
+                                        Decline
+                                    </button>
+
+                                </form>
+
+
+                                <a
+                                    href="{% url 'director_athlete_profile' link.athlete.id %}"
+                                    class="btn btn-outline-secondary btn-sm"
+                                >
+                                    View Athlete
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    {% empty %}
+
+                        <div class="text-center py-4">
+
+                            <div class="fs-2 mb-2">
+                                ✅
+                            </div>
+
+                            <div class="fw-semibold">
+                                No pending requests
+                            </div>
+
+                            <div class="text-muted small">
+                                All parent connections have been reviewed.
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         UPCOMING GYM EVENTS
+         ===================================================== -->
+
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-header bg-white border-0 pt-4 px-4">
+
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+
+                <div>
+
+                    <h5 class="fw-bold mb-1">
+                        📅 Upcoming Gym Events
+                    </h5>
+
+                    <small class="text-muted">
+                        Practices, meets, closures and gym-wide events
+                    </small>
+
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+
+                    <span class="badge text-bg-primary">
+                        {{ upcoming_event_count }} upcoming
+                    </span>
+
+                    <a
+                        href="{% url 'add_event' %}"
+                        class="btn btn-primary btn-sm"
+                    >
+                        + Create Event
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="card-body">
+
+            {% if upcoming_events %}
+
+                <div class="row g-3">
+
+                    {% for event in upcoming_events %}
+
+                        <div class="col-md-6 col-xl-4">
+
+                            <div class="border rounded-4 p-4 h-100">
+
+                                <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+
+                                    <div>
+
+                                        <div class="text-muted small fw-semibold">
+                                            {{ event.event_date|date:"l" }}
+                                        </div>
+
+                                        <div class="fs-5 fw-bold">
+                                            {{ event.event_date|date:"M j" }}
+                                        </div>
+
+                                    </div>
+
+                                    {% if event.event_date == today %}
+
+                                        <span class="badge text-bg-success">
+                                            Today
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="badge text-bg-light border">
+                                            Upcoming
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                <h5 class="fw-bold mb-2">
+                                    {{ event.title }}
+                                </h5>
+
+
+                                {% if event.start_time %}
+
+                                    <div class="text-muted small mb-2">
+
+                                        🕒 {{ event.start_time|time:"g:i A" }}
+
+                                        {% if event.end_time %}
+                                            – {{ event.end_time|time:"g:i A" }}
+                                        {% endif %}
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                {% if event.location %}
+
+                                    <div class="text-muted small mb-2">
+                                        📍 {{ event.location }}
+                                    </div>
+
+                                {% endif %}
+
+
+                                {% if event.description %}
+
+                                    <div class="small mt-3">
+                                        {{ event.description|truncatechars:140 }}
+                                    </div>
+
+                                {% endif %}
+
+
+                                {% if event.created_by %}
+
+                                    <div class="text-muted small mt-3 pt-3 border-top">
+
+                                        Created by
+
+                                        {{ event.created_by.get_full_name|default:event.created_by.username }}
+
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                {% if upcoming_event_count > 6 %}
+
+                    <div class="text-muted small text-center mt-4">
+                        Showing the next 6 of
+                        {{ upcoming_event_count }}
+                        upcoming events.
+                    </div>
+
+                {% endif %}
+
+            {% else %}
+
+                <div class="text-center py-5">
+
+                    <div class="fs-1 mb-3">
+                        📅
+                    </div>
+
+                    <h5 class="fw-bold">
+                        No Upcoming Events
+                    </h5>
+
+                    <p class="text-muted">
+                        Create an event to keep coaches, athletes and families informed.
+                    </p>
+
+                    <a
+                        href="{% url 'add_event' %}"
+                        class="btn btn-primary"
+                    >
+                        + Create Gym Event
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         TRAINING GROUP HEALTH
+         ===================================================== -->
+
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-header bg-white border-0 pt-4 px-4">
+
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+
+                <div>
+
+                    <h5 class="fw-bold mb-1">
+                        Training Group Health
+                    </h5>
+
+                    <small class="text-muted">
+                        Coaching assignments and athlete rosters
+                    </small>
+
+                </div>
+
+                <a
+                    href="{% url 'create_training_group' %}"
+                    class="btn btn-primary btn-sm"
+                >
+                    + Create Group
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <div class="card-body">
+
+            {% if group_data %}
+
+                <div class="row g-3">
+
+                    {% for item in group_data %}
+
+                        <div class="col-lg-6">
+
+                            <div class="border rounded-4 p-4 h-100">
+
+                                <div class="d-flex justify-content-between align-items-start gap-3">
+
+                                    <div>
+
+                                        <h5 class="fw-bold mb-1">
+
+                                            <a
+                                                href="{% url 'group_control_panel' item.group.id %}"
+                                                class="text-decoration-none text-dark"
+                                            >
+                                                {{ item.group.name }}
+                                            </a>
+
+                                        </h5>
+
+                                        {% if item.group.level %}
+
+                                            <div class="text-muted small">
+                                                {{ item.group.level }}
+                                            </div>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                    {% if item.needs_attention %}
+
+                                        <span class="badge text-bg-warning">
+                                            Needs attention
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="badge text-bg-success">
+                                            Healthy
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                <div class="row g-2 mt-3">
+
+                                    <div class="col-6">
+
+                                        <div class="bg-light rounded-3 p-3">
+
+                                            <div class="text-muted small">
+                                                Athletes
+                                            </div>
+
+                                            <div class="fs-5 fw-bold">
+                                                {{ item.athlete_count }}
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                    <div class="col-6">
+
+                                        <div class="bg-light rounded-3 p-3">
+
+                                            <div class="text-muted small">
+                                                Coaches
+                                            </div>
+
+                                            <div class="fs-5 fw-bold">
+                                                {{ item.coach_count }}
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+
+                                {% if item.attention_reasons %}
+
+                                    <div class="alert alert-warning py-2 px-3 mt-3 mb-0">
+
+                                        {% for reason in item.attention_reasons %}
+
+                                            <div class="small">
+                                                • {{ reason }}
+                                            </div>
+
+                                        {% endfor %}
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                <div class="mt-3">
+
+                                    <div class="small fw-semibold text-muted mb-2">
+                                        Coaching Staff
+                                    </div>
+
+                                    {% for assignment in item.coaches %}
+
+                                        <span class="badge text-bg-light border me-1 mb-1">
+
+                                            {{ assignment.coach.get_full_name|default:assignment.coach.username }}
+
+                                            · {{ assignment.get_role_display }}
+
+                                        </span>
+
+                                    {% empty %}
+
+                                        <span class="text-muted small">
+                                            No coaches assigned
+                                        </span>
+
+                                    {% endfor %}
+
+                                </div>
+
+
+                                <div class="d-flex flex-wrap gap-2 mt-4">
+
+                                    <a
+                                        href="{% url 'group_control_panel' item.group.id %}"
+                                        class="btn btn-primary btn-sm"
+                                    >
+                                        Open Group
+                                    </a>
+
+                                    <a
+                                        href="{% url 'manage_group_coaches' item.group.id %}"
+                                        class="btn btn-outline-dark btn-sm"
+                                    >
+                                        Coaches
+                                    </a>
+
+                                    <a
+                                        href="{% url 'manage_group_athletes' item.group.id %}"
+                                        class="btn btn-outline-dark btn-sm"
+                                    >
+                                        Athletes
+                                    </a>
+
+                                    <a
+                                        href="{% url 'edit_training_group' item.group.id %}"
+                                        class="btn btn-outline-secondary btn-sm"
+                                    >
+                                        Edit
+                                    </a>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="text-center py-5">
+
+                    <div class="fs-1 mb-3">
+                        🤸
+                    </div>
+
+                    <h5 class="fw-bold">
+                        No Training Groups Yet
+                    </h5>
+
+                    <p class="text-muted">
+                        Create your first group and begin assigning coaches and athletes.
+                    </p>
+
+                    <a
+                        href="{% url 'create_training_group' %}"
+                        class="btn btn-primary"
+                    >
+                        + Create Training Group
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         QUICK MANAGEMENT
+         ===================================================== -->
+
+    <div class="row g-3">
+
+        <div class="col-md-4">
+
+            <div class="card h-100 border-0 shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <div class="fs-3 mb-2">
+                        👥
+                    </div>
+
+                    <h5 class="fw-bold">
+                        People Management
+                    </h5>
+
+                    <p class="text-muted">
+                        Add and manage athletes, coaches, directors,
+                        parents and guardians.
+                    </p>
+
+                    <a
+                        href="{% url 'people_management' %}"
+                        class="btn btn-outline-primary"
+                    >
+                        Manage People
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-4">
+
+            <div class="card h-100 border-0 shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <div class="fs-3 mb-2">
+                        📅
+                    </div>
+
+                    <h5 class="fw-bold">
+                        Gym Events
+                    </h5>
+
+                    <p class="text-muted">
+                        Create practices, meets, closures and other
+                        gym-wide events.
+                    </p>
+
+                    <a
+                        href="{% url 'add_event' %}"
+                        class="btn btn-outline-primary"
+                    >
+                        + Create Event
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-4">
+
+            <div class="card h-100 border-0 shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <div class="fs-3 mb-2">
+                        🤸
+                    </div>
+
+                    <h5 class="fw-bold">
+                        Training Groups
+                    </h5>
+
+                    <p class="text-muted">
+                        Create groups and manage coaching assignments
+                        and athlete rosters.
+                    </p>
+
+                    <a
+                        href="{% url 'create_training_group' %}"
+                        class="btn btn-primary"
+                    >
+                        + Create Group
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

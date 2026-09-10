@@ -1,1266 +1,936 @@
 {% extends "base.html" %}
 
-{% block title %}Parent Dashboard{% endblock %}
-{% block page_header %}Parent Dashboard{% endblock %}
+{% block title %}
+Parent Dashboard
+{% endblock %}
 
 {% block content %}
 
-<style>
-    .parent-dashboard {
-        --parent-primary: #0d6efd;
-        --parent-secondary: #20c997;
-        --parent-dark: #18243a;
-        --parent-muted: #6c757d;
-        --parent-surface: #ffffff;
-        --parent-soft: #f6f8fc;
-    }
+<div class="container-fluid">
 
-    .parent-hero {
-        position: relative;
-        overflow: hidden;
-        padding: 34px;
-        border-radius: 26px;
-        color: white;
-        background:
-            linear-gradient(
-                135deg,
-                rgba(13, 110, 253, 0.98),
-                rgba(32, 201, 151, 0.91)
-            );
-        box-shadow: 0 18px 45px rgba(13, 110, 253, 0.18);
-    }
+    <!-- ======================================================
+         HEADER
+         ====================================================== -->
 
-    .parent-hero::before {
-        content: "";
-        position: absolute;
-        width: 280px;
-        height: 280px;
-        right: -90px;
-        top: -120px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.10);
-    }
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
 
-    .parent-hero::after {
-        content: "";
-        position: absolute;
-        width: 150px;
-        height: 150px;
-        right: 180px;
-        bottom: -110px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.07);
-    }
+        <div>
 
-    .parent-hero-content {
-        position: relative;
-        z-index: 2;
-    }
+            <div class="text-muted small mb-1">
+                Parent Portal
+            </div>
 
-    .parent-hero-label {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 14px;
-        margin-bottom: 16px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.16);
-        font-size: 0.83rem;
-        font-weight: 700;
-        letter-spacing: 0.01em;
-    }
+            <h2 class="fw-bold mb-1">
+                Welcome, {{ request.user.get_full_name|default:request.user.username }}
+            </h2>
 
-    .parent-hero-subtitle {
-        max-width: 650px;
-        color: rgba(255, 255, 255, 0.83);
-    }
+            <p class="text-muted mb-0">
+                Stay connected with your athlete's training and progress.
+            </p>
 
-    .athlete-selector-wrapper {
-        display: inline-block;
-        min-width: 240px;
-        padding: 14px;
-        border-radius: 18px;
-        background: rgba(255, 255, 255, 0.14);
-        backdrop-filter: blur(10px);
-    }
+        </div>
 
-    .athlete-selector {
-        width: 100%;
-        border: 0;
-        border-radius: 12px;
-        padding: 11px 14px;
-        background: white;
-        font-weight: 600;
-        color: var(--parent-dark);
-    }
 
-    .parent-card,
-    .parent-metric-card {
-        height: 100%;
-        border: 0;
-        border-radius: 21px;
-        background: var(--parent-surface);
-        box-shadow: 0 9px 30px rgba(33, 37, 41, 0.065);
-    }
+        <div>
 
-    .parent-card .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        padding: 20px 22px;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.055);
-        background: transparent;
-        font-weight: 750;
-        color: var(--parent-dark);
-    }
+            <a
+                href="{% url 'connect_athlete' %}"
+                class="btn btn-primary"
+            >
+                + Connect Athlete
+            </a>
 
-    .parent-card .card-body {
-        padding: 22px;
-    }
+        </div>
 
-    .metric-label {
-        margin-bottom: 6px;
-        color: var(--parent-muted);
-        font-size: 0.81rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.035em;
-    }
+    </div>
 
-    .metric-value {
-        color: var(--parent-dark);
-        font-size: 1.8rem;
-        font-weight: 800;
-        line-height: 1.1;
-    }
 
-    .metric-icon {
-        width: 49px;
-        height: 49px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        border-radius: 15px;
-        background: #eef4ff;
-        font-size: 1.35rem;
-    }
+    <!-- ======================================================
+         MESSAGES
+         ====================================================== -->
 
-    .progress-ring {
-        --value: 0;
-        position: relative;
-        width: 100px;
-        height: 100px;
-        display: grid;
-        place-items: center;
-        margin: auto;
-        border-radius: 50%;
-        background:
-            conic-gradient(
-                var(--parent-primary) calc(var(--value) * 1%),
-                #e9ecef 0
-            );
-    }
+    {% if messages %}
 
-    .progress-ring::before {
-        content: "";
-        position: absolute;
-        width: 76px;
-        height: 76px;
-        border-radius: 50%;
-        background: white;
-    }
+        {% for message in messages %}
 
-    .progress-ring-value {
-        position: relative;
-        z-index: 2;
-        color: var(--parent-dark);
-        font-size: 1.17rem;
-        font-weight: 800;
-    }
+            <div
+                class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show"
+                role="alert"
+            >
 
-    .metric-footer {
-        margin-top: 15px;
-        color: var(--parent-muted);
-        font-size: 0.82rem;
-        text-align: center;
-    }
+                {{ message }}
 
-    .readiness-panel {
-        padding: 21px;
-        border-radius: 19px;
-    }
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close"
+                ></button>
 
-    .readiness-ready {
-        border: 1px solid rgba(25, 135, 84, 0.16);
-        background: rgba(25, 135, 84, 0.09);
-    }
+            </div>
 
-    .readiness-attention {
-        border: 1px solid rgba(255, 193, 7, 0.21);
-        background: rgba(255, 193, 7, 0.13);
-    }
+        {% endfor %}
 
-    .readiness-unknown {
-        border: 1px solid rgba(108, 117, 125, 0.14);
-        background: rgba(108, 117, 125, 0.08);
-    }
+    {% endif %}
 
-    .reassurance-message {
-        color: #526071;
-        font-size: 0.92rem;
-        line-height: 1.55;
-    }
 
-    .event-countdown-card {
-        position: relative;
-        overflow: hidden;
-        min-height: 220px;
-        padding: 25px;
-        border-radius: 21px;
-        color: white;
-        background:
-            linear-gradient(
-                135deg,
-                #263b63,
-                #0d6efd
-            );
-        box-shadow: 0 10px 32px rgba(38, 59, 99, 0.18);
-    }
+    <!-- ======================================================
+         NO CONNECTED ATHLETES
+         ====================================================== -->
 
-    .event-countdown-card::after {
-        content: "";
-        position: absolute;
-        width: 150px;
-        height: 150px;
-        right: -40px;
-        bottom: -55px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.08);
-    }
+    {% if not linked_athletes %}
 
-    .event-countdown-content {
-        position: relative;
-        z-index: 2;
-    }
+        <div class="card">
 
-    .countdown-number {
-        font-size: 3.3rem;
-        font-weight: 850;
-        line-height: 1;
-    }
+            <div class="card-body text-center py-5">
 
-    .countdown-label {
-        color: rgba(255, 255, 255, 0.75);
-        font-size: 0.82rem;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-    }
-
-    .soft-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 7px 11px;
-        border-radius: 999px;
-        background: #edf4ff;
-        color: var(--parent-primary);
-        font-size: 0.78rem;
-        font-weight: 700;
-    }
-
-    .trend-up {
-        background: rgba(25, 135, 84, 0.10);
-        color: #198754;
-    }
-
-    .testing-summary {
-        padding: 18px;
-        border-radius: 17px;
-        background: var(--parent-soft);
-    }
-
-    .testing-number {
-        color: var(--parent-dark);
-        font-size: 2rem;
-        font-weight: 850;
-    }
-
-    .feedback-featured {
-        position: relative;
-        padding: 22px;
-        border: 1px solid rgba(13, 110, 253, 0.10);
-        border-radius: 19px;
-        background:
-            linear-gradient(
-                135deg,
-                rgba(13, 110, 253, 0.075),
-                rgba(32, 201, 151, 0.055)
-            );
-    }
-
-    .feedback-featured::before {
-        content: "“";
-        position: absolute;
-        right: 18px;
-        top: 2px;
-        color: rgba(13, 110, 253, 0.14);
-        font-size: 5rem;
-        font-family: Georgia, serif;
-        line-height: 1;
-    }
-
-    .feedback-text {
-        position: relative;
-        z-index: 2;
-        color: #445064;
-        font-size: 0.95rem;
-        line-height: 1.65;
-    }
-
-    .video-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-top: 13px;
-    }
-
-    .video-meta span {
-        padding: 6px 9px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.75);
-        color: var(--parent-muted);
-        font-size: 0.75rem;
-        font-weight: 650;
-    }
-
-    .event-row {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-    }
-
-    .event-date-box {
-        width: 62px;
-        min-width: 62px;
-        padding: 9px 8px;
-        border-radius: 15px;
-        background: #eef4ff;
-        text-align: center;
-    }
-
-    .event-month {
-        color: var(--parent-primary);
-        font-size: 0.7rem;
-        font-weight: 800;
-        text-transform: uppercase;
-    }
-
-    .event-day {
-        color: var(--parent-dark);
-        font-size: 1.35rem;
-        font-weight: 850;
-        line-height: 1.1;
-    }
-
-    .attendance-breakdown {
-        display: flex;
-        justify-content: center;
-        gap: 22px;
-        margin-top: 17px;
-    }
-
-    .attendance-stat {
-        text-align: center;
-    }
-
-    .attendance-stat strong {
-        display: block;
-        color: var(--parent-dark);
-        font-size: 1.1rem;
-    }
-
-    .attendance-stat span {
-        color: var(--parent-muted);
-        font-size: 0.72rem;
-    }
-
-    .empty-state {
-        padding: 35px 22px;
-        border: 1px dashed #ced4da;
-        border-radius: 18px;
-        color: var(--parent-muted);
-        text-align: center;
-    }
-
-    .empty-state-icon {
-        margin-bottom: 10px;
-        font-size: 2.2rem;
-    }
-
-    .privacy-note {
-        display: flex;
-        align-items: flex-start;
-        gap: 13px;
-        padding: 17px 19px;
-        border-radius: 17px;
-        background: #f7f8fa;
-        color: #667085;
-        font-size: 0.86rem;
-        line-height: 1.5;
-    }
-
-    @media (max-width: 991.98px) {
-        .parent-hero {
-            padding: 27px;
-        }
-
-        .athlete-selector-wrapper {
-            width: 100%;
-            margin-top: 22px;
-        }
-    }
-
-    @media (max-width: 575.98px) {
-        .parent-hero {
-            padding: 23px;
-            border-radius: 19px;
-        }
-
-        .parent-hero h1 {
-            font-size: 1.75rem;
-        }
-
-        .parent-card,
-        .parent-metric-card,
-        .event-countdown-card {
-            border-radius: 17px;
-        }
-
-        .parent-card .card-header,
-        .parent-card .card-body {
-            padding: 18px;
-        }
-
-        .countdown-number {
-            font-size: 2.7rem;
-        }
-    }
-</style>
-
-<div class="parent-dashboard">
-
-{% if selected_athlete %}
-
-    <div class="parent-hero mb-4">
-        <div class="parent-hero-content">
-            <div class="row align-items-center">
-                <div class="col-lg-7">
-                    <div class="parent-hero-label">
-                        👨‍👩‍👧 Family Progress Center
-                    </div>
-
-                    <h1 class="fw-bold mb-2">
-                        {% if selected_athlete.first_name %}
-                            {{ selected_athlete.first_name }}’s Journey
-                        {% else %}
-                            {{ selected_athlete.username }}’s Journey
-                        {% endif %}
-                    </h1>
-
-                    <p class="parent-hero-subtitle mb-0">
-                        Follow your athlete’s progress, celebrate their
-                        achievements and stay connected with their team.
-                    </p>
+                <div class="fs-1 mb-3">
+                    🤸
                 </div>
 
-                {% if linked_athletes|length > 1 %}
-                    <div class="col-lg-5 text-lg-end">
-                        <div class="athlete-selector-wrapper text-start">
-                            <label
-                                for="athlete-select"
-                                class="d-block small fw-semibold mb-2"
+                <h4 class="fw-bold">
+                    Connect Your Athlete
+                </h4>
+
+                <p class="text-muted mx-auto mb-4" style="max-width: 550px;">
+                    Your parent account isn't connected to an athlete yet.
+                    Send a connection request and your Gym Director can
+                    approve it.
+                </p>
+
+                <a
+                    href="{% url 'connect_athlete' %}"
+                    class="btn btn-primary"
+                >
+                    + Connect Athlete
+                </a>
+
+            </div>
+
+        </div>
+
+    {% else %}
+
+
+        <!-- ==================================================
+             ATHLETE SELECTOR
+             ================================================== -->
+
+        <div class="card mb-4">
+
+            <div class="card-body">
+
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+
+                    <div>
+
+                        <div class="small text-muted mb-1">
+                            Viewing Athlete
+                        </div>
+
+                        <h4 class="fw-bold mb-0">
+                            {{ selected_athlete.get_full_name|default:selected_athlete.username }}
+                        </h4>
+
+                    </div>
+
+
+                    {% if linked_athletes|length > 1 %}
+
+                        <div class="dropdown">
+
+                            <button
+                                class="btn btn-outline-primary dropdown-toggle"
+                                type="button"
+                                data-bs-toggle="dropdown"
                             >
-                                Viewing athlete
-                            </label>
+                                Switch Athlete
+                            </button>
 
-                            <form method="get">
-                                <select
-                                    id="athlete-select"
-                                    name="athlete"
-                                    class="athlete-selector"
-                                    onchange="this.form.submit()"
-                                >
-                                    {% for athlete in linked_athletes %}
-                                        <option
-                                            value="{{ athlete.id }}"
-                                            {% if athlete.id == selected_athlete.id %}
-                                                selected
-                                            {% endif %}
+
+                            <ul class="dropdown-menu dropdown-menu-end">
+
+                                {% for athlete in linked_athletes %}
+
+                                    <li>
+
+                                        <a
+                                            class="dropdown-item {% if athlete.id == selected_athlete.id %}active{% endif %}"
+                                            href="{% url 'parent_dashboard' %}?athlete={{ athlete.id }}"
                                         >
-                                            {% if athlete.get_full_name %}
-                                                {{ athlete.get_full_name }}
-                                            {% else %}
-                                                {{ athlete.username }}
-                                            {% endif %}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </form>
-                        </div>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
+                                            {{ athlete.get_full_name|default:athlete.username }}
+                                        </a>
 
-    <div class="row g-3 mb-4">
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card parent-metric-card">
-                <div class="card-body text-center">
-                    <div class="metric-label">
-                        Attendance
-                    </div>
+                                    </li>
 
-                    <div
-                        class="progress-ring mt-3"
-                        style="--value: {{ attendance_rate }};"
-                    >
-                        <span class="progress-ring-value">
-                            {{ attendance_rate }}%
-                        </span>
-                    </div>
+                                {% endfor %}
 
-                    <div class="attendance-breakdown">
-                        <div class="attendance-stat">
-                            <strong>{{ attendance_present }}</strong>
-                            <span>Present</span>
+                            </ul>
+
                         </div>
 
-                        <div class="attendance-stat">
-                            <strong>{{ attendance_late }}</strong>
-                            <span>Late</span>
-                        </div>
-
-                        <div class="attendance-stat">
-                            <strong>{{ attendance_total }}</strong>
-                            <span>Total</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card parent-metric-card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between gap-3">
-                        <div>
-                            <div class="metric-label">
-                                Wellness Today
-                            </div>
-
-                            <div class="metric-value fs-5">
-                                {{ readiness_status.label }}
-                            </div>
-                        </div>
-
-                        <div class="metric-icon">
-                            {{ readiness_status.icon }}
-                        </div>
-                    </div>
-
-                    <p class="reassurance-message mt-3 mb-0">
-                        {{ readiness_status.message }}
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card parent-metric-card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between gap-3">
-                        <div>
-                            <div class="metric-label">
-                                Latest Testing
-                            </div>
-
-                            {% if latest_testing_result %}
-                                <div class="metric-value">
-                                    {{ latest_testing_result.total_score }}
-                                </div>
-                            {% else %}
-                                <div class="fw-bold text-muted">
-                                    No published result
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        <div class="metric-icon">
-                            📊
-                        </div>
-                    </div>
-
-                    {% if latest_testing_result %}
-                        <div class="mt-3">
-                            {% if testing_score_change > 0 %}
-                                <span class="soft-badge trend-up">
-                                    ↗ {{ testing_trend }}
-                                </span>
-                            {% else %}
-                                <span class="soft-badge">
-                                    {{ testing_trend }}
-                                </span>
-                            {% endif %}
-                        </div>
-
-                        {% if testing_score_change is not None %}
-                            <div class="small text-muted mt-3">
-                                {% if testing_score_change > 0 %}
-                                    Improved by
-                                    {{ testing_score_change }}
-                                    points
-                                {% elif testing_score_change < 0 %}
-                                    Building consistency across sessions
-                                {% else %}
-                                    Score remained consistent
-                                {% endif %}
-                            </div>
-                        {% endif %}
                     {% endif %}
+
                 </div>
+
             </div>
+
         </div>
 
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card parent-metric-card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between gap-3">
-                        <div>
-                            <div class="metric-label">
-                                Personal Best
+
+        <!-- ==================================================
+             OVERVIEW CARDS
+             ================================================== -->
+
+        <div class="row g-3 mb-4">
+
+
+            <!-- WELLNESS -->
+
+            <div class="col-md-6 col-xl-3">
+
+                <div class="card h-100">
+
+                    <div class="card-body">
+
+                        <div class="text-muted small mb-2">
+                            Today's Wellness
+                        </div>
+
+
+                        {% if readiness_status %}
+
+                            <div class="fs-4 fw-bold">
+
+                                {{ readiness_status.icon }}
+                                {{ readiness_status.label }}
+
                             </div>
 
-                            {% if testing_personal_best %}
-                                <div class="metric-value">
-                                    {{ testing_personal_best }}
-                                </div>
+                            <div class="small text-muted mt-2">
+                                {{ readiness_status.message }}
+                            </div>
 
-                                <div class="small text-muted mt-2">
-                                    Best published testing result
-                                </div>
-                            {% else %}
-                                <div class="fw-bold text-muted">
-                                    Not available yet
-                                </div>
-                            {% endif %}
-                        </div>
+                        {% else %}
 
-                        <div class="metric-icon">
-                            🏆
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+                            <div class="fs-4 fw-bold">
+                                —
+                            </div>
 
-    <div
-        class="
-            readiness-panel
-            mb-4
+                        {% endif %}
 
-            {% if readiness_status.level == 'ready' %}
-                readiness-ready
-            {% elif readiness_status.level == 'attention' %}
-                readiness-attention
-            {% else %}
-                readiness-unknown
-            {% endif %}
-        "
-    >
-        <div class="d-flex align-items-start gap-3">
-            <div class="fs-3">
-                {{ readiness_status.icon }}
-            </div>
-
-            <div>
-                <div class="fw-bold fs-5">
-                    Today’s Wellness Update
-                </div>
-
-                <div class="reassurance-message mt-1">
-                    {{ readiness_status.message }}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-4 mb-4">
-        <div class="col-xl-5">
-            {% include "communications/dashboard_communication_card.html" %}
-        </div>
-
-        <div class="col-xl-7">
-            <div class="card parent-card h-100">
-                <div class="card-header">
-                    <span>🤝 Stay Connected</span>
-                </div>
-
-                <div class="card-body">
-                    <div class="d-flex align-items-start gap-3 mb-4">
-                        <div class="metric-icon">
-                            💬
-                        </div>
-
-                        <div>
-                            <h5 class="fw-bold mb-1">
-                                Contact your athlete’s coach
-                            </h5>
-
-                            <p class="text-muted mb-0">
-                                Share schedule updates, attendance information,
-                                questions or anything the coaching team should know.
-                            </p>
-                        </div>
                     </div>
 
-                    <div class="testing-summary">
-                        <div class="fw-semibold mb-2">
-                            Messages stay connected to the athlete
+                </div>
+
+            </div>
+
+
+            <!-- ATTENDANCE -->
+
+            <div class="col-md-6 col-xl-3">
+
+                <div class="card h-100">
+
+                    <div class="card-body">
+
+                        <div class="text-muted small">
+                            Attendance
+                        </div>
+
+                        <div class="fs-2 fw-bold">
+                            {{ attendance_rate }}%
                         </div>
 
                         <div class="small text-muted">
-                            When you choose a coach, the conversation is automatically
-                            linked to the correct athlete so the coaching team has the
-                            right context.
+                            {{ attendance_present }} present
+                            {% if attendance_late %}
+                                · {{ attendance_late }} late
+                            {% endif %}
                         </div>
+
                     </div>
 
-                    <div class="privacy-note mt-4">
-                        <div class="fs-5">🔒</div>
-
-                        <div>
-                            Messages are visible only to authorized participants
-                            in the conversation.
-                        </div>
-                    </div>
                 </div>
+
             </div>
-        </div>
-    </div>
 
-    <div class="row g-4 mb-4">
-        <div class="col-xl-8">
-            <div class="card parent-card">
-                <div class="card-header">
-                    <span>📈 Testing Progress</span>
 
-                    {% if testing_score_change > 0 %}
-                        <span class="soft-badge trend-up">
-                            ↗ Positive Progress
-                        </span>
-                    {% endif %}
-                </div>
+            <!-- PERFORMANCE -->
 
-                <div class="card-body">
-                    {% if testing_chart_scores %}
-                        <div style="height: 325px;">
-                            <canvas id="parentTestingChart"></canvas>
-                        </div>
-                    {% else %}
-                        <div class="empty-state">
-                            <div class="empty-state-icon">
-                                📊
-                            </div>
+            <div class="col-md-6 col-xl-3">
 
-                            <div class="fw-bold mb-1">
-                                No testing progress available yet
-                            </div>
+                <div class="card h-100">
 
-                            <div class="small">
-                                Results will appear here after a coach
-                                publishes a completed testing session.
-                            </div>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-4">
-            {% if next_event %}
-                <div class="event-countdown-card h-100">
-                    <div class="event-countdown-content">
-                        <div class="countdown-label mb-3">
-                            Next Team Event
-                        </div>
-
-                        {% if days_until_next_event == 0 %}
-                            <div class="countdown-number">
-                                Today
-                            </div>
-                        {% elif days_until_next_event == 1 %}
-                            <div class="countdown-number">
-                                1
-                            </div>
-
-                            <div class="fs-5 fw-semibold">
-                                Day Away
-                            </div>
-                        {% else %}
-                            <div class="countdown-number">
-                                {{ days_until_next_event }}
-                            </div>
-
-                            <div class="fs-5 fw-semibold">
-                                Days Away
-                            </div>
-                        {% endif %}
-
-                        <hr class="border-light opacity-25 my-4">
-
-                        <h4 class="fw-bold">
-                            {{ next_event.title }}
-                        </h4>
-
-                        <div class="small opacity-75 mt-2">
-                            📅 {{ next_event.event_date|date:"F d, Y" }}
-                        </div>
-
-                        {% if next_event.start_time %}
-                            <div class="small opacity-75 mt-2">
-                                🕒 {{ next_event.start_time|time:"g:i A" }}
-                            </div>
-                        {% endif %}
-
-                        {% if next_event.location %}
-                            <div class="small opacity-75 mt-2">
-                                📍 {{ next_event.location }}
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-            {% else %}
-                <div class="card parent-card">
                     <div class="card-body">
-                        <div class="empty-state">
-                            <div class="empty-state-icon">
-                                📅
-                            </div>
 
-                            <div class="fw-bold mb-1">
-                                No upcoming event
-                            </div>
-
-                            <div class="small">
-                                The next practice, meet or team event
-                                will appear here.
-                            </div>
+                        <div class="text-muted small">
+                            Performance
                         </div>
-                    </div>
-                </div>
-            {% endif %}
-        </div>
-    </div>
 
-    <div class="row g-4 mb-4">
-        <div class="col-lg-5">
-            <div class="card parent-card">
-                <div class="card-header">
-                    <span>🏆 Recent Progress</span>
-                </div>
 
-                <div class="card-body">
-                    {% if latest_testing_result %}
-                        <div class="mb-4">
-                            <div class="metric-label">
-                                Latest Session
+                        {% if latest_testing_result %}
+
+                            <div class="fs-2 fw-bold">
+                                {{ latest_testing_result.total_score }}
                             </div>
-
-                            <h5 class="fw-bold mb-1">
-                                {{ latest_testing_result.session.title }}
-                            </h5>
 
                             <div class="small text-muted">
-                                {{ latest_testing_result.session.testing_date|date:"F d, Y" }}
+                                {{ testing_trend }}
                             </div>
+
+                        {% else %}
+
+                            <div class="fs-2 fw-bold">
+                                —
+                            </div>
+
+                            <div class="small text-muted">
+                                No published results
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- NEXT EVENT -->
+
+            <div class="col-md-6 col-xl-3">
+
+                <div class="card h-100">
+
+                    <div class="card-body">
+
+                        <div class="text-muted small">
+                            Next Event
                         </div>
 
-                        <div class="row g-3">
-                            <div class="col-6">
-                                <div class="testing-summary text-center">
-                                    <div class="testing-number">
-                                        {{ latest_testing_result.total_score }}
-                                    </div>
 
-                                    <div class="small text-muted">
-                                        Latest Score
-                                    </div>
-                                </div>
+                        {% if next_event %}
+
+                            <div class="fw-bold fs-5 mt-1">
+                                {{ next_event.title }}
                             </div>
 
-                            <div class="col-6">
-                                <div class="testing-summary text-center">
-                                    <div class="testing-number">
-                                        {{ testing_personal_best|default:"-" }}
-                                    </div>
+                            <div class="small text-muted">
+                                {{ next_event.event_date|date:"M j, Y" }}
+                            </div>
+
+
+                            {% if days_until_next_event != None %}
+
+                                <div class="small mt-2">
+
+                                    {% if days_until_next_event == 0 %}
+
+                                        Today
+
+                                    {% elif days_until_next_event == 1 %}
+
+                                        Tomorrow
+
+                                    {% else %}
+
+                                        {{ days_until_next_event }} days away
+
+                                    {% endif %}
+
+                                </div>
+
+                            {% endif %}
+
+                        {% else %}
+
+                            <div class="fs-2 fw-bold">
+                                —
+                            </div>
+
+                            <div class="small text-muted">
+                                No upcoming events
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="row g-4">
+
+
+            <!-- ==================================================
+                 LEFT COLUMN
+                 ================================================== -->
+
+            <div class="col-xl-8">
+
+
+                <!-- WELLNESS DETAILS -->
+
+                <div class="card mb-4">
+
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+
+                        <h5 class="fw-bold mb-1">
+                            Wellness & Readiness
+                        </h5>
+
+                        <small class="text-muted">
+                            Today's training readiness
+                        </small>
+
+                    </div>
+
+
+                    <div class="card-body">
+
+                        {% if readiness_status %}
+
+                            <div class="d-flex align-items-start gap-3">
+
+                                <div class="fs-2">
+                                    {{ readiness_status.icon }}
+                                </div>
+
+                                <div>
+
+                                    <h5 class="fw-bold mb-1">
+                                        {{ readiness_status.label }}
+                                    </h5>
+
+                                    <p class="text-muted mb-0">
+                                        {{ readiness_status.message }}
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                        {% else %}
+
+                            <div class="text-muted">
+                                No wellness information available today.
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- PERFORMANCE TESTING -->
+
+                <div class="card mb-4">
+
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+
+                        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+
+                            <div>
+
+                                <h5 class="fw-bold mb-1">
+                                    Performance Testing
+                                </h5>
+
+                                <small class="text-muted">
+                                    Published testing results
+                                </small>
+
+                            </div>
+
+
+                            {% if testing_personal_best %}
+
+                                <div class="text-end">
 
                                     <div class="small text-muted">
                                         Personal Best
                                     </div>
+
+                                    <div class="fw-bold">
+                                        {{ testing_personal_best }}
+                                    </div>
+
                                 </div>
-                            </div>
+
+                            {% endif %}
+
                         </div>
 
-                        {% if testing_score_change > 0 %}
-                            <div class="alert alert-success border-0 rounded-4 mt-4 mb-0">
-                                <div class="fw-bold">
-                                    🎉 Great progress
+                    </div>
+
+
+                    <div class="card-body">
+
+                        {% if latest_testing_result %}
+
+                            <div class="row g-3 mb-4">
+
+                                <div class="col-md-4">
+
+                                    <div class="border rounded-3 p-3">
+
+                                        <div class="small text-muted">
+                                            Latest Score
+                                        </div>
+
+                                        <div class="fs-3 fw-bold">
+                                            {{ latest_testing_result.total_score }}
+                                        </div>
+
+                                    </div>
+
                                 </div>
 
-                                <div class="small mt-1">
-                                    The latest score improved by
-                                    {{ testing_score_change }}
-                                    points.
-                                </div>
-                            </div>
-                        {% elif testing_score_change == 0 %}
-                            <div class="alert alert-primary border-0 rounded-4 mt-4 mb-0">
-                                <div class="fw-bold">
-                                    ⭐ Strong consistency
+
+                                <div class="col-md-4">
+
+                                    <div class="border rounded-3 p-3">
+
+                                        <div class="small text-muted">
+                                            Trend
+                                        </div>
+
+                                        <div class="fw-bold mt-1">
+                                            {{ testing_trend }}
+                                        </div>
+
+                                    </div>
+
                                 </div>
 
-                                <div class="small mt-1">
-                                    The latest result matched the
-                                    previous testing session.
+
+                                <div class="col-md-4">
+
+                                    <div class="border rounded-3 p-3">
+
+                                        <div class="small text-muted">
+                                            Change
+                                        </div>
+
+                                        <div class="fs-4 fw-bold">
+
+                                            {% if testing_score_change != None %}
+
+                                                {% if testing_score_change > 0 %}
+                                                    +{{ testing_score_change }}
+                                                {% else %}
+                                                    {{ testing_score_change }}
+                                                {% endif %}
+
+                                            {% else %}
+
+                                                —
+
+                                            {% endif %}
+
+                                        </div>
+
+                                    </div>
+
                                 </div>
+
                             </div>
+
+
+                            <div class="table-responsive">
+
+                                <table class="table align-middle">
+
+                                    <thead>
+
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Test</th>
+                                            <th>Score</th>
+                                            <th>Rank</th>
+                                        </tr>
+
+                                    </thead>
+
+
+                                    <tbody>
+
+                                        {% for result in testing_results reversed %}
+
+                                            <tr>
+
+                                                <td>
+                                                    {{ result.session.testing_date|date:"M j, Y" }}
+                                                </td>
+
+                                                <td>
+                                                    {{ result.session.title }}
+                                                </td>
+
+                                                <td>
+                                                    <strong>
+                                                        {{ result.total_score }}
+                                                    </strong>
+                                                </td>
+
+                                                <td>
+
+                                                    {% if result.rank %}
+                                                        #{{ result.rank }}
+                                                    {% else %}
+                                                        —
+                                                    {% endif %}
+
+                                                </td>
+
+                                            </tr>
+
+                                        {% endfor %}
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        {% else %}
+
+                            <div class="text-center text-muted py-4">
+
+                                <div class="fs-2 mb-2">
+                                    📊
+                                </div>
+
+                                No performance testing results have been
+                                published to parents yet.
+
+                            </div>
+
                         {% endif %}
-                    {% else %}
-                        <div class="empty-state">
-                            <div class="empty-state-icon">
-                                🏆
-                            </div>
 
-                            <div class="fw-bold mb-1">
-                                Progress is coming
-                            </div>
+                    </div>
 
-                            <div class="small">
-                                Testing achievements and personal bests
-                                will be highlighted here.
-                            </div>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-7">
-            <div class="card parent-card">
-                <div class="card-header">
-                    <span>💬 Featured Coach Feedback</span>
-
-                    {% if recent_videos %}
-                        <span class="soft-badge">
-                            Coach Reviewed
-                        </span>
-                    {% endif %}
                 </div>
 
-                <div class="card-body">
-                    {% if recent_videos %}
-                        {% with featured_video=recent_videos.0 %}
-                            <div class="feedback-featured">
-                                <div class="position-relative">
-                                    <div class="fw-bold fs-5 mb-1">
-                                        {{ featured_video.title }}
-                                    </div>
 
-                                    <div class="small text-muted mb-3">
-                                        {% if featured_video.skill %}
-                                            {{ featured_video.skill.name }}
-                                        {% else %}
-                                            {{ featured_video.get_event_display }}
-                                        {% endif %}
-                                    </div>
+                <!-- RECENT VIDEOS -->
 
-                                    {% if featured_video.coach_feedback %}
-                                        <div class="feedback-text">
-                                            {{ featured_video.coach_feedback }}
-                                        </div>
-                                    {% else %}
-                                        <div class="feedback-text">
-                                            A coach reviewed this video and
-                                            marked it as complete.
-                                        </div>
-                                    {% endif %}
+                <div class="card mb-4">
 
-                                    <div class="video-meta">
-                                        <span>
-                                            🎥 {{ featured_video.get_event_display }}
-                                        </span>
+                    <div class="card-header bg-white border-0 pt-4 px-4">
 
-                                        <span>
-                                            ✅ Reviewed
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endwith %}
+                        <h5 class="fw-bold mb-1">
+                            Recent Training Videos
+                        </h5>
 
-                        {% if recent_videos|length > 1 %}
-                            <div class="mt-4">
-                                <div class="metric-label mb-3">
-                                    More Recent Reviews
-                                </div>
+                        <small class="text-muted">
+                            Coach-reviewed athlete videos
+                        </small>
 
-                                <div class="d-flex flex-column gap-3">
-                                    {% for video in recent_videos %}
-                                        {% if not forloop.first %}
-                                            <div class="d-flex justify-content-between align-items-center gap-3">
-                                                <div>
-                                                    <div class="fw-semibold">
-                                                        {{ video.title }}
-                                                    </div>
+                    </div>
 
-                                                    <div class="small text-muted">
-                                                        {% if video.skill %}
-                                                            {{ video.skill.name }}
-                                                        {% else %}
-                                                            {{ video.get_event_display }}
-                                                        {% endif %}
-                                                    </div>
-                                                </div>
 
-                                                <span class="badge bg-light text-primary">
-                                                    Reviewed
-                                                </span>
+                    <div class="card-body">
+
+                        <div class="row g-3">
+
+                            {% for video in recent_videos %}
+
+                                <div class="col-md-6">
+
+                                    <div class="border rounded-3 p-3 h-100">
+
+                                        <div class="d-flex justify-content-between align-items-start gap-2">
+
+                                            <div class="fw-bold">
+                                                {{ video.title }}
                                             </div>
 
-                                            {% if not forloop.last %}
-                                                <hr class="my-0">
-                                            {% endif %}
+
+                                            <span class="badge text-bg-light border">
+                                                {{ video.get_event_display }}
+                                            </span>
+
+                                        </div>
+
+
+                                        {% if video.practice_date %}
+
+                                            <div class="small text-muted mt-1">
+                                                {{ video.practice_date|date:"M j, Y" }}
+                                            </div>
+
                                         {% endif %}
-                                    {% endfor %}
+
+
+                                        {% if video.skill %}
+
+                                            <div class="small mt-3">
+
+                                                Skill:
+
+                                                <strong>
+                                                    {{ video.skill.name }}
+                                                </strong>
+
+                                            </div>
+
+                                        {% endif %}
+
+
+                                        {% if video.coach_feedback %}
+
+                                            <div class="small text-muted mt-2">
+                                                {{ video.coach_feedback }}
+                                            </div>
+
+                                        {% endif %}
+
+                                    </div>
+
                                 </div>
-                            </div>
-                        {% endif %}
-                    {% else %}
-                        <div class="empty-state">
-                            <div class="empty-state-icon">
-                                💬
-                            </div>
 
-                            <div class="fw-bold mb-1">
-                                No shared coach feedback yet
-                            </div>
+                            {% empty %}
 
-                            <div class="small">
-                                Coach-reviewed videos and feedback will
-                                appear here when they are available.
-                            </div>
+                                <div class="col-12">
+
+                                    <div class="text-center text-muted py-4">
+
+                                        <div class="fs-2 mb-2">
+                                            🎥
+                                        </div>
+
+                                        No reviewed training videos available yet.
+
+                                    </div>
+
+                                </div>
+
+                            {% endfor %}
+
                         </div>
-                    {% endif %}
+
+                    </div>
+
                 </div>
+
             </div>
-        </div>
-    </div>
 
-    <div class="card parent-card mb-4">
-        <div class="card-header">
-            <span>📅 Upcoming Schedule</span>
 
-            <span class="small text-muted fw-normal">
-                Next {{ upcoming_events|length }} events
-            </span>
-        </div>
+            <!-- ==================================================
+                 RIGHT COLUMN
+                 ================================================== -->
 
-        <div class="card-body">
-            {% if upcoming_events %}
-                <div class="d-flex flex-column gap-3">
-                    {% for event in upcoming_events %}
-                        <div class="event-row">
-                            <div class="event-date-box">
-                                <div class="event-month">
-                                    {{ event.event_date|date:"M" }}
-                                </div>
+            <div class="col-xl-4">
 
-                                <div class="event-day">
-                                    {{ event.event_date|date:"d" }}
-                                </div>
-                            </div>
 
-                            <div class="flex-grow-1">
-                                <div class="fw-bold">
+                <!-- UPCOMING EVENTS -->
+
+                <div class="card mb-4">
+
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+
+                        <h5 class="fw-bold mb-1">
+                            Upcoming Events
+                        </h5>
+
+                        <small class="text-muted">
+                            Meets, practices and team events
+                        </small>
+
+                    </div>
+
+
+                    <div class="card-body">
+
+                        {% for event in upcoming_events %}
+
+                            <div class="border-bottom py-3">
+
+                                <div class="fw-semibold">
                                     {{ event.title }}
                                 </div>
 
-                                <div class="small text-muted mt-1">
-                                    {% if event.start_time %}
-                                        {{ event.start_time|time:"g:i A" }}
-                                    {% endif %}
-
-                                    {% if event.location %}
-                                        · {{ event.location }}
-                                    {% endif %}
+                                <div class="small text-muted">
+                                    {{ event.event_date|date:"M j, Y" }}
                                 </div>
+
+
+                                {% if event.start_time %}
+
+                                    <div class="small">
+                                        {{ event.start_time|time:"g:i A" }}
+                                    </div>
+
+                                {% endif %}
+
+
+                                {% if event.location %}
+
+                                    <div class="small text-muted mt-1">
+                                        📍 {{ event.location }}
+                                    </div>
+
+                                {% endif %}
+
                             </div>
 
-                            <div class="text-end d-none d-sm-block">
-                                <span class="soft-badge">
-                                    {{ event.event_date|date:"D" }}
-                                </span>
+                        {% empty %}
+
+                            <div class="text-center text-muted py-4">
+                                No upcoming events.
                             </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- ATHLETE CONNECTION -->
+
+                <div class="card mb-4">
+
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+
+                        <h5 class="fw-bold mb-1">
+                            Family Connections
+                        </h5>
+
+                        <small class="text-muted">
+                            Manage athletes connected to your account
+                        </small>
+
+                    </div>
+
+
+                    <div class="card-body">
+
+                        {% for athlete in linked_athletes %}
+
+                            <div class="d-flex justify-content-between align-items-center border-bottom py-3">
+
+                                <div>
+
+                                    <div class="fw-semibold">
+                                        {{ athlete.get_full_name|default:athlete.username }}
+                                    </div>
+
+                                    <div class="small text-muted">
+                                        Connected
+                                    </div>
+
+                                </div>
+
+
+                                <span class="badge text-bg-success">
+                                    ✓
+                                </span>
+
+                            </div>
+
+                        {% endfor %}
+
+
+                        <div class="d-grid mt-3">
+
+                            <a
+                                href="{% url 'connect_athlete' %}"
+                                class="btn btn-outline-primary"
+                            >
+                                + Connect Another Athlete
+                            </a>
+
                         </div>
 
-                        {% if not forloop.last %}
-                            <hr class="my-0">
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="empty-state">
-                    <div class="empty-state-icon">
-                        📅
                     </div>
 
-                    <div class="fw-bold mb-1">
-                        The schedule is currently clear
-                    </div>
-
-                    <div class="small">
-                        New practices, meets and team events will
-                        appear here.
-                    </div>
-                </div>
-            {% endif %}
-        </div>
-    </div>
-
-    <div class="privacy-note">
-        <div class="fs-5">🔒</div>
-
-        <div>
-            <strong>Parent-friendly and private.</strong>
-            This page displays approved progress information,
-            shared feedback and family-relevant updates. Internal
-            coaching notes, detailed wellness answers and private
-            team comparisons remain visible only to authorized coaches.
-        </div>
-    </div>
-
-{% else %}
-
-    <div class="card parent-card">
-        <div class="card-body">
-            <div class="empty-state">
-                <div class="empty-state-icon">
-                    👨‍👩‍👧
                 </div>
 
-                <h4 class="fw-bold">
-                    No athlete linked yet
-                </h4>
 
-                <p class="mb-0">
-                    A coach or administrator must link an athlete
-                    to your parent account before their progress
-                    can appear here.
-                </p>
+                <!-- COMMUNICATIONS -->
+
+                {% if dashboard_communication %}
+
+                    <div class="card">
+
+                        <div class="card-header bg-white border-0 pt-4 px-4">
+
+                            <h5 class="fw-bold mb-1">
+                                Communications
+                            </h5>
+
+                            <small class="text-muted">
+                                Gym updates and announcements
+                            </small>
+
+                        </div>
+
+
+                        <div class="card-body">
+
+                            {% if dashboard_communication.unread_count %}
+
+                                <div class="alert alert-primary mb-3">
+
+                                    <strong>
+                                        {{ dashboard_communication.unread_count }}
+                                    </strong>
+
+                                    unread message{{ dashboard_communication.unread_count|pluralize }}
+
+                                </div>
+
+                            {% endif %}
+
+
+                            {% for item in dashboard_communication.recent_items %}
+
+                                <div class="border-bottom py-3">
+
+                                    <div class="fw-semibold">
+                                        {{ item.title }}
+                                    </div>
+
+
+                                    {% if item.created_at %}
+
+                                        <div class="small text-muted">
+                                            {{ item.created_at|date:"M j, Y" }}
+                                        </div>
+
+                                    {% endif %}
+
+                                </div>
+
+                            {% empty %}
+
+                                <div class="text-muted text-center py-3">
+                                    No recent communications.
+                                </div>
+
+                            {% endfor %}
+
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
             </div>
-        </div>
-    </div>
 
-{% endif %}
+        </div>
+
+    {% endif %}
 
 </div>
-
-{% if testing_chart_scores %}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    {{ testing_chart_labels|json_script:"parent-testing-labels" }}
-    {{ testing_chart_scores|json_script:"parent-testing-scores" }}
-
-    <script>
-        const parentTestingLabels = JSON.parse(
-            document.getElementById(
-                "parent-testing-labels"
-            ).textContent
-        );
-
-        const parentTestingScores = JSON.parse(
-            document.getElementById(
-                "parent-testing-scores"
-            ).textContent
-        );
-
-        const parentTestingCanvas = document.getElementById(
-            "parentTestingChart"
-        );
-
-        if (parentTestingCanvas) {
-            new Chart(parentTestingCanvas, {
-                type: "line",
-
-                data: {
-                    labels: parentTestingLabels,
-
-                    datasets: [{
-                        label: "Testing Score",
-                        data: parentTestingScores,
-                        tension: 0.35,
-                        fill: true,
-                        borderWidth: 3,
-                        pointRadius: 5,
-                        pointHoverRadius: 7,
-                        borderColor: "#0d6efd",
-                        backgroundColor: "rgba(13, 110, 253, 0.08)",
-                        pointBackgroundColor: "#0d6efd"
-                    }]
-                },
-
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-
-                    interaction: {
-                        mode: "index",
-                        intersect: false
-                    },
-
-                    scales: {
-                        x: {
-                            grid: {
-                                display: false
-                            }
-                        },
-
-                        y: {
-                            beginAtZero: true,
-
-                            grid: {
-                                color: "rgba(0, 0, 0, 0.05)"
-                            }
-                        }
-                    },
-
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-
-                        tooltip: {
-                            padding: 12,
-                            displayColors: false
-                        }
-                    }
-                }
-            });
-        }
-    </script>
-{% endif %}
 
 {% endblock %}
