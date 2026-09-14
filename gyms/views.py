@@ -17,6 +17,7 @@ from .models import (
     TrainingGroup,
     TrainingGroupAthlete,
     TrainingGroupCoach,
+    gym,
 )
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -70,29 +71,30 @@ User = get_user_model()
 
 def get_director_gym(request_user):
     """
-    Return the active gym overseen by this director.
+    Return the application's gym for a Director.
 
-    For now we use the first active director membership.
-    Later we can add a gym switcher if one director manages
-    multiple clubs.
+    The app currently supports one gym, so Directors are
+    automatically assigned to the first available gym.
     """
-    membership = (
-        GymMembership.objects
-        .filter(
-            user=request_user,
-            role='director',
-            is_active=True
-        )
-        .select_related('gym')
-        .first()
-    )
 
-    if not membership:
+    if request_user.role != "director":
         return None
 
-    return membership.gym
+    gym = Gym.objects.first()
 
+    if not gym:
+        return None
 
+    GymMembership.objects.update_or_create(
+        user=request_user,
+        gym=gym,
+        defaults={
+            "role": "director",
+            "is_active": True,
+        },
+    )
+
+    return gymgit
 @login_required
 def director_dashboard(request):
 
