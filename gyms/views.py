@@ -17,7 +17,7 @@ from .models import (
     TrainingGroup,
     TrainingGroupAthlete,
     TrainingGroupCoach,
-    gym,
+    Gym,
 )
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -94,7 +94,7 @@ def get_director_gym(request_user):
         },
     )
 
-    return gymgit
+    return gym
 @login_required
 def director_dashboard(request):
 
