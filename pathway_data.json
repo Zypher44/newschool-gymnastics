@@ -1,0 +1,1820 @@
+[
+{
+  "model": "pathway.pathwaylevel",
+  "pk": 1,
+  "fields": {
+    "name": "Aspire",
+    "code": "aspire",
+    "order": 1,
+    "minimum_age": 9,
+    "maximum_age": 11,
+    "description": "Pre-Youth pathway stage.",
+    "is_active": true,
+    "created_at": "2026-09-02T16:43:45.033Z",
+    "updated_at": "2026-09-02T19:16:39.137Z"
+  }
+},
+{
+  "model": "pathway.pathwaylevel",
+  "pk": 2,
+  "fields": {
+    "name": "Youth 1",
+    "code": "youth_1",
+    "order": 2,
+    "minimum_age": 10,
+    "maximum_age": 14,
+    "description": "Novice 1st Year.",
+    "is_active": true,
+    "created_at": "2026-09-02T16:43:45.043Z",
+    "updated_at": "2026-09-02T19:16:39.154Z"
+  }
+},
+{
+  "model": "pathway.pathwaylevel",
+  "pk": 3,
+  "fields": {
+    "name": "Youth 2",
+    "code": "youth_2",
+    "order": 3,
+    "minimum_age": 11,
+    "maximum_age": 14,
+    "description": "Novice 2nd Year.",
+    "is_active": true,
+    "created_at": "2026-09-02T16:43:45.051Z",
+    "updated_at": "2026-09-02T19:16:39.163Z"
+  }
+},
+{
+  "model": "pathway.pathwaylevel",
+  "pk": 4,
+  "fields": {
+    "name": "Novice / Youth 3",
+    "code": "youth_3",
+    "order": 4,
+    "minimum_age": 11,
+    "maximum_age": 14,
+    "description": "Novice 3rd Year / Pre-Junior.",
+    "is_active": true,
+    "created_at": "2026-09-02T16:43:45.061Z",
+    "updated_at": "2026-09-02T19:16:39.171Z"
+  }
+},
+{
+  "model": "pathway.pathwayevent",
+  "pk": 1,
+  "fields": {
+    "code": "vault",
+    "name": "Vault",
+    "order": 1
+  }
+},
+{
+  "model": "pathway.pathwayevent",
+  "pk": 2,
+  "fields": {
+    "code": "bars",
+    "name": "Uneven Bars",
+    "order": 2
+  }
+},
+{
+  "model": "pathway.pathwayevent",
+  "pk": 3,
+  "fields": {
+    "code": "beam",
+    "name": "Beam",
+    "order": 3
+  }
+},
+{
+  "model": "pathway.pathwayevent",
+  "pk": 4,
+  "fields": {
+    "code": "floor",
+    "name": "Floor",
+    "order": 4
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 118,
+  "fields": {
+    "level": 1,
+    "event": 1,
+    "requirement_type": "vault",
+    "title": "Timer Tsukahara to Feet",
+    "description": "",
+    "requirement_number": null,
+    "value": "3.00",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 1,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.234Z",
+    "updated_at": "2026-09-02T19:16:39.234Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 119,
+  "fields": {
+    "level": 1,
+    "event": 1,
+    "requirement_type": "vault",
+    "title": "Timer Tsukahara to Candle",
+    "description": "",
+    "requirement_number": null,
+    "value": "3.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 2,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.242Z",
+    "updated_at": "2026-09-02T19:16:39.242Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 120,
+  "fields": {
+    "level": 1,
+    "event": 1,
+    "requirement_type": "vault",
+    "title": "Timer Yurchenko to Feet",
+    "description": "",
+    "requirement_number": null,
+    "value": "3.00",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 3,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.250Z",
+    "updated_at": "2026-09-02T19:16:39.250Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 121,
+  "fields": {
+    "level": 1,
+    "event": 1,
+    "requirement_type": "vault",
+    "title": "Timer Yurchenko to Candle",
+    "description": "",
+    "requirement_number": null,
+    "value": "3.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 4,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.258Z",
+    "updated_at": "2026-09-02T19:16:39.258Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 122,
+  "fields": {
+    "level": 1,
+    "event": 1,
+    "requirement_type": "vault",
+    "title": "Timer Handspring to Back",
+    "description": "",
+    "requirement_number": null,
+    "value": "3.00",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 5,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.265Z",
+    "updated_at": "2026-09-02T19:16:39.265Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 123,
+  "fields": {
+    "level": 1,
+    "event": 1,
+    "requirement_type": "vault",
+    "title": "Timer Handspring to Feet",
+    "description": "",
+    "requirement_number": null,
+    "value": "3.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 6,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.274Z",
+    "updated_at": "2026-09-02T19:16:39.274Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 124,
+  "fields": {
+    "level": 1,
+    "event": 1,
+    "requirement_type": "vault",
+    "title": "Tsukahara Tuck",
+    "description": "",
+    "requirement_number": null,
+    "value": "4.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 7,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.283Z",
+    "updated_at": "2026-09-02T19:16:39.283Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 125,
+  "fields": {
+    "level": 1,
+    "event": 1,
+    "requirement_type": "vault",
+    "title": "Yurchenko Tuck",
+    "description": "",
+    "requirement_number": null,
+    "value": "4.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 8,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.291Z",
+    "updated_at": "2026-09-02T19:16:39.291Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 126,
+  "fields": {
+    "level": 2,
+    "event": 1,
+    "requirement_type": "vault",
+    "title": "Competition Vault",
+    "description": "Athlete is working toward a vault listed in the WG Code of Points.",
+    "requirement_number": null,
+    "value": null,
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 1,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.299Z",
+    "updated_at": "2026-09-02T19:16:39.299Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 127,
+  "fields": {
+    "level": 2,
+    "event": 1,
+    "requirement_type": "bonus",
+    "title": "Salto Vault Bonus",
+    "description": "Bonus for salto vaults.",
+    "requirement_number": null,
+    "value": null,
+    "bonus_value": "0.20",
+    "parent_requirement": null,
+    "is_required": false,
+    "is_active": true,
+    "display_order": 20,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.308Z",
+    "updated_at": "2026-09-02T19:16:39.308Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 128,
+  "fields": {
+    "level": 3,
+    "event": 1,
+    "requirement_type": "vault",
+    "title": "Competition Vault",
+    "description": "Athlete is working toward a vault listed in the WG Code of Points.",
+    "requirement_number": null,
+    "value": null,
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 1,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.316Z",
+    "updated_at": "2026-09-02T19:16:39.316Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 129,
+  "fields": {
+    "level": 3,
+    "event": 1,
+    "requirement_type": "bonus",
+    "title": "Salto Vault Bonus",
+    "description": "Bonus for salto vaults.",
+    "requirement_number": null,
+    "value": null,
+    "bonus_value": "0.20",
+    "parent_requirement": null,
+    "is_required": false,
+    "is_active": true,
+    "display_order": 20,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.323Z",
+    "updated_at": "2026-09-02T19:16:39.323Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 130,
+  "fields": {
+    "level": 4,
+    "event": 1,
+    "requirement_type": "vault",
+    "title": "Competition Vault",
+    "description": "Athlete is working toward a vault listed in the WG Code of Points.",
+    "requirement_number": null,
+    "value": null,
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 1,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.331Z",
+    "updated_at": "2026-09-02T19:16:39.331Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 131,
+  "fields": {
+    "level": 4,
+    "event": 1,
+    "requirement_type": "bonus",
+    "title": "Salto Vault Bonus",
+    "description": "Bonus for salto vaults.",
+    "requirement_number": null,
+    "value": null,
+    "bonus_value": "0.20",
+    "parent_requirement": null,
+    "is_required": false,
+    "is_active": true,
+    "display_order": 20,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.341Z",
+    "updated_at": "2026-09-02T19:16:39.341Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 132,
+  "fields": {
+    "level": 1,
+    "event": 2,
+    "requirement_type": "cr",
+    "title": "Close Bar Circle Element to 30°",
+    "description": "+0.3 bonus if completed in handstand within 10°.",
+    "requirement_number": 1,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 1,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.350Z",
+    "updated_at": "2026-09-02T19:16:39.350Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 133,
+  "fields": {
+    "level": 1,
+    "event": 2,
+    "requirement_type": "cr",
+    "title": "Second Close Bar Circle Element to 30°",
+    "description": "+0.3 bonus if completed in handstand.",
+    "requirement_number": 2,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 2,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.357Z",
+    "updated_at": "2026-09-02T19:16:39.357Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 134,
+  "fields": {
+    "level": 1,
+    "event": 2,
+    "requirement_type": "cr",
+    "title": "Glide Kip or Long Kip to Cast Handstand to 30°",
+    "description": "+0.2 bonus if completed in handstand, awarded once.",
+    "requirement_number": 3,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 3,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.365Z",
+    "updated_at": "2026-09-02T19:16:39.365Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 135,
+  "fields": {
+    "level": 1,
+    "event": 2,
+    "requirement_type": "cr",
+    "title": "Back Giant",
+    "description": "+0.5 if both back and front giants are performed.",
+    "requirement_number": 4,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 4,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.373Z",
+    "updated_at": "2026-09-02T19:16:39.373Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 136,
+  "fields": {
+    "level": 1,
+    "event": 2,
+    "requirement_type": "cr",
+    "title": "Dismount",
+    "description": "+0.1 bonus for salto dismount.",
+    "requirement_number": 5,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 5,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.381Z",
+    "updated_at": "2026-09-02T19:16:39.381Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 137,
+  "fields": {
+    "level": 1,
+    "event": 2,
+    "requirement_type": "bonus",
+    "title": "Connected Close Bar Circles Bonus",
+    "description": "Bonus each time close bar circles are directly connected within 30°.",
+    "requirement_number": null,
+    "value": null,
+    "bonus_value": "0.10",
+    "parent_requirement": null,
+    "is_required": false,
+    "is_active": true,
+    "display_order": 20,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.390Z",
+    "updated_at": "2026-09-02T19:16:39.390Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 138,
+  "fields": {
+    "level": 2,
+    "event": 2,
+    "requirement_type": "cr",
+    "title": "Close Bar Circle Element to 30°",
+    "description": "+0.2 bonus if completed in handstand.",
+    "requirement_number": 1,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 1,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.397Z",
+    "updated_at": "2026-09-02T19:16:39.397Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 139,
+  "fields": {
+    "level": 2,
+    "event": 2,
+    "requirement_type": "cr",
+    "title": "Second Close Bar Circle Element to 30° with Different Root",
+    "description": "+0.2 bonus if completed in handstand.",
+    "requirement_number": 2,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 2,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.405Z",
+    "updated_at": "2026-09-02T19:16:39.405Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 140,
+  "fields": {
+    "level": 2,
+    "event": 2,
+    "requirement_type": "cr",
+    "title": "Cast to Handstand to 30°",
+    "description": "+0.1 bonus if completed in handstand, awarded once.",
+    "requirement_number": 3,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 3,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.413Z",
+    "updated_at": "2026-09-02T19:16:39.413Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 141,
+  "fields": {
+    "level": 2,
+    "event": 2,
+    "requirement_type": "cr",
+    "title": "Forward Giant or Backward Giant",
+    "description": "Athlete must perform at least one giant, forward or backward.",
+    "requirement_number": 4,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 4,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.422Z",
+    "updated_at": "2026-09-02T19:16:39.422Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 142,
+  "fields": {
+    "level": 2,
+    "event": 2,
+    "requirement_type": "bonus",
+    "title": "Forward + Backward Giant Bonus",
+    "description": "Bonus awarded when the athlete performs both a forward giant and a backward giant.",
+    "requirement_number": null,
+    "value": null,
+    "bonus_value": "0.50",
+    "parent_requirement": null,
+    "is_required": false,
+    "is_active": true,
+    "display_order": 20,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.430Z",
+    "updated_at": "2026-09-02T19:16:39.430Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 143,
+  "fields": {
+    "level": 2,
+    "event": 2,
+    "requirement_type": "bonus",
+    "title": "Connected Close Bar Circles Bonus",
+    "description": "Bonus each time close bar circles are directly connected within 30°.",
+    "requirement_number": null,
+    "value": null,
+    "bonus_value": "0.10",
+    "parent_requirement": null,
+    "is_required": false,
+    "is_active": true,
+    "display_order": 21,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.438Z",
+    "updated_at": "2026-09-02T19:16:39.438Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 144,
+  "fields": {
+    "level": 2,
+    "event": 2,
+    "requirement_type": "bonus",
+    "title": "Salto Dismount Bonus",
+    "description": "Bonus for a salto dismount.",
+    "requirement_number": null,
+    "value": null,
+    "bonus_value": "0.10",
+    "parent_requirement": null,
+    "is_required": false,
+    "is_active": true,
+    "display_order": 22,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.447Z",
+    "updated_at": "2026-09-02T19:16:39.447Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 145,
+  "fields": {
+    "level": 2,
+    "event": 2,
+    "requirement_type": "bonus",
+    "title": "Double Salto Dismount Bonus",
+    "description": "Bonus for a double salto dismount.",
+    "requirement_number": null,
+    "value": null,
+    "bonus_value": "0.30",
+    "parent_requirement": null,
+    "is_required": false,
+    "is_active": true,
+    "display_order": 23,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.455Z",
+    "updated_at": "2026-09-02T19:16:39.455Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 146,
+  "fields": {
+    "level": 3,
+    "event": 2,
+    "requirement_type": "cr",
+    "title": "Flight Element",
+    "description": "HB-LB, LB-HB, or same-bar flight.",
+    "requirement_number": 1,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 1,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.465Z",
+    "updated_at": "2026-09-02T19:16:39.465Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 147,
+  "fields": {
+    "level": 3,
+    "event": 2,
+    "requirement_type": "cr",
+    "title": "Non-Flight Element with 360° Turn",
+    "description": "",
+    "requirement_number": 2,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 2,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.473Z",
+    "updated_at": "2026-09-02T19:16:39.473Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 148,
+  "fields": {
+    "level": 3,
+    "event": 2,
+    "requirement_type": "cr",
+    "title": "Close Bar Circle to Handstand",
+    "description": "",
+    "requirement_number": 3,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 3,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.482Z",
+    "updated_at": "2026-09-02T19:16:39.482Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 149,
+  "fields": {
+    "level": 3,
+    "event": 2,
+    "requirement_type": "cr",
+    "title": "Second Close Bar Circle to 30° with Different Root",
+    "description": "+0.1 bonus if completed in handstand.",
+    "requirement_number": 4,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 4,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.491Z",
+    "updated_at": "2026-09-02T19:16:39.491Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 150,
+  "fields": {
+    "level": 3,
+    "event": 2,
+    "requirement_type": "cr",
+    "title": "Cast to Handstand",
+    "description": "",
+    "requirement_number": 5,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 5,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.497Z",
+    "updated_at": "2026-09-02T19:16:39.497Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 151,
+  "fields": {
+    "level": 3,
+    "event": 2,
+    "requirement_type": "cr",
+    "title": "Forward Giant or Backward Giant",
+    "description": "Athlete must perform at least one giant, forward or backward.",
+    "requirement_number": 6,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 6,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.507Z",
+    "updated_at": "2026-09-02T19:16:39.507Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 152,
+  "fields": {
+    "level": 3,
+    "event": 2,
+    "requirement_type": "bonus",
+    "title": "Forward + Backward Giant Bonus",
+    "description": "Bonus awarded when the athlete performs both a forward giant and a backward giant.",
+    "requirement_number": null,
+    "value": null,
+    "bonus_value": "0.50",
+    "parent_requirement": null,
+    "is_required": false,
+    "is_active": true,
+    "display_order": 20,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.514Z",
+    "updated_at": "2026-09-02T19:16:39.514Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 153,
+  "fields": {
+    "level": 3,
+    "event": 2,
+    "requirement_type": "bonus",
+    "title": "Salto Dismount Bonus",
+    "description": "Bonus for a salto dismount.",
+    "requirement_number": null,
+    "value": null,
+    "bonus_value": "0.10",
+    "parent_requirement": null,
+    "is_required": false,
+    "is_active": true,
+    "display_order": 21,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.524Z",
+    "updated_at": "2026-09-02T19:16:39.524Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 154,
+  "fields": {
+    "level": 3,
+    "event": 2,
+    "requirement_type": "bonus",
+    "title": "Double Salto Dismount Bonus",
+    "description": "Bonus for a double salto dismount.",
+    "requirement_number": null,
+    "value": null,
+    "bonus_value": "0.30",
+    "parent_requirement": null,
+    "is_required": false,
+    "is_active": true,
+    "display_order": 22,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.532Z",
+    "updated_at": "2026-09-02T19:16:39.532Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 155,
+  "fields": {
+    "level": 4,
+    "event": 2,
+    "requirement_type": "cr",
+    "title": "Flight Element High Bar to Low Bar",
+    "description": "",
+    "requirement_number": 1,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 1,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.539Z",
+    "updated_at": "2026-09-02T19:16:39.539Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 156,
+  "fields": {
+    "level": 4,
+    "event": 2,
+    "requirement_type": "cr",
+    "title": "Flight Element Low Bar to High Bar",
+    "description": "",
+    "requirement_number": 2,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 2,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.547Z",
+    "updated_at": "2026-09-02T19:16:39.547Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 157,
+  "fields": {
+    "level": 4,
+    "event": 2,
+    "requirement_type": "cr",
+    "title": "Same-Bar Flight Element",
+    "description": "",
+    "requirement_number": 3,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 3,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.555Z",
+    "updated_at": "2026-09-02T19:16:39.555Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 158,
+  "fields": {
+    "level": 4,
+    "event": 2,
+    "requirement_type": "cr",
+    "title": "Different Grip",
+    "description": "",
+    "requirement_number": 4,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 4,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.562Z",
+    "updated_at": "2026-09-02T19:16:39.562Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 159,
+  "fields": {
+    "level": 4,
+    "event": 2,
+    "requirement_type": "cr",
+    "title": "Non-Flight Element with 360° Turn",
+    "description": "",
+    "requirement_number": 5,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 5,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.571Z",
+    "updated_at": "2026-09-02T19:16:39.571Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 160,
+  "fields": {
+    "level": 4,
+    "event": 2,
+    "requirement_type": "cr",
+    "title": "Close Bar Circle to Handstand",
+    "description": "",
+    "requirement_number": 6,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 6,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.579Z",
+    "updated_at": "2026-09-02T19:16:39.579Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 161,
+  "fields": {
+    "level": 4,
+    "event": 2,
+    "requirement_type": "bonus",
+    "title": "Salto Dismount Bonus",
+    "description": "Bonus for a salto dismount.",
+    "requirement_number": null,
+    "value": null,
+    "bonus_value": "0.10",
+    "parent_requirement": null,
+    "is_required": false,
+    "is_active": true,
+    "display_order": 20,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.587Z",
+    "updated_at": "2026-09-02T19:16:39.587Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 162,
+  "fields": {
+    "level": 4,
+    "event": 2,
+    "requirement_type": "bonus",
+    "title": "Double Salto Dismount Bonus",
+    "description": "Bonus for a double salto dismount.",
+    "requirement_number": null,
+    "value": null,
+    "bonus_value": "0.20",
+    "parent_requirement": null,
+    "is_required": false,
+    "is_active": true,
+    "display_order": 21,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.595Z",
+    "updated_at": "2026-09-02T19:16:39.595Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 163,
+  "fields": {
+    "level": 4,
+    "event": 2,
+    "requirement_type": "bonus",
+    "title": "Complete All 6 CR Bonus",
+    "description": "Bonus awarded when all six composition requirements are performed.",
+    "requirement_number": null,
+    "value": null,
+    "bonus_value": "0.50",
+    "parent_requirement": null,
+    "is_required": false,
+    "is_active": true,
+    "display_order": 22,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.603Z",
+    "updated_at": "2026-09-02T19:16:39.603Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 164,
+  "fields": {
+    "level": 1,
+    "event": 3,
+    "requirement_type": "cr",
+    "title": "Press to Handstand Mount or B Mount",
+    "description": "",
+    "requirement_number": 1,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 1,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.610Z",
+    "updated_at": "2026-09-02T19:16:39.610Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 165,
+  "fields": {
+    "level": 1,
+    "event": 3,
+    "requirement_type": "cr",
+    "title": "Minimum 1/1 Pirouette",
+    "description": "",
+    "requirement_number": 2,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 2,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.618Z",
+    "updated_at": "2026-09-02T19:16:39.618Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 166,
+  "fields": {
+    "level": 1,
+    "event": 3,
+    "requirement_type": "cr",
+    "title": "Acro Series with Second Element Being Flight",
+    "description": "+0.3 bonus if the series contains two flight elements.",
+    "requirement_number": 3,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 3,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.626Z",
+    "updated_at": "2026-09-02T19:16:39.626Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 167,
+  "fields": {
+    "level": 1,
+    "event": 3,
+    "requirement_type": "cr",
+    "title": "Acro Showing Flexibility",
+    "description": "",
+    "requirement_number": 4,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 4,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.634Z",
+    "updated_at": "2026-09-02T19:16:39.634Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 168,
+  "fields": {
+    "level": 1,
+    "event": 3,
+    "requirement_type": "cr",
+    "title": "Dance Connection with Split Leap and Split/Straddle Jump",
+    "description": "",
+    "requirement_number": 5,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 5,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.642Z",
+    "updated_at": "2026-09-02T19:16:39.642Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 169,
+  "fields": {
+    "level": 2,
+    "event": 3,
+    "requirement_type": "cr",
+    "title": "Connection of 2 Different Dance Elements with 180° Split",
+    "description": "",
+    "requirement_number": 1,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 1,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.651Z",
+    "updated_at": "2026-09-02T19:16:39.651Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 170,
+  "fields": {
+    "level": 2,
+    "event": 3,
+    "requirement_type": "cr",
+    "title": "Minimum 1/1 Pirouette",
+    "description": "",
+    "requirement_number": 2,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 2,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.660Z",
+    "updated_at": "2026-09-02T19:16:39.660Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 171,
+  "fields": {
+    "level": 2,
+    "event": 3,
+    "requirement_type": "cr",
+    "title": "Acro Series with Minimum 1 Flight Element",
+    "description": "",
+    "requirement_number": 3,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 3,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.668Z",
+    "updated_at": "2026-09-02T19:16:39.668Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 172,
+  "fields": {
+    "level": 2,
+    "event": 3,
+    "requirement_type": "cr",
+    "title": "Acro in Different Directions (Backward + Forward/Sideward)",
+    "description": "",
+    "requirement_number": 4,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 4,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.676Z",
+    "updated_at": "2026-09-02T19:16:39.676Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 173,
+  "fields": {
+    "level": 3,
+    "event": 3,
+    "requirement_type": "cr",
+    "title": "Connection of 2 Different Dance Elements with 180° Split",
+    "description": "",
+    "requirement_number": 1,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 1,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.684Z",
+    "updated_at": "2026-09-02T19:16:39.684Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 174,
+  "fields": {
+    "level": 3,
+    "event": 3,
+    "requirement_type": "cr",
+    "title": "Minimum 1/1 Pirouette",
+    "description": "",
+    "requirement_number": 2,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 2,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.691Z",
+    "updated_at": "2026-09-02T19:16:39.691Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 175,
+  "fields": {
+    "level": 3,
+    "event": 3,
+    "requirement_type": "cr",
+    "title": "Acro Series with Minimum 2 Flight Elements",
+    "description": "+0.1 bonus if the series includes a salto.",
+    "requirement_number": 3,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 3,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.708Z",
+    "updated_at": "2026-09-02T19:16:39.708Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 176,
+  "fields": {
+    "level": 3,
+    "event": 3,
+    "requirement_type": "cr",
+    "title": "Acro in Different Directions (Backward + Forward/Sideward)",
+    "description": "",
+    "requirement_number": 4,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 4,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.719Z",
+    "updated_at": "2026-09-02T19:16:39.719Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 177,
+  "fields": {
+    "level": 4,
+    "event": 3,
+    "requirement_type": "cr",
+    "title": "Connection of 2 Different Dance Elements with 180° Split",
+    "description": "",
+    "requirement_number": 1,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 1,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.727Z",
+    "updated_at": "2026-09-02T19:16:39.727Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 178,
+  "fields": {
+    "level": 4,
+    "event": 3,
+    "requirement_type": "cr",
+    "title": "Minimum 1/1 Pirouette",
+    "description": "",
+    "requirement_number": 2,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 2,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.734Z",
+    "updated_at": "2026-09-02T19:16:39.734Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 179,
+  "fields": {
+    "level": 4,
+    "event": 3,
+    "requirement_type": "cr",
+    "title": "Acro Series with Minimum 2 Flight Elements",
+    "description": "+0.2 bonus if the series includes a salto.",
+    "requirement_number": 3,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 3,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.743Z",
+    "updated_at": "2026-09-02T19:16:39.743Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 180,
+  "fields": {
+    "level": 4,
+    "event": 3,
+    "requirement_type": "cr",
+    "title": "Acro in Different Directions (Backward + Forward/Sideward)",
+    "description": "",
+    "requirement_number": 4,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 4,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.751Z",
+    "updated_at": "2026-09-02T19:16:39.751Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 181,
+  "fields": {
+    "level": 2,
+    "event": 3,
+    "requirement_type": "bonus",
+    "title": "Two Flight Elements Bonus",
+    "description": "Bonus when the acro series contains two flight elements.",
+    "requirement_number": null,
+    "value": null,
+    "bonus_value": "0.10",
+    "parent_requirement": null,
+    "is_required": false,
+    "is_active": true,
+    "display_order": 20,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.758Z",
+    "updated_at": "2026-09-02T19:16:39.758Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 182,
+  "fields": {
+    "level": 1,
+    "event": 4,
+    "requirement_type": "cr",
+    "title": "Dance Passage of Minimum 2 Different Leaps or Hops with 180° Split",
+    "description": "+0.1 bonus for a C-valued leap.",
+    "requirement_number": 1,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 1,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.764Z",
+    "updated_at": "2026-09-02T19:16:39.764Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 183,
+  "fields": {
+    "level": 1,
+    "event": 4,
+    "requirement_type": "cr",
+    "title": "Stretched Salto Forward or Backward in Acro Line",
+    "description": "+0.1 bonus for 180° backward LA. +0.3 bonus for 360° backward LA.",
+    "requirement_number": 2,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 2,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.772Z",
+    "updated_at": "2026-09-02T19:16:39.772Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 184,
+  "fields": {
+    "level": 1,
+    "event": 4,
+    "requirement_type": "cr",
+    "title": "Forward and Backward Salto",
+    "description": "+0.3 bonus if performed in a combination line.",
+    "requirement_number": 3,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 3,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.781Z",
+    "updated_at": "2026-09-02T19:16:39.781Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 185,
+  "fields": {
+    "level": 1,
+    "event": 4,
+    "requirement_type": "cr",
+    "title": "B Pirouette",
+    "description": "",
+    "requirement_number": 4,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 4,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.790Z",
+    "updated_at": "2026-09-02T19:16:39.790Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 186,
+  "fields": {
+    "level": 1,
+    "event": 4,
+    "requirement_type": "cr",
+    "title": "Minimum 3 Acro Lines with Minimum 2 Flight Elements Including One Salto",
+    "description": "",
+    "requirement_number": 5,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 5,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.797Z",
+    "updated_at": "2026-09-02T19:16:39.797Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 187,
+  "fields": {
+    "level": 2,
+    "event": 4,
+    "requirement_type": "cr",
+    "title": "Dance Passage of Minimum 2 Different Leaps or Hops with 180° Split",
+    "description": "",
+    "requirement_number": 1,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 1,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.805Z",
+    "updated_at": "2026-09-02T19:16:39.805Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 188,
+  "fields": {
+    "level": 2,
+    "event": 4,
+    "requirement_type": "cr",
+    "title": "Stretched Salto Forward or Backward in Acro Line",
+    "description": "+0.1 bonus for 360° longitudinal-axis rotation.",
+    "requirement_number": 2,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 2,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.814Z",
+    "updated_at": "2026-09-02T19:16:39.814Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 189,
+  "fields": {
+    "level": 2,
+    "event": 4,
+    "requirement_type": "cr",
+    "title": "Forward and Backward Salto",
+    "description": "",
+    "requirement_number": 3,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 3,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.822Z",
+    "updated_at": "2026-09-02T19:16:39.822Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 190,
+  "fields": {
+    "level": 2,
+    "event": 4,
+    "requirement_type": "cr",
+    "title": "B Pirouette",
+    "description": "",
+    "requirement_number": 4,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 4,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.830Z",
+    "updated_at": "2026-09-02T19:16:39.830Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 191,
+  "fields": {
+    "level": 3,
+    "event": 4,
+    "requirement_type": "cr",
+    "title": "Dance Passage of Minimum 2 Different Leaps or Hops with 180° Split",
+    "description": "",
+    "requirement_number": 1,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 1,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.839Z",
+    "updated_at": "2026-09-02T19:16:39.839Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 192,
+  "fields": {
+    "level": 3,
+    "event": 4,
+    "requirement_type": "cr",
+    "title": "Stretched Salto Forward or Backward with 360° in Acro Line",
+    "description": "+0.1 bonus for 720° longitudinal-axis rotation.",
+    "requirement_number": 2,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 2,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.848Z",
+    "updated_at": "2026-09-02T19:16:39.848Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 193,
+  "fields": {
+    "level": 3,
+    "event": 4,
+    "requirement_type": "cr",
+    "title": "Forward and Backward Salto",
+    "description": "",
+    "requirement_number": 3,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 3,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.856Z",
+    "updated_at": "2026-09-02T19:16:39.856Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 194,
+  "fields": {
+    "level": 3,
+    "event": 4,
+    "requirement_type": "cr",
+    "title": "B Pirouette",
+    "description": "",
+    "requirement_number": 4,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 4,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.864Z",
+    "updated_at": "2026-09-02T19:16:39.864Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 195,
+  "fields": {
+    "level": 4,
+    "event": 4,
+    "requirement_type": "cr",
+    "title": "Dance Passage of Minimum 2 Different Leaps or Hops with 180° Split",
+    "description": "",
+    "requirement_number": 1,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 1,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.873Z",
+    "updated_at": "2026-09-02T19:16:39.873Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 196,
+  "fields": {
+    "level": 4,
+    "event": 4,
+    "requirement_type": "cr",
+    "title": "Stretched Salto with Minimum 360° Longitudinal Axis Rotation in Acro Line",
+    "description": "+0.1 bonus for 720° longitudinal-axis rotation.",
+    "requirement_number": 2,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 2,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.881Z",
+    "updated_at": "2026-09-02T19:16:39.881Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 197,
+  "fields": {
+    "level": 4,
+    "event": 4,
+    "requirement_type": "cr",
+    "title": "Forward and Backward Salto",
+    "description": "",
+    "requirement_number": 3,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 3,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.890Z",
+    "updated_at": "2026-09-02T19:16:39.890Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 198,
+  "fields": {
+    "level": 4,
+    "event": 4,
+    "requirement_type": "cr",
+    "title": "B Pirouette",
+    "description": "",
+    "requirement_number": 4,
+    "value": "0.50",
+    "bonus_value": null,
+    "parent_requirement": null,
+    "is_required": true,
+    "is_active": true,
+    "display_order": 4,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.898Z",
+    "updated_at": "2026-09-02T19:16:39.898Z"
+  }
+},
+{
+  "model": "pathway.pathwayrequirement",
+  "pk": 199,
+  "fields": {
+    "level": 4,
+    "event": 4,
+    "requirement_type": "bonus",
+    "title": "Double Back Salto Bonus",
+    "description": "Bonus for a double backward salto.",
+    "requirement_number": null,
+    "value": null,
+    "bonus_value": "0.40",
+    "parent_requirement": null,
+    "is_required": false,
+    "is_active": true,
+    "display_order": 20,
+    "notes": "",
+    "created_at": "2026-09-02T19:16:39.907Z",
+    "updated_at": "2026-09-02T19:16:39.907Z"
+  }
+}
+]

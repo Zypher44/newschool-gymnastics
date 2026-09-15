@@ -1,37 +1,11 @@
-from django.utils import timezone
-from communications.dashboard import (
-    get_dashboard_communication_data,
-)
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, redirect, render
-
-from .forms import (
-    ManageGroupAthletesForm,
-    ManageGroupCoachesForm,
-    TrainingGroupForm,
-)
-
-from .models import (
-    GymMembership,
-    TrainingGroup,
-    TrainingGroupAthlete,
-    TrainingGroupCoach,
-    Gym,
-
-
-)
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 
-from athletes.models import AthleteProfile
-from coaches.models import CoachProfile
-from parents_portal.models import ParentProfile
-
-from .forms import (
-    CreateGymPersonForm,
-    EditGymPersonForm,
-)
+from communications.dashboard import get_dashboard_communication_data
 
 from athletes.models import (
     AthleteProfile,
@@ -39,34 +13,28 @@ from athletes.models import (
     AthleteSkill,
     AthleteVideo,
 )
-
-from coaches.models import (
-    CoachNote,
-    TeamEvent,
+from coaches.models import CoachNote, CoachProfile, TeamEvent
+from parents_portal.models import (
+    ParentAthleteLink,
+    ParentProfile,
 )
-from coaches.models import CoachNote
-from parents_portal.models import ParentAthleteLink
-from surveys.models import DailySurvey
 from performance_testing.models import AthleteTestingResult
-
-from .models import (
-    GymMembership,
-    TrainingGroupAthlete,
-)
-
-from django.contrib import messages
-from django.shortcuts import get_object_or_404, redirect, render
-
-from parents_portal.models import ParentAthleteLink
-from django.contrib.auth import get_user_model
+from surveys.models import DailySurvey
 
 from .forms import (
-    TrainingGroupForm,
-    ManageGroupCoachesForm,
-    ManageGroupAthletesForm,
     CreateGymPersonForm,
     EditGymPersonForm,
     LinkParentGuardianForm,
+    ManageGroupAthletesForm,
+    ManageGroupCoachesForm,
+    TrainingGroupForm,
+)
+from .models import (
+    Gym,
+    GymMembership,
+    TrainingGroup,
+    TrainingGroupAthlete,
+    TrainingGroupCoach,
 )
 
 User = get_user_model()
