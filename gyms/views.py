@@ -18,7 +18,7 @@ from .models import (
     TrainingGroupAthlete,
     TrainingGroupCoach,
     Gym,
-    gym
+
 
 )
 from django.contrib.auth import get_user_model
