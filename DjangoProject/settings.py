@@ -289,57 +289,63 @@ STORAGES = {
 
 
 # ---------------------------------------------------------
-# Uploaded media and Cloudflare R2
+# Uploaded media and Supabase Storage
 # ---------------------------------------------------------
 
-R2_ACCOUNT_ID = os.environ.get("R2_ACCOUNT_ID")
-R2_ACCESS_KEY_ID = os.environ.get("R2_ACCESS_KEY_ID")
-R2_SECRET_ACCESS_KEY = os.environ.get(
-    "R2_SECRET_ACCESS_KEY"
+SUPABASE_S3_ENDPOINT = os.environ.get(
+    "SUPABASE_S3_ENDPOINT"
 )
-R2_BUCKET_NAME = os.environ.get("R2_BUCKET_NAME")
 
-USE_R2_STORAGE = all(
+SUPABASE_S3_REGION = os.environ.get(
+    "SUPABASE_S3_REGION"
+)
+
+SUPABASE_S3_ACCESS_KEY_ID = os.environ.get(
+    "SUPABASE_S3_ACCESS_KEY_ID"
+)
+
+SUPABASE_S3_SECRET_ACCESS_KEY = os.environ.get(
+    "SUPABASE_S3_SECRET_ACCESS_KEY"
+)
+
+SUPABASE_STORAGE_BUCKET = os.environ.get(
+    "SUPABASE_STORAGE_BUCKET"
+)
+
+USE_SUPABASE_STORAGE = all(
     [
-        R2_ACCOUNT_ID,
-        R2_ACCESS_KEY_ID,
-        R2_SECRET_ACCESS_KEY,
-        R2_BUCKET_NAME,
+        SUPABASE_S3_ENDPOINT,
+        SUPABASE_S3_REGION,
+        SUPABASE_S3_ACCESS_KEY_ID,
+        SUPABASE_S3_SECRET_ACCESS_KEY,
+        SUPABASE_STORAGE_BUCKET,
     ]
 )
 
-if USE_R2_STORAGE:
+if USE_SUPABASE_STORAGE:
     INSTALLED_APPS.append("storages")
 
     STORAGES["default"] = {
-        "BACKEND": (
-            "storages.backends.s3.S3Storage"
-        ),
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "access_key": SUPABASE_S3_ACCESS_KEY_ID,
+            "secret_key": SUPABASE_S3_SECRET_ACCESS_KEY,
+            "bucket_name": SUPABASE_STORAGE_BUCKET,
+            "endpoint_url": SUPABASE_S3_ENDPOINT,
+            "region_name": SUPABASE_S3_REGION,
+            "signature_version": "s3v4",
+            "addressing_style": "path",
+            "default_acl": None,
+            "file_overwrite": False,
+            "querystring_auth": True,
+            "querystring_expire": int(
+                os.environ.get(
+                    "SUPABASE_SIGNED_URL_EXPIRY",
+                    "3600",
+                )
+            ),
+        },
     }
-
-    AWS_ACCESS_KEY_ID = R2_ACCESS_KEY_ID
-    AWS_SECRET_ACCESS_KEY = R2_SECRET_ACCESS_KEY
-    AWS_STORAGE_BUCKET_NAME = R2_BUCKET_NAME
-
-    AWS_S3_ENDPOINT_URL = (
-        f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
-    )
-
-    AWS_S3_REGION_NAME = "auto"
-    AWS_S3_SIGNATURE_VERSION = "s3v4"
-    AWS_DEFAULT_ACL = None
-    AWS_S3_FILE_OVERWRITE = False
-
-    # Keep athlete videos private.
-    AWS_QUERYSTRING_AUTH = True
-
-    # Signed video links remain valid for one hour.
-    AWS_QUERYSTRING_EXPIRE = int(
-        os.environ.get(
-            "R2_SIGNED_URL_EXPIRY",
-            "3600",
-        )
-    )
 
 else:
     STORAGES["default"] = {
@@ -350,8 +356,6 @@ else:
 
     MEDIA_URL = "/media/"
     MEDIA_ROOT = BASE_DIR / "media"
-
-
 # ---------------------------------------------------------
 # File-upload limits
 # ---------------------------------------------------------
