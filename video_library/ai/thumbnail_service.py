@@ -12,221 +12,143 @@ class ThumbnailGenerationError(
     pass
 
 
-def generate_video_thumbnail(
-    video,
-):
+def generate_video_thumbnail(video):
     """
-    Generate a representative JPEG thumbnail
-    from an uploaded video and save it to
-    video.thumbnail.
+    Generate a thumbnail from either local storage or cloud storage.
     """
 
     if not video.video_file:
         raise ThumbnailGenerationError(
-            'Video file is missing.'
+            "Video file is missing."
         )
 
-
-    video_path = Path(
-        video.video_file.path
+    video_extension = (
+        Path(video.video_file.name).suffix.lower()
+        or ".mp4"
     )
 
+    with tempfile.TemporaryDirectory() as temp_directory:
+        temp_directory = Path(temp_directory)
 
-    if not video_path.exists():
-        raise ThumbnailGenerationError(
-            (
-                'Video file does not exist: '
-                f'{video_path}'
+        local_video_path = (
+            temp_directory
+            / f"source{video_extension}"
+        )
+
+        thumbnail_name = (
+            f"video_{video.id}_thumbnail.jpg"
+        )
+
+        thumbnail_path = (
+            temp_directory
+            / thumbnail_name
+        )
+
+        try:
+            video.video_file.open("rb")
+
+            with local_video_path.open("wb") as local_file:
+                while True:
+                    chunk = video.video_file.read(
+                        1024 * 1024
+                    )
+
+                    if not chunk:
+                        break
+
+                    local_file.write(chunk)
+
+        except Exception as error:
+            raise ThumbnailGenerationError(
+                f"Could not download video: {error}"
+            ) from error
+
+        finally:
+            video.video_file.close()
+
+        capture = cv2.VideoCapture(
+            str(local_video_path)
+        )
+
+        if not capture.isOpened():
+            raise ThumbnailGenerationError(
+                "OpenCV could not open the video."
             )
-        )
 
-
-    capture = cv2.VideoCapture(
-        str(
-            video_path
-        )
-    )
-
-
-    if not capture.isOpened():
-        raise ThumbnailGenerationError(
-            'OpenCV could not open the video.'
-        )
-
-
-    try:
-        frame_count = int(
-            capture.get(
-                cv2.CAP_PROP_FRAME_COUNT
-            )
-            or 0
-        )
-
-        fps = float(
-            capture.get(
-                cv2.CAP_PROP_FPS
-            )
-            or 0.0
-        )
-
-
-        #
-        # Try to use a frame around 15% into
-        # the video instead of the first frame.
-        #
-        if frame_count > 0:
-            target_frame = int(
-                frame_count
-                * 0.15
+        try:
+            frame_count = int(
+                capture.get(
+                    cv2.CAP_PROP_FRAME_COUNT
+                )
+                or 0
             )
 
-        else:
-            target_frame = 0
-
-
-        capture.set(
-            cv2.CAP_PROP_POS_FRAMES,
-            target_frame,
-        )
-
-
-        success, frame = (
-            capture.read()
-        )
-
-
-        #
-        # Fall back to the first frame if the
-        # preferred frame could not be read.
-        #
-        if not success:
+            target_frame = (
+                int(frame_count * 0.15)
+                if frame_count > 0
+                else 0
+            )
 
             capture.set(
                 cv2.CAP_PROP_POS_FRAMES,
-                0,
+                target_frame,
             )
 
-            success, frame = (
-                capture.read()
-            )
+            success, frame = capture.read()
 
-
-        if not success:
-            raise ThumbnailGenerationError(
-                (
-                    'OpenCV could not read '
-                    'a usable video frame.'
+            if not success:
+                capture.set(
+                    cv2.CAP_PROP_POS_FRAMES,
+                    0,
                 )
-            )
+                success, frame = capture.read()
 
+            if not success:
+                raise ThumbnailGenerationError(
+                    "OpenCV could not read a video frame."
+                )
 
-        #
-        # Resize very large frames so thumbnails
-        # stay lightweight.
-        #
-        height, width = (
-            frame.shape[:2]
-        )
+            height, width = frame.shape[:2]
+            maximum_width = 1280
 
-        maximum_width = 1280
+            if width > maximum_width:
+                scale = maximum_width / width
 
-
-        if width > maximum_width:
-
-            scale = (
-                maximum_width
-                / width
-            )
-
-            resized_width = int(
-                width
-                * scale
-            )
-
-            resized_height = int(
-                height
-                * scale
-            )
-
-
-            frame = cv2.resize(
-                frame,
-                (
-                    resized_width,
-                    resized_height,
-                ),
-                interpolation=(
-                    cv2.INTER_AREA
-                ),
-            )
-
-
-        with tempfile.TemporaryDirectory() as temp_directory:
-
-            temp_directory = Path(
-                temp_directory
-            )
-
-
-            thumbnail_name = (
-                f'video_'
-                f'{video.id}_'
-                f'thumbnail.jpg'
-            )
-
-
-            thumbnail_path = (
-                temp_directory
-                / thumbnail_name
-            )
-
+                frame = cv2.resize(
+                    frame,
+                    (
+                        int(width * scale),
+                        int(height * scale),
+                    ),
+                    interpolation=cv2.INTER_AREA,
+                )
 
             saved = cv2.imwrite(
-                str(
-                    thumbnail_path
-                ),
+                str(thumbnail_path),
                 frame,
                 [
-                    int(
-                        cv2.IMWRITE_JPEG_QUALITY
-                    ),
+                    int(cv2.IMWRITE_JPEG_QUALITY),
                     88,
                 ],
             )
 
-
             if not saved:
                 raise ThumbnailGenerationError(
-                    (
-                        'OpenCV could not save '
-                        'the thumbnail image.'
-                    )
+                    "OpenCV could not save the thumbnail."
                 )
 
-
-            with thumbnail_path.open(
-                'rb'
-            ) as thumbnail_file:
-
+            with thumbnail_path.open("rb") as thumbnail_file:
                 video.thumbnail.save(
                     thumbnail_name,
-                    File(
-                        thumbnail_file
-                    ),
+                    File(thumbnail_file),
                     save=False,
                 )
 
-
             video.save(
-                update_fields=[
-                    'thumbnail',
-                ],
+                update_fields=["thumbnail"]
             )
 
-
-    finally:
-
-        capture.release()
-
+        finally:
+            capture.release()
 
     return video.thumbnail

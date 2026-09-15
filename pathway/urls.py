@@ -51,11 +51,7 @@ urlpatterns = [
         name='pathway_level_detail',
     ),
 
-    path(
-        'athlete/<int:athlete_id>/d-score/bars/',
-        views.bars_d_score_calculator,
-        name='bars_d_score_calculator',
-    ),
+
 
     path(
         'routine-element/<int:element_id>/delete/',
@@ -75,11 +71,6 @@ urlpatterns = [
         name='beam_d_score_calculator',
     ),
 
-    path(
-        'routine-element/<int:element_id>/delete/',
-        views.delete_routine_element,
-        name='delete_routine_element',
-    ),
 
     path(
         'athlete/<int:athlete_id>/d-score/floor/',
