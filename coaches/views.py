@@ -774,12 +774,22 @@ def coach_dashboard(request):
     )
 
 @login_required
-def athlete_detail(request, athlete_id):
-    if request.user.role not in ['coach', 'head_coach']:
-        return render(request, 'coaches/not_allowed.html', {
-            'role': request.user.role,
-            'username': request.user.username,
-        })
+def athlete_detail(
+    request,
+    athlete_id,
+):
+    if request.user.role not in [
+        "coach",
+        "head_coach",
+    ]:
+        return render(
+            request,
+            "coaches/not_allowed.html",
+            {
+                "role": request.user.role,
+                "username": request.user.username,
+            },
+        )
 
     athlete = get_accessible_athlete(
         request.user,
@@ -796,128 +806,253 @@ def athlete_detail(request, athlete_id):
             },
         )
 
-    athlete_profile = AthleteProfile.objects.filter(
-        user=athlete
-    ).first()
+    athlete_profile = (
+        AthleteProfile.objects
+        .filter(
+            user=athlete,
+        )
+        .first()
+    )
 
-    if request.method == 'POST':
-        note_text = request.POST.get('note')
+    if request.method == "POST":
+        note_text = request.POST.get(
+            "note",
+            "",
+        ).strip()
 
         if note_text:
             CoachNote.objects.create(
                 athlete=athlete,
                 coach=request.user,
-                note=note_text
+                note=note_text,
             )
 
-        return redirect('athlete_detail', athlete_id=athlete.id)
+        return redirect(
+            "athlete_detail",
+            athlete_id=athlete.id,
+        )
 
-    surveys = DailySurvey.objects.filter(
-        athlete=athlete
-    ).order_by('-survey_date')[:7]
+    surveys = (
+        DailySurvey.objects
+        .filter(
+            athlete=athlete,
+        )
+        .order_by("-survey_date")[:7]
+    )
 
-    chart_surveys = list(reversed(surveys))
+    chart_surveys = list(
+        reversed(surveys)
+    )
 
-    chart_labels = [survey.survey_date.strftime("%b %d") for survey in chart_surveys]
-    energy_data = [survey.energy for survey in chart_surveys]
-    soreness_data = [survey.soreness for survey in chart_surveys]
-    stress_data = [survey.stress for survey in chart_surveys]
-    sleep_data = [
-        float(survey.sleep_hours) if survey.sleep_hours is not None else 0
+    chart_labels = [
+        survey.survey_date.strftime(
+            "%b %d"
+        )
         for survey in chart_surveys
     ]
 
-    notes = CoachNote.objects.filter(
-        athlete=athlete
-    ).select_related('coach')[:10]
+    energy_data = [
+        survey.energy
+        for survey in chart_surveys
+    ]
 
-    attendance_records = AttendanceRecord.objects.filter(
-        athlete=athlete
-    ).order_by('-attendance_date')[:10]
+    soreness_data = [
+        survey.soreness
+        for survey in chart_surveys
+    ]
 
-    attendance_total = AttendanceRecord.objects.filter(
-        athlete=athlete
-    ).count()
+    stress_data = [
+        survey.stress
+        for survey in chart_surveys
+    ]
 
-    attendance_present = AttendanceRecord.objects.filter(
-        athlete=athlete,
-        status='present'
-    ).count()
+    sleep_data = [
+        (
+            float(survey.sleep_hours)
+            if survey.sleep_hours is not None
+            else 0
+        )
+        for survey in chart_surveys
+    ]
 
-    attendance_late = AttendanceRecord.objects.filter(
-        athlete=athlete,
-        status='late'
-    ).count()
+    notes = (
+        CoachNote.objects
+        .filter(
+            athlete=athlete,
+        )
+        .select_related("coach")
+        .order_by("-created_at")[:10]
+    )
 
-    attendance_absent = AttendanceRecord.objects.filter(
-        athlete=athlete,
-        status='absent'
-    ).count()
+    attendance_records = (
+        AttendanceRecord.objects
+        .filter(
+            athlete=athlete,
+        )
+        .order_by("-attendance_date")[:10]
+    )
 
-    attendance_excused = AttendanceRecord.objects.filter(
-        athlete=athlete,
-        status='excused'
-    ).count()
+    all_attendance = (
+        AttendanceRecord.objects
+        .filter(
+            athlete=athlete,
+        )
+    )
+
+    attendance_total = (
+        all_attendance.count()
+    )
+
+    attendance_present = (
+        all_attendance
+        .filter(status="present")
+        .count()
+    )
+
+    attendance_late = (
+        all_attendance
+        .filter(status="late")
+        .count()
+    )
+
+    attendance_absent = (
+        all_attendance
+        .filter(status="absent")
+        .count()
+    )
+
+    attendance_excused = (
+        all_attendance
+        .filter(status="excused")
+        .count()
+    )
 
     if attendance_total > 0:
-        attendance_rate = round(((attendance_present + attendance_late) / attendance_total) * 100)
+        attendance_rate = round(
+            (
+                attendance_present
+                + attendance_late
+            )
+            / attendance_total
+            * 100
+        )
     else:
         attendance_rate = 0
 
-    athlete_skills = AthleteSkill.objects.filter(
-        athlete=athlete
-    ).select_related('skill', 'coach')
+    athlete_skills = (
+        AthleteSkill.objects
+        .filter(
+            athlete=athlete,
+        )
+        .select_related(
+            "skill",
+            "coach",
+        )
+    )
 
     skills_by_event = {
-        'vault': [],
-        'bars': [],
-        'beam': [],
-        'floor': [],
-        'strength': [],
-        'flexibility': [],
+        "vault": [],
+        "bars": [],
+        "beam": [],
+        "floor": [],
+        "strength": [],
+        "flexibility": [],
+        "other": [],
     }
 
     for athlete_skill in athlete_skills:
-        skills_by_event[athlete_skill.skill.event].append(athlete_skill)
+        event = (
+            athlete_skill.skill.event
+            or "other"
+        )
 
-    athlete_videos = AthleteVideo.objects.filter(
-        athlete=athlete
-    ).select_related('skill', 'uploaded_by')
+        skills_by_event.setdefault(
+            event,
+            [],
+        ).append(
+            athlete_skill
+        )
+
+    athlete_videos = (
+        AthleteVideo.objects
+        .filter(
+            athlete=athlete,
+        )
+        .select_related(
+            "skill",
+            "uploaded_by",
+        )
+        .order_by(
+            "-practice_date",
+            "-uploaded_at",
+        )
+    )
 
     videos_by_event = {
-        'vault': [],
-        'bars': [],
-        'beam': [],
-        'floor': [],
-        'strength': [],
-        'flexibility': [],
-        'other': [],
+        "vault": [],
+        "bars": [],
+        "beam": [],
+        "floor": [],
+        "strength": [],
+        "flexibility": [],
+        "other": [],
     }
 
     for video in athlete_videos:
-        videos_by_event[video.event].append(video)
+        event = (
+            video.event
+            or "other"
+        )
 
-    return render(request, 'coaches/athlete_detail.html', {
-        'athlete': athlete,
-        'athlete_profile': athlete_profile,
-        'coach': assignment.coach,
-        'surveys': surveys,
-        'notes': notes,
-        'chart_labels': chart_labels,
-        'energy_data': energy_data,
-        'soreness_data': soreness_data,
-        'stress_data': stress_data,
-        'sleep_data': sleep_data,
-        'attendance_records': attendance_records,
-        'attendance_total': attendance_total,
-        'attendance_present': attendance_present,
-        'attendance_late': attendance_late,
-        'attendance_absent': attendance_absent,
-        'attendance_excused': attendance_excused,
-        'attendance_rate': attendance_rate,
-        'skills_by_event': skills_by_event,
-        'videos_by_event': videos_by_event,
-    })
+        videos_by_event.setdefault(
+            event,
+            [],
+        ).append(
+            video
+        )
+
+    context = {
+        "athlete": athlete,
+        "athlete_profile": athlete_profile,
+
+        # The logged-in coach has access through
+        # the Director-managed training group.
+        "coach": request.user,
+
+        "surveys": surveys,
+        "notes": notes,
+
+        "chart_labels": chart_labels,
+        "energy_data": energy_data,
+        "soreness_data": soreness_data,
+        "stress_data": stress_data,
+        "sleep_data": sleep_data,
+
+        "attendance_records": (
+            attendance_records
+        ),
+        "attendance_total": attendance_total,
+        "attendance_present": (
+            attendance_present
+        ),
+        "attendance_late": attendance_late,
+        "attendance_absent": (
+            attendance_absent
+        ),
+        "attendance_excused": (
+            attendance_excused
+        ),
+        "attendance_rate": attendance_rate,
+
+        "skills_by_event": skills_by_event,
+        "videos_by_event": videos_by_event,
+    }
+
+    return render(
+        request,
+        "coaches/athlete_detail.html",
+        context,
+    )
 
 
 @login_required
