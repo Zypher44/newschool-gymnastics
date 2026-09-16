@@ -1,15 +1,26 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from django.shortcuts import render, redirect
+
 from django.utils import timezone
 from django.urls import reverse
 from datetime import timedelta
-from gyms.models import GymMembership
+
+from django.shortcuts import (
+    get_object_or_404,
+    redirect,
+    render,
+)
+
+from gyms.models import (
+    GymMembership,
+    TrainingGroup,
+    TrainingGroupAthlete,
+)
 
 User = get_user_model()
 
-from .models import CoachAthleteAssignment, CoachNote, TeamEvent
+from .models import CoachNote, TeamEvent
 from surveys.models import DailySurvey
 from athletes.models import (
     AthleteProfile,
@@ -78,32 +89,96 @@ def calculate_readiness_score(survey):
     return 100
 
 
-def get_coach_assignments(user):
-    if user.role == 'head_coach':
-        return CoachAthleteAssignment.objects.select_related('athlete', 'coach')
+def get_accessible_groups(user):
+    """
+    Return active Director-managed groups assigned to this coach.
+    """
 
-    return CoachAthleteAssignment.objects.filter(
-        coach=user
-    ).select_related('athlete', 'coach')
+    if not user.is_authenticated:
+        return TrainingGroup.objects.none()
 
+    if user.role not in [
+        "coach",
+        "head_coach",
+    ]:
+        return TrainingGroup.objects.none()
+
+    return (
+        TrainingGroup.objects
+        .filter(
+            coach_assignments__coach=user,
+            is_active=True,
+        )
+        .distinct()
+        .order_by("name")
+    )
+
+
+def get_accessible_athletes(user):
+    """
+    Return active athletes assigned through the coach's
+    Director-managed training groups.
+    """
+
+    if not user.is_authenticated:
+        return User.objects.none()
+
+    if user.role not in [
+        "coach",
+        "head_coach",
+    ]:
+        return User.objects.none()
+
+    return (
+        User.objects
+        .filter(
+            role="athlete",
+            is_active=True,
+            training_groups__is_active=True,
+            training_groups__group__is_active=True,
+            training_groups__group__coach_assignments__coach=user,
+        )
+        .distinct()
+        .order_by(
+            "first_name",
+            "last_name",
+            "username",
+        )
+    )
+
+def get_accessible_athlete(
+    user,
+    athlete_id,
+):
+    """
+    Return an athlete when they belong to one of the
+    coach's Director-assigned groups.
+    """
+
+    return (
+        get_accessible_athletes(user)
+        .filter(id=athlete_id)
+        .first()
+    )
 
 def get_pending_video_reviews(user):
-    if user.role == 'head_coach':
-        return AthleteVideo.objects.filter(
-            review_status='not_reviewed'
-        ).select_related(
-            'athlete',
-            'skill'
-        ).order_by('-uploaded_at')[:10]
+    athletes = get_accessible_athletes(
+        user
+    )
 
-    return AthleteVideo.objects.filter(
-        athlete__assigned_coaches__coach=user,
-        review_status='not_reviewed'
-    ).select_related(
-        'athlete',
-        'skill'
-    ).distinct().order_by('-uploaded_at')[:10]
-
+    return (
+        AthleteVideo.objects
+        .filter(
+            athlete__in=athletes,
+            review_status="not_reviewed",
+        )
+        .select_related(
+            "athlete",
+            "skill",
+        )
+        .distinct()
+        .order_by("-uploaded_at")[:10]
+    )
 
 def get_team_skill_stats(athletes):
     team_skills = AthleteSkill.objects.filter(
@@ -314,12 +389,16 @@ def get_dashboard_notifications(
     return notifications[:limit]
 
 
-def build_dashboard_data(assignments, today):
+def build_dashboard_data(
+    athletes,
+    today,
+    coach=None,
+):
     athlete_data = []
     alerts = {}
     coaching_priorities = []
 
-    total_athletes = assignments.count()
+    total_athletes = athletes.count()
     submitted_today = 0
     missing_today = 0
 
@@ -331,85 +410,92 @@ def build_dashboard_data(assignments, today):
     readiness_total = 0
     readiness_count = 0
 
-    for assignment in assignments:
-        athlete = assignment.athlete
+    for athlete in athletes:
 
-        survey = DailySurvey.objects.filter(
-            athlete=athlete,
-            survey_date=today
-        ).first()
+        survey = (
+            DailySurvey.objects
+            .filter(
+                athlete=athlete,
+                survey_date=today,
+            )
+            .first()
+        )
 
         recent_surveys = list(
-            DailySurvey.objects.filter(
-                athlete=athlete
-            ).order_by('-survey_date')[:7]
+            DailySurvey.objects
+            .filter(
+                athlete=athlete,
+            )
+            .order_by("-survey_date")[:7]
         )
 
         low_energy_days = count_consecutive(
             recent_surveys,
-            lambda s: s.energy <= 2
+            lambda survey: survey.energy <= 2,
         )
 
         high_soreness_days = count_consecutive(
             recent_surveys,
-            lambda s: s.soreness >= 4
+            lambda survey: survey.soreness >= 4,
         )
 
         high_stress_days = count_consecutive(
             recent_surveys,
-            lambda s: s.stress >= 4
+            lambda survey: survey.stress >= 4,
         )
 
         low_sleep_days = count_consecutive(
             recent_surveys,
-            lambda s: s.sleep_hours is not None and s.sleep_hours < 7
+            lambda survey: (
+                survey.sleep_hours is not None
+                and survey.sleep_hours < 7
+            ),
         )
 
+        consecutive_alerts = []
+
         if low_energy_days >= 2:
-            issue = f"low energy for {low_energy_days} consecutive days"
-            add_alert(alerts, athlete, issue)
-            coaching_priorities.append({
-                'icon': '🟠',
-                'athlete': athlete,
-                'message': issue,
-                'url_name': 'athlete_detail',
-                'url_id': athlete.id,
-            })
+            consecutive_alerts.append(
+                f"low energy for {low_energy_days} "
+                "consecutive days"
+            )
 
         if high_soreness_days >= 2:
-            issue = f"high soreness for {high_soreness_days} consecutive days"
-            add_alert(alerts, athlete, issue)
-            coaching_priorities.append({
-                'icon': '🟠',
-                'athlete': athlete,
-                'message': issue,
-                'url_name': 'athlete_detail',
-                'url_id': athlete.id,
-            })
+            consecutive_alerts.append(
+                f"high soreness for {high_soreness_days} "
+                "consecutive days"
+            )
 
         if high_stress_days >= 2:
-            issue = f"high stress for {high_stress_days} consecutive days"
-            add_alert(alerts, athlete, issue)
-            coaching_priorities.append({
-                'icon': '🟠',
-                'athlete': athlete,
-                'message': issue,
-                'url_name': 'athlete_detail',
-                'url_id': athlete.id,
-            })
+            consecutive_alerts.append(
+                f"high stress for {high_stress_days} "
+                "consecutive days"
+            )
 
         if low_sleep_days >= 2:
-            issue = f"low sleep for {low_sleep_days} consecutive days"
-            add_alert(alerts, athlete, issue)
+            consecutive_alerts.append(
+                f"low sleep for {low_sleep_days} "
+                "consecutive days"
+            )
+
+        for issue in consecutive_alerts:
+            add_alert(
+                alerts,
+                athlete,
+                issue,
+            )
+
             coaching_priorities.append({
-                'icon': '🟠',
-                'athlete': athlete,
-                'message': issue,
-                'url_name': 'athlete_detail',
-                'url_id': athlete.id,
+                "icon": "🟠",
+                "athlete": athlete,
+                "message": issue,
+                "url_name": "athlete_detail",
+                "url_id": athlete.id,
             })
 
-        readiness_score = calculate_readiness_score(survey)
+        readiness_score = calculate_readiness_score(
+            survey
+        )
 
         if survey:
             submitted_today += 1
@@ -418,33 +504,52 @@ def build_dashboard_data(assignments, today):
             athlete_alerts = []
 
             if survey.energy == 1:
-                athlete_alerts.append("low energy today")
+                athlete_alerts.append(
+                    "low energy today"
+                )
 
             if survey.soreness == 5:
-                athlete_alerts.append("high soreness today")
+                athlete_alerts.append(
+                    "high soreness today"
+                )
 
             if survey.stress == 5:
-                athlete_alerts.append("high stress today")
+                athlete_alerts.append(
+                    "high stress today"
+                )
 
-            if survey.sleep_hours is not None and survey.sleep_hours < 6:
-                athlete_alerts.append("low sleep today")
+            if (
+                survey.sleep_hours is not None
+                and survey.sleep_hours < 6
+            ):
+                athlete_alerts.append(
+                    "low sleep today"
+                )
 
             for issue in athlete_alerts:
-                add_alert(alerts, athlete, issue)
+                add_alert(
+                    alerts,
+                    athlete,
+                    issue,
+                )
+
                 coaching_priorities.append({
-                    'icon': '🔴',
-                    'athlete': athlete,
-                    'message': issue,
-                    'url_name': 'athlete_detail',
-                    'url_id': athlete.id,
+                    "icon": "🔴",
+                    "athlete": athlete,
+                    "message": issue,
+                    "url_name": "athlete_detail",
+                    "url_id": athlete.id,
                 })
 
             if readiness_score == 25:
                 red_flags += 1
+
             elif readiness_score == 50:
                 orange_flags += 1
+
             elif readiness_score == 75:
                 yellow_flags += 1
+
             elif readiness_score == 100:
                 green_flags += 1
 
@@ -454,54 +559,72 @@ def build_dashboard_data(assignments, today):
             missing_today += 1
 
             coaching_priorities.append({
-                'icon': '❌',
-                'athlete': athlete,
-                'message': 'missing wellness survey today',
-                'url_name': 'athlete_detail',
-                'url_id': athlete.id,
+                "icon": "❌",
+                "athlete": athlete,
+                "message": (
+                    "missing wellness survey today"
+                ),
+                "url_name": "athlete_detail",
+                "url_id": athlete.id,
             })
 
         athlete_data.append({
-            'athlete': athlete,
-            'coach': assignment.coach,
-            'survey': survey,
-            'readiness_score': readiness_score,
+            "athlete": athlete,
+            "coach": coach,
+            "survey": survey,
+            "readiness_score": readiness_score,
         })
 
     if total_athletes > 0:
-        submission_percentage = round((submitted_today / total_athletes) * 100)
+        submission_percentage = round(
+            (
+                submitted_today
+                / total_athletes
+            )
+            * 100
+        )
     else:
         submission_percentage = 0
 
     if readiness_count > 0:
-        team_readiness_score = round(readiness_total / readiness_count)
+        team_readiness_score = round(
+            readiness_total
+            / readiness_count
+        )
     else:
         team_readiness_score = 0
 
     return {
-        'athlete_data': athlete_data,
-        'alerts': alerts.values(),
-        'coaching_priorities': coaching_priorities,
-        'total_athletes': total_athletes,
-        'submitted_today': submitted_today,
-        'missing_today': missing_today,
-        'submission_percentage': submission_percentage,
-        'red_flags': red_flags,
-        'orange_flags': orange_flags,
-        'yellow_flags': yellow_flags,
-        'green_flags': green_flags,
-        'team_readiness_score': team_readiness_score,
+        "athlete_data": athlete_data,
+        "alerts": list(alerts.values()),
+        "coaching_priorities": coaching_priorities,
+        "total_athletes": total_athletes,
+        "submitted_today": submitted_today,
+        "missing_today": missing_today,
+        "submission_percentage": submission_percentage,
+        "red_flags": red_flags,
+        "orange_flags": orange_flags,
+        "yellow_flags": yellow_flags,
+        "green_flags": green_flags,
+        "team_readiness_score": team_readiness_score,
     }
 
 
 @login_required
 def coach_dashboard(request):
 
-    if request.user.role not in ['coach', 'head_coach']:
-        return render(request, 'coaches/not_allowed.html', {
-            'role': request.user.role,
-            'username': request.user.username,
-        })
+    if request.user.role not in [
+        "coach",
+        "head_coach",
+    ]:
+        return render(
+            request,
+            "coaches/not_allowed.html",
+            {
+                "role": request.user.role,
+                "username": request.user.username,
+            },
+        )
 
     gym_membership = (
         GymMembership.objects
@@ -509,11 +632,11 @@ def coach_dashboard(request):
             user=request.user,
             is_active=True,
             role__in=[
-                'head_coach',
-                'coach',
-            ]
+                "head_coach",
+                "coach",
+            ],
         )
-        .select_related('gym')
+        .select_related("gym")
         .first()
     )
 
@@ -523,71 +646,132 @@ def coach_dashboard(request):
         else None
     )
 
-    today = timezone.now().date()
+    today = timezone.localdate()
 
-    assignments = get_coach_assignments(request.user)
-    athletes = [assignment.athlete for assignment in assignments]
+    # Groups assigned through the Director dashboard.
+    groups = get_accessible_groups(
+        request.user
+    )
 
-    pending_video_reviews = get_pending_video_reviews(request.user)
-    dashboard_data = build_dashboard_data(assignments, today)
-    skill_stats = get_team_skill_stats(athletes)
+    # Athletes belonging to the coach's assigned groups.
+    athletes = get_accessible_athletes(
+        request.user
+    )
+
+    pending_video_reviews = (
+        get_pending_video_reviews(
+            request.user
+        )
+    )
+
+    dashboard_data = build_dashboard_data(
+        athletes,
+        today,
+        coach=request.user,
+    )
+
+    skill_stats = get_team_skill_stats(
+        athletes
+    )
+
     skill_chart_labels = [
-        'Mastered',
-        'Competition Ready',
-        'In Progress',
-        'Not Started',
+        "Mastered",
+        "Competition Ready",
+        "In Progress",
+        "Not Started",
     ]
 
     skill_chart_values = [
-        skill_stats['skills_mastered'],
-        skill_stats['skills_competition_ready'],
-        skill_stats['skills_in_progress'],
-        skill_stats['skills_not_started'],
-
+        skill_stats["skills_mastered"],
+        skill_stats["skills_competition_ready"],
+        skill_stats["skills_in_progress"],
+        skill_stats["skills_not_started"],
     ]
+
     upcoming_events = get_upcoming_events(
         today,
-        gym
+        gym,
     )
 
-    recent_activity = get_recent_activity(athletes)
+    recent_activity = get_recent_activity(
+        athletes
+    )
 
-    coaching_priorities = list(dashboard_data['coaching_priorities'])
+    coaching_priorities = list(
+        dashboard_data[
+            "coaching_priorities"
+        ]
+    )
 
     for video in pending_video_reviews:
         coaching_priorities.append({
-            'icon': '🎥',
-            'athlete': video.athlete,
-            'message': f"video waiting for review: {video.title}",
-            'url_name': 'athlete_detail',
-            'url_id': video.athlete.id,
+            "icon": "🎥",
+            "athlete": video.athlete,
+            "message": (
+                f"video waiting for review: "
+                f"{video.title}"
+            ),
+            "url_name": "athlete_detail",
+            "url_id": video.athlete.id,
         })
+
     notifications = get_dashboard_notifications(
-        coaching_priorities=coaching_priorities,
-        pending_video_reviews=pending_video_reviews,
+        coaching_priorities=(
+            coaching_priorities
+        ),
+        pending_video_reviews=(
+            pending_video_reviews
+        ),
         upcoming_events=upcoming_events,
         today=today,
     )
 
-
-    return render(request, 'coaches/dashboard.html', {
+    context = {
         **dashboard_data,
         **skill_stats,
-        'coaching_priorities': coaching_priorities[:10],
-        'upcoming_events': upcoming_events,
-        'pending_video_reviews': pending_video_reviews,
-        'videos_waiting_review_count': len(pending_video_reviews),
-        'recent_activity': recent_activity,
-        'notifications': notifications,
-        'skill_chart_labels': skill_chart_labels,
-        'skill_chart_values': skill_chart_values,
-        'dashboard_communication': (
+
+        "gym": gym,
+
+        "training_groups": groups,
+        "training_group_count": groups.count(),
+
+        "coaching_priorities": (
+            coaching_priorities[:10]
+        ),
+
+        "upcoming_events": upcoming_events,
+
+        "pending_video_reviews": (
+            pending_video_reviews
+        ),
+
+        "videos_waiting_review_count": (
+            len(pending_video_reviews)
+        ),
+
+        "recent_activity": recent_activity,
+        "notifications": notifications,
+
+        "skill_chart_labels": (
+            skill_chart_labels
+        ),
+
+        "skill_chart_values": (
+            skill_chart_values
+        ),
+
+        "dashboard_communication": (
             get_dashboard_communication_data(
                 request.user
             )
         ),
-    })
+    }
 
+    return render(
+        request,
+        "coaches/dashboard.html",
+        context,
+    )
 
 @login_required
 def athlete_detail(request, athlete_id):
@@ -597,23 +781,20 @@ def athlete_detail(request, athlete_id):
             'username': request.user.username,
         })
 
-    if request.user.role == 'head_coach':
-        assignment = CoachAthleteAssignment.objects.filter(
-            athlete_id=athlete_id
-        ).select_related('athlete', 'coach').first()
-    else:
-        assignment = CoachAthleteAssignment.objects.filter(
-            coach=request.user,
-            athlete_id=athlete_id
-        ).select_related('athlete', 'coach').first()
+    athlete = get_accessible_athlete(
+        request.user,
+        athlete_id,
+    )
 
-    if not assignment:
-        return render(request, 'coaches/not_allowed.html', {
-            'role': request.user.role,
-            'username': request.user.username,
-        })
-
-    athlete = assignment.athlete
+    if not athlete:
+        return render(
+            request,
+            "coaches/not_allowed.html",
+            {
+                "role": request.user.role,
+                "username": request.user.username,
+            },
+        )
 
     athlete_profile = AthleteProfile.objects.filter(
         user=athlete
@@ -849,20 +1030,32 @@ def add_event(request):
 
 @login_required
 def take_attendance(request):
-    if request.user.role not in ['coach', 'head_coach']:
-        return render(request, 'coaches/not_allowed.html', {
-            'role': request.user.role,
-            'username': request.user.username,
-        })
 
-    today = timezone.now().date()
-    assignments = get_coach_assignments(request.user)
+    if request.user.role not in [
+        "coach",
+        "head_coach",
+    ]:
+        return render(
+            request,
+            "coaches/not_allowed.html",
+            {
+                "role": request.user.role,
+                "username": request.user.username,
+            },
+        )
 
-    athletes = [assignment.athlete for assignment in assignments]
+    today = timezone.localdate()
 
-    existing_records = AttendanceRecord.objects.filter(
-        athlete__in=athletes,
-        attendance_date=today
+    athletes = get_accessible_athletes(
+        request.user
+    )
+
+    existing_records = (
+        AttendanceRecord.objects
+        .filter(
+            athlete__in=athletes,
+            attendance_date=today,
+        )
     )
 
     attendance_map = {
@@ -870,36 +1063,51 @@ def take_attendance(request):
         for record in existing_records
     }
 
-    if request.method == 'POST':
+    if request.method == "POST":
+
         for athlete in athletes:
-            status = request.POST.get(f'status_{athlete.id}')
-            notes = request.POST.get(f'notes_{athlete.id}', '')
+            status = request.POST.get(
+                f"status_{athlete.id}"
+            )
+
+            notes = request.POST.get(
+                f"notes_{athlete.id}",
+                "",
+            )
 
             if status:
                 AttendanceRecord.objects.update_or_create(
                     athlete=athlete,
                     attendance_date=today,
                     defaults={
-                        'coach': request.user,
-                        'status': status,
-                        'notes': notes,
-                    }
+                        "coach": request.user,
+                        "status": status,
+                        "notes": notes,
+                    },
                 )
 
-        return redirect('coach_dashboard')
+        return redirect(
+            "coach_dashboard"
+        )
 
-    athlete_attendance = []
+    athlete_attendance = [
+        {
+            "athlete": athlete,
+            "record": attendance_map.get(
+                athlete.id
+            ),
+        }
+        for athlete in athletes
+    ]
 
-    for athlete in athletes:
-        athlete_attendance.append({
-            'athlete': athlete,
-            'record': attendance_map.get(athlete.id),
-        })
-
-    return render(request, 'coaches/take_attendance.html', {
-        'today': today,
-        'athlete_attendance': athlete_attendance,
-    })
+    return render(
+        request,
+        "coaches/take_attendance.html",
+        {
+            "today": today,
+            "athlete_attendance": athlete_attendance,
+        },
+    )
 
 
 @login_required
@@ -910,23 +1118,20 @@ def update_athlete_skill(request, athlete_id, athlete_skill_id):
             'username': request.user.username,
         })
 
-    if request.user.role == 'head_coach':
-        assignment = CoachAthleteAssignment.objects.filter(
-            athlete_id=athlete_id
-        ).select_related('athlete').first()
-    else:
-        assignment = CoachAthleteAssignment.objects.filter(
-            coach=request.user,
-            athlete_id=athlete_id
-        ).select_related('athlete').first()
+    athlete = get_accessible_athlete(
+        request.user,
+        athlete_id,
+    )
 
-    if not assignment:
-        return render(request, 'coaches/not_allowed.html', {
-            'role': request.user.role,
-            'username': request.user.username,
-        })
-
-    athlete = assignment.athlete
+    if not athlete:
+        return render(
+            request,
+            "coaches/not_allowed.html",
+            {
+                "role": request.user.role,
+                "username": request.user.username,
+            },
+        )
 
     athlete_skill = AthleteSkill.objects.filter(
         id=athlete_skill_id,
@@ -955,25 +1160,20 @@ def upload_athlete_video(request, athlete_id):
             'username': request.user.username,
         })
 
-    if request.user.role == 'head_coach':
-        assignment = CoachAthleteAssignment.objects.filter(
-            athlete_id=athlete_id
-        ).select_related('athlete').first()
-    else:
-        assignment = CoachAthleteAssignment.objects.filter(
-            coach=request.user,
-            athlete_id=athlete_id
-        ).select_related('athlete').first()
+    athlete = get_accessible_athlete(
+        request.user,
+        athlete_id,
+    )
 
-    if not assignment:
-        return render(request, 'coaches/not_allowed.html', {
-            'role': request.user.role,
-            'username': request.user.username,
-        })
-
-    athlete = assignment.athlete
-    skills = Skill.objects.all().order_by('event', 'name')
-
+    if not athlete:
+        return render(
+            request,
+            "coaches/not_allowed.html",
+            {
+                "role": request.user.role,
+                "username": request.user.username,
+            },
+        )
     if request.method == 'POST':
         skill_id = request.POST.get('skill')
 
@@ -1013,23 +1213,20 @@ def athlete_skill_detail(request, athlete_id, athlete_skill_id):
             'username': request.user.username,
         })
 
-    if request.user.role == 'head_coach':
-        assignment = CoachAthleteAssignment.objects.filter(
-            athlete_id=athlete_id
-        ).select_related('athlete').first()
-    else:
-        assignment = CoachAthleteAssignment.objects.filter(
-            coach=request.user,
-            athlete_id=athlete_id
-        ).select_related('athlete').first()
+    athlete = get_accessible_athlete(
+        request.user,
+        athlete_id,
+    )
 
-    if not assignment:
-        return render(request, 'coaches/not_allowed.html', {
-            'role': request.user.role,
-            'username': request.user.username,
-        })
-
-    athlete = assignment.athlete
+    if not athlete:
+        return render(
+            request,
+            "coaches/not_allowed.html",
+            {
+                "role": request.user.role,
+                "username": request.user.username,
+            },
+        )
 
     athlete_skill = AthleteSkill.objects.filter(
         id=athlete_skill_id,
@@ -1059,23 +1256,20 @@ def update_video_review(request, athlete_id, video_id):
             'username': request.user.username,
         })
 
-    if request.user.role == 'head_coach':
-        assignment = CoachAthleteAssignment.objects.filter(
-            athlete_id=athlete_id
-        ).select_related('athlete').first()
-    else:
-        assignment = CoachAthleteAssignment.objects.filter(
-            coach=request.user,
-            athlete_id=athlete_id
-        ).select_related('athlete').first()
+    athlete = get_accessible_athlete(
+        request.user,
+        athlete_id,
+    )
 
-    if not assignment:
-        return render(request, 'coaches/not_allowed.html', {
-            'role': request.user.role,
-            'username': request.user.username,
-        })
-
-    athlete = assignment.athlete
+    if not athlete:
+        return render(
+            request,
+            "coaches/not_allowed.html",
+            {
+                "role": request.user.role,
+                "username": request.user.username,
+            },
+        )
 
     video = AthleteVideo.objects.filter(
         id=video_id,
@@ -1106,53 +1300,59 @@ def update_video_review(request, athlete_id, video_id):
             )
 
     return redirect('athlete_detail', athlete_id=athlete.id)
+
 @login_required
 def athlete_search(request):
-    if request.user.role not in ['coach', 'head_coach']:
-        return render(request, 'coaches/not_allowed.html', {
-            'role': request.user.role,
-            'username': request.user.username,
-        })
 
-    query = request.GET.get('q', '').strip()
+    if request.user.role not in [
+        "coach",
+        "head_coach",
+    ]:
+        return render(
+            request,
+            "coaches/not_allowed.html",
+            {
+                "role": request.user.role,
+                "username": request.user.username,
+            },
+        )
 
-    assignments = get_coach_assignments(request.user)
+    query = request.GET.get(
+        "q",
+        "",
+    ).strip()
 
-    athletes = [
-        assignment.athlete
-        for assignment in assignments
-    ]
-
-    results = []
+    results = User.objects.none()
 
     if query:
-        athlete_ids = [athlete.id for athlete in athletes]
-
-        results = User.objects.filter(
-            id__in=athlete_ids
-        ).filter(
-            Q(username__icontains=query) |
-            Q(first_name__icontains=query) |
-            Q(last_name__icontains=query)
-        ).order_by(
-            'first_name',
-            'last_name',
-            'username'
+        results = (
+            get_accessible_athletes(
+                request.user
+            )
+            .filter(
+                Q(username__icontains=query)
+                | Q(first_name__icontains=query)
+                | Q(last_name__icontains=query)
+            )
+            .distinct()
         )
 
         if results.count() == 1:
             athlete = results.first()
 
             return redirect(
-                'athlete_detail',
-                athlete_id=athlete.id
+                "athlete_detail",
+                athlete_id=athlete.id,
             )
 
-    return render(request, 'coaches/athlete_search.html', {
-        'query': query,
-        'results': results,
-    })
-
+    return render(
+        request,
+        "coaches/athlete_search.html",
+        {
+            "query": query,
+            "results": results,
+        },
+    )
 
 @login_required
 def team_skills_dashboard(request):
@@ -1162,12 +1362,9 @@ def team_skills_dashboard(request):
             'username': request.user.username,
         })
 
-    assignments = get_coach_assignments(request.user)
-
-    athletes = [
-        assignment.athlete
-        for assignment in assignments
-    ]
+    athletes = get_accessible_athletes(
+        request.user
+    )
 
     athlete_skills = AthleteSkill.objects.filter(
         athlete__in=athletes
@@ -1297,56 +1494,6 @@ def team_skills_dashboard(request):
         'team_skill_completed': team_skill_completed,
         'team_skill_percentage': team_skill_percentage,
         'status_totals': status_totals,
-        'total_athletes': len(athletes),
+        "total_athletes": athletes.count(),
     })
 
-@login_required
-def athlete_search(request):
-    if request.user.role not in ['coach', 'head_coach']:
-        return render(request, 'coaches/not_allowed.html', {
-            'role': request.user.role,
-            'username': request.user.username,
-        })
-
-    query = request.GET.get('q', '').strip()
-
-    if request.user.role == 'head_coach':
-        athlete_ids = CoachAthleteAssignment.objects.values_list(
-            'athlete_id',
-            flat=True
-        )
-    else:
-        athlete_ids = CoachAthleteAssignment.objects.filter(
-            coach=request.user
-        ).values_list(
-            'athlete_id',
-            flat=True
-        )
-
-    results = User.objects.none()
-
-    if query:
-        results = User.objects.filter(
-            id__in=athlete_ids
-        ).filter(
-            Q(username__icontains=query) |
-            Q(first_name__icontains=query) |
-            Q(last_name__icontains=query)
-        ).order_by(
-            'first_name',
-            'last_name',
-            'username'
-        ).distinct()
-
-        if results.count() == 1:
-            athlete = results.first()
-
-            return redirect(
-                'athlete_detail',
-                athlete_id=athlete.id
-            )
-
-    return render(request, 'coaches/athlete_search.html', {
-        'query': query,
-        'results': results,
-    })
