@@ -120,7 +120,7 @@ class TestingSession(models.Model):
     )
 
     training_group = models.ForeignKey(
-        'practice_planner.TrainingGroup',
+        'gyms.TrainingGroup',
         on_delete=models.SET_NULL,
         related_name='testing_sessions',
         null=True,
@@ -227,17 +227,6 @@ class TestingSession(models.Model):
 
         if (
             self.practice_plan_id
-            and self.training_group_id
-            and self.practice_plan.training_group_id
-            != self.training_group_id
-        ):
-            errors['training_group'] = (
-                'The testing session group must match the '
-                'practice plan training group.'
-            )
-
-        if (
-            self.practice_plan_id
             and self.testing_date
             != self.practice_plan.practice_date
         ):
@@ -257,13 +246,21 @@ class TestingSession(models.Model):
         if not self.training_group_id:
             return
 
-        athletes = self.training_group.athletes.filter(
-            role='athlete',
-            is_active=True,
+        athletes = (
+            self.training_group
+            .athlete_assignments
+            .filter(
+                is_active=True,
+                athlete__is_active=True,
+            )
+            .select_related('athlete')
         )
 
         self.athletes.add(
-            *athletes
+            *(
+                assignment.athlete
+                for assignment in athletes
+            )
         )
 
     @property
