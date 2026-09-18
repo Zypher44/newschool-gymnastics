@@ -381,13 +381,44 @@ def athlete_pathway_requirements(
     )
 
 
-    athlete_requirements = (
+    selected_levels = []
+
+    if athlete_pathway.current_level_id:
+        selected_levels.append({
+            'level': athlete_pathway.current_level,
+            'label': 'Current Level',
+        })
+
+    if athlete_pathway.target_level_id:
+        if (
+            athlete_pathway.target_level_id
+            == athlete_pathway.current_level_id
+        ):
+            selected_levels[0]['label'] = (
+                'Current & Target Level'
+            )
+        else:
+            selected_levels.append({
+                'level': athlete_pathway.target_level,
+                'label': 'Target Level',
+            })
+
+    selected_level_ids = [
+        item['level'].id
+        for item in selected_levels
+    ]
+
+
+    athlete_requirements = list(
         AthletePathwayRequirement.objects
         .filter(
             athlete_pathway=(
                 athlete_pathway
             ),
             requirement__is_active=True,
+            requirement__level_id__in=(
+                selected_level_ids
+            ),
         )
         .select_related(
             'requirement',
@@ -402,6 +433,60 @@ def athlete_pathway_requirements(
             'requirement__requirement_number',
         )
     )
+
+
+    level_progress = []
+
+
+    for selected_level in selected_levels:
+        level = selected_level['level']
+
+        level_required_items = [
+            item
+            for item in athlete_requirements
+            if (
+                item.requirement.level_id
+                == level.id
+                and item.requirement.is_required
+            )
+        ]
+
+        level_completed_items = [
+            item
+            for item in level_required_items
+            if (
+                item.status
+                == AthletePathwayRequirement
+                .STATUS_COMPETITION_READY
+            )
+        ]
+
+        level_required_count = len(
+            level_required_items
+        )
+
+        level_completed_count = len(
+            level_completed_items
+        )
+
+        if level_required_count:
+            level_percentage = round(
+                (
+                    level_completed_count
+                    / level_required_count
+                )
+                * 100
+            )
+        else:
+            level_percentage = 0
+
+        level_progress.append({
+            'level': level,
+            'label': selected_level['label'],
+            'required_count': level_required_count,
+            'completed_count': level_completed_count,
+            'completion_percentage': level_percentage,
+        })
 
 
     events = (
@@ -550,6 +635,10 @@ def athlete_pathway_requirements(
 
         'overall_percentage': (
             overall_percentage
+        ),
+
+        'level_progress': (
+            level_progress
         ),
 
         'total_required': (

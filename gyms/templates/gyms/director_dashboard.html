@@ -6,7 +6,80 @@ Director Dashboard | {{ gym.name }}
 
 {% block content %}
 
-<div class="container-fluid">
+<style>
+    .director-page {
+        max-width: 1500px;
+        margin: 0 auto;
+    }
+
+    .director-page .card {
+        border-radius: 18px;
+    }
+
+    .director-page .director-group-card {
+        border-radius: 16px !important;
+    }
+
+    @media (max-width: 767.98px) {
+        .director-page {
+            padding: 0;
+        }
+
+        .director-page > .d-flex:first-of-type {
+            align-items: stretch !important;
+            flex-direction: column;
+        }
+
+        .director-page > .d-flex:first-of-type > .d-flex {
+            width: 100%;
+        }
+
+        .director-page > .d-flex:first-of-type .btn {
+            width: 100%;
+        }
+
+        .director-page .card {
+            border-radius: 16px;
+        }
+
+        .director-page .card-header,
+        .director-page .card-body {
+            padding: 16px !important;
+        }
+
+        .director-page .card-header .d-flex {
+            align-items: stretch !important;
+            flex-direction: column;
+        }
+
+        .director-page .card-header .btn {
+            width: 100%;
+        }
+
+        .director-page .director-group-card {
+            padding: 17px !important;
+        }
+
+        .director-page .director-group-card > .d-flex:first-child {
+            align-items: flex-start !important;
+            flex-direction: column;
+        }
+
+        .director-page .director-group-actions .btn {
+            width: 100%;
+        }
+
+        .director-page form .btn {
+            min-height: 44px;
+        }
+
+        .director-page h2 {
+            font-size: 1.65rem;
+        }
+    }
+</style>
+
+<div class="container-fluid director-page">
 
     <!-- =====================================================
          HEADER
@@ -648,7 +721,7 @@ Director Dashboard | {{ gym.name }}
 
                         <div class="col-md-6 col-xl-4">
 
-                            <div class="border rounded-4 p-4 h-100">
+                            <div class="border rounded-4 p-4 h-100 director-group-card">
 
                                 <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
 
@@ -951,7 +1024,7 @@ Director Dashboard | {{ gym.name }}
                                 </div>
 
 
-                                <div class="d-flex flex-wrap gap-2 mt-4">
+                                <div class="d-flex flex-wrap gap-2 mt-4 director-group-actions">
 
                                     <a
                                         href="{% url 'group_control_panel' item.group.id %}"

@@ -146,6 +146,37 @@ HP Skill Tree
         backdrop-filter: blur(8px);
     }
 
+    .level-progress-grid {
+        display: grid;
+        grid-template-columns:
+            repeat(
+                auto-fit,
+                minmax(180px, 1fr)
+            );
+        gap: 12px;
+    }
+
+    .level-progress-card {
+        padding: 16px;
+        border-radius: 16px;
+        background:
+            rgba(255, 255, 255, 0.13);
+        backdrop-filter: blur(8px);
+    }
+
+    .level-progress-track {
+        height: 8px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.22);
+    }
+
+    .level-progress-fill {
+        height: 100%;
+        border-radius: 999px;
+        background: white;
+    }
+
     .parent-hidden {
         display: inline-flex;
         padding: 4px 8px;
@@ -306,23 +337,47 @@ HP Skill Tree
 
                 <div class="col-12 col-lg-4">
 
-                    <div class="overall-progress">
+                    <div class="level-progress-grid">
 
-                        <div class="small opacity-75 mb-1">
-                            Competition Ready
-                        </div>
+                        {% for progress in level_progress %}
 
-                        <div class="display-6 fw-bold">
-                            {{ overall_percentage }}%
-                        </div>
+                            <div class="level-progress-card">
 
-                        <div class="small opacity-75 mt-1">
-                            {{ total_completed }}
-                            of
-                            {{ total_required }}
-                            core requirements
-                            are Competition Ready
-                        </div>
+                                <div class="small opacity-75">
+                                    {{ progress.label }}
+                                </div>
+
+                                <div class="fw-bold mt-1">
+                                    {{ progress.level.name }}
+                                </div>
+
+                                <div class="display-6 fw-bold my-1">
+                                    {{ progress.completion_percentage }}%
+                                </div>
+
+                                <div class="small opacity-75 mb-2">
+                                    {{ progress.completed_count }}
+                                    of
+                                    {{ progress.required_count }}
+                                    core requirements ready
+                                </div>
+
+                                <div class="level-progress-track">
+                                    <div
+                                        class="level-progress-fill"
+                                        style="width: {{ progress.completion_percentage }}%;"
+                                    ></div>
+                                </div>
+
+                            </div>
+
+                        {% empty %}
+
+                            <div class="level-progress-card">
+                                No pathway levels selected.
+                            </div>
+
+                        {% endfor %}
 
                     </div>
 

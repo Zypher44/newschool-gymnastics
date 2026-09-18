@@ -4,7 +4,164 @@
 
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<style>
+    .athlete-detail-page {
+        max-width: 1500px;
+        margin: 0 auto;
+    }
+
+    .athlete-page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .athlete-page-header h1 {
+        margin: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .athlete-primary-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 1rem;
+    }
+
+    .athlete-detail-page > .card {
+        overflow: hidden;
+        border: 0;
+        border-radius: 18px;
+        box-shadow: 0 8px 28px rgba(33, 37, 41, 0.06);
+    }
+
+    .athlete-detail-page > .card > .card-header {
+        padding: 17px 20px;
+        background: white;
+        font-weight: 800;
+    }
+
+    .attendance-stat {
+        height: 100%;
+        padding: 14px 8px;
+        border-radius: 14px;
+        background: #f8f9fa;
+    }
+
+    .attendance-stat h3 {
+        margin-bottom: 0;
+        font-size: 1.45rem;
+    }
+
+    .athlete-detail-page .table-responsive {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .athlete-detail-page table {
+        min-width: 700px;
+    }
+
+    .skill-actions {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 6px;
+    }
+
+    .athlete-video {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        background: #111827;
+        object-fit: contain;
+    }
+
+    .wellness-chart-wrap {
+        position: relative;
+        min-height: 320px;
+    }
+
+    @media (max-width: 767.98px) {
+        .athlete-page-header {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .athlete-page-header h1 {
+            font-size: clamp(1.55rem, 8vw, 2rem);
+        }
+
+        .athlete-page-header .btn,
+        .athlete-primary-actions .btn {
+            width: 100%;
+        }
+
+        .athlete-detail-page > .card {
+            border-radius: 16px;
+        }
+
+        .athlete-detail-page > .card > .card-header,
+        .athlete-detail-page > .card > .card-body {
+            padding: 16px;
+        }
+
+        .athlete-detail-page > .card > .card-header.d-flex {
+            align-items: stretch !important;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .athlete-detail-page > .card > .card-header .btn {
+            width: 100%;
+        }
+
+        .attendance-stat h6 {
+            min-height: 2.4em;
+            font-size: 0.78rem;
+        }
+
+        .attendance-stat h3 {
+            font-size: 1.2rem;
+        }
+
+        .athlete-detail-page th,
+        .athlete-detail-page td {
+            padding-top: 12px;
+            padding-bottom: 12px;
+            white-space: nowrap;
+        }
+
+        .skill-actions .btn {
+            min-height: 40px;
+        }
+
+        .modal-dialog {
+            margin: 0;
+        }
+
+        .modal-content {
+            min-height: 100vh;
+            border: 0;
+            border-radius: 0;
+        }
+
+        .modal-footer {
+            align-items: stretch;
+            flex-direction: column-reverse;
+        }
+
+        .modal-footer .btn {
+            width: 100%;
+        }
+
+        .wellness-chart-wrap {
+            min-height: 280px;
+        }
+    }
+</style>
+
+<div class="athlete-detail-page">
+
+<div class="athlete-page-header mb-4">
     <h1>{{ athlete.username }} - Athlete Detail</h1>
 
     <a href="{% url 'coach_dashboard' %}" class="btn btn-secondary">
@@ -12,9 +169,11 @@
     </a>
 </div>
 
-<a href="{% url 'upload_athlete_video' athlete.id %}" class="btn btn-primary">
-    🎥 Upload Video
-</a>
+<div class="athlete-primary-actions">
+    <a href="{% url 'upload_athlete_video' athlete.id %}" class="btn btn-primary">
+        🎥 Upload Video
+    </a>
+</div>
 <div class="card mb-4">
     <div class="card-header">Athlete Profile</div>
     <div class="card-body">
@@ -48,7 +207,8 @@
     <div class="card-header">Attendance Summary</div>
     <div class="card-body">
         <div class="row text-center mb-4">
-            <div class="col-md-2 mb-3">
+            <div class="col-6 col-sm-4 col-lg-2 mb-3">
+                <div class="attendance-stat">
                 <h6>Attendance Rate</h6>
                 <h3>
                     {% if attendance_rate >= 90 %}
@@ -59,12 +219,13 @@
                         🔴 {{ attendance_rate }}%
                     {% endif %}
                 </h3>
+                </div>
             </div>
-            <div class="col-md-2 mb-3"><h6>Total</h6><h3>{{ attendance_total }}</h3></div>
-            <div class="col-md-2 mb-3"><h6>Present</h6><h3>✅ {{ attendance_present }}</h3></div>
-            <div class="col-md-2 mb-3"><h6>Late</h6><h3>⏰ {{ attendance_late }}</h3></div>
-            <div class="col-md-2 mb-3"><h6>Absent</h6><h3>❌ {{ attendance_absent }}</h3></div>
-            <div class="col-md-2 mb-3"><h6>Excused</h6><h3>🟢 {{ attendance_excused }}</h3></div>
+            <div class="col-6 col-sm-4 col-lg-2 mb-3"><div class="attendance-stat"><h6>Total</h6><h3>{{ attendance_total }}</h3></div></div>
+            <div class="col-6 col-sm-4 col-lg-2 mb-3"><div class="attendance-stat"><h6>Present</h6><h3>✅ {{ attendance_present }}</h3></div></div>
+            <div class="col-6 col-sm-4 col-lg-2 mb-3"><div class="attendance-stat"><h6>Late</h6><h3>⏰ {{ attendance_late }}</h3></div></div>
+            <div class="col-6 col-sm-4 col-lg-2 mb-3"><div class="attendance-stat"><h6>Absent</h6><h3>❌ {{ attendance_absent }}</h3></div></div>
+            <div class="col-6 col-sm-4 col-lg-2 mb-3"><div class="attendance-stat"><h6>Excused</h6><h3>🟢 {{ attendance_excused }}</h3></div></div>
         </div>
 
         <h5>Last 10 Attendance Records</h5>
@@ -151,6 +312,7 @@
                                 <td>{% if athlete_skill.coach %}{{ athlete_skill.coach.username }}{% else %}-{% endif %}</td>
                                 <td>{{ athlete_skill.notes|default:"-" }}</td>
                                 <td>
+                                    <div class="skill-actions">
                                     <button
                                         type="button"
                                         class="btn btn-sm btn-outline-primary"
@@ -165,11 +327,12 @@
                                     >
                                         View
                                     </a>
+                                    </div>
                                 </td>
                             </tr>
 
                             <div class="modal fade" id="skillModal{{ athlete_skill.id }}" tabindex="-1">
-                                <div class="modal-dialog">
+                                <div class="modal-dialog modal-dialog-scrollable">
                                     <div class="modal-content">
                                         <form method="POST" action="{% url 'update_athlete_skill' athlete.id athlete_skill.id %}">
                                             {% csrf_token %}
@@ -275,8 +438,9 @@
 
                                 <video
                                     controls
-                                    width="100%"
-                                    class="rounded-top"
+                                    playsinline
+                                    preload="metadata"
+                                    class="athlete-video rounded-top"
                                 >
                                     <source
                                         src="{{ video.video_file.url }}"
@@ -375,7 +539,9 @@
     <div class="card-header">7 Day Trend Charts</div>
     <div class="card-body">
         {% if surveys %}
-            <canvas id="wellnessChart" height="120"></canvas>
+            <div class="wellness-chart-wrap">
+                <canvas id="wellnessChart"></canvas>
+            </div>
         {% else %}
             <p class="mb-0">No surveys found for this athlete.</p>
         {% endif %}
@@ -458,6 +624,7 @@
             data: data,
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 scales: {
                     y: {
                         beginAtZero: true
@@ -468,5 +635,7 @@
     );
 </script>
 {% endif %}
+
+</div>
 
 {% endblock %}

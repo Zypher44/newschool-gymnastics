@@ -365,7 +365,147 @@ Testing Results
 
     @media (max-width: 767px) {
         .testing-hero {
-            padding: 22px;
+            padding: 21px 18px;
+            border-radius: 18px;
+        }
+
+        .testing-hero h1 {
+            font-size: clamp(1.55rem, 8vw, 2rem);
+        }
+
+        .testing-stat-card {
+            padding: 16px;
+            border-radius: 16px;
+        }
+
+        .testing-card {
+            border-radius: 16px;
+        }
+
+        .verification-banner {
+            padding: 17px;
+        }
+
+        .publish-card {
+            padding: 17px;
+        }
+
+        .testing-grid-wrapper {
+            max-height: none;
+            overflow: visible;
+            padding: 0 12px 14px;
+            border-top: 0;
+            background: #f8fafc;
+        }
+
+        .testing-grid,
+        .testing-grid tbody {
+            display: block;
+            width: 100%;
+            min-width: 0;
+        }
+
+        .testing-grid thead {
+            display: none;
+        }
+
+        .testing-grid tbody {
+            padding-top: 12px;
+        }
+
+        .testing-grid tbody tr {
+            display: block;
+            margin-bottom: 14px;
+            overflow: hidden;
+            border: 1px solid #dbe2ea;
+            border-radius: 16px;
+            background: white;
+            box-shadow: 0 5px 16px rgba(15, 23, 42, 0.05);
+        }
+
+        .testing-grid tbody tr:last-child {
+            margin-bottom: 0;
+        }
+
+        .testing-grid td,
+        .testing-grid .sticky-athlete {
+            position: static;
+            display: block;
+            width: 100%;
+            min-width: 0;
+            padding: 14px;
+            border: 0;
+            border-bottom: 1px solid #eef0f3;
+            box-shadow: none;
+            white-space: normal;
+        }
+
+        .testing-grid .sticky-athlete {
+            color: white;
+            background:
+                linear-gradient(
+                    135deg,
+                    #1e40af,
+                    #4f46e5
+                ) !important;
+        }
+
+        .testing-grid .sticky-athlete .text-muted {
+            color: rgba(255, 255, 255, 0.75) !important;
+        }
+
+        .testing-grid td[data-label]::before {
+            content: attr(data-label);
+            display: block;
+            margin-bottom: 8px;
+            color: #475467;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .testing-grid td.text-center {
+            text-align: left !important;
+        }
+
+        .testing-grid .result-cell {
+            min-width: 0;
+        }
+
+        .testing-grid .raw-input,
+        .testing-grid .score-input {
+            min-width: 0;
+        }
+
+        .testing-grid .form-check {
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: -8px;
+        }
+
+        .testing-grid .form-check-input {
+            width: 1.25rem;
+            height: 1.25rem;
+            margin-top: 0;
+        }
+
+        .testing-grid .not-completed-label {
+            font-size: 0.8rem;
+        }
+
+        .testing-grid td:last-child {
+            border-bottom: 0;
+        }
+
+        .results-actions {
+            position: sticky;
+            bottom: 0;
+            z-index: 8;
+            padding: 14px;
+            box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.08);
         }
 
         .verify-button {
@@ -374,6 +514,18 @@ Testing Results
 
         .results-actions .btn {
             width: 100%;
+        }
+
+        .results-actions .d-flex.gap-2 {
+            width: 100%;
+        }
+
+        .routine-athlete-card {
+            padding: 17px;
+        }
+
+        .accordion-button {
+            padding: 16px;
         }
     }
 </style>
@@ -1055,7 +1207,10 @@ Testing Results
 
                                     {% for cell in row.cells %}
 
-                                        <td class="result-cell">
+                                        <td
+                                            class="result-cell"
+                                            data-label="{{ cell.exercise.name }} — {{ cell.exercise.get_unit_display }}"
+                                        >
 
                                             <div class="row g-1">
 
@@ -1123,7 +1278,7 @@ Testing Results
                                     {% endfor %}
 
 
-                                    <td class="text-center">
+                                    <td class="text-center" data-label="Total Score">
 
                                         <span
                                             class="total-score row-total"
@@ -1135,7 +1290,7 @@ Testing Results
                                     </td>
 
 
-                                    <td class="text-center">
+                                    <td class="text-center" data-label="Previous Score">
 
                                         {% if row.previous_score is not None %}
                                             {{ row.previous_score }}
@@ -1146,7 +1301,7 @@ Testing Results
                                     </td>
 
 
-                                    <td class="text-center">
+                                    <td class="text-center" data-label="Score Change">
 
                                         {% if row.score_change is not None %}
 
@@ -1171,7 +1326,7 @@ Testing Results
                                     </td>
 
 
-                                    <td class="text-center">
+                                    <td class="text-center" data-label="Rank">
 
                                         {% if row.athlete_result.rank %}
                                             <span class="badge text-bg-primary">
@@ -1184,7 +1339,7 @@ Testing Results
                                     </td>
 
 
-                                    <td class="text-center">
+                                    <td class="text-center" data-label="Status">
 
                                         {% if row.athlete_result.status == 'verified' %}
                                             <span class="badge text-bg-success">

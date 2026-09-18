@@ -6,7 +6,90 @@
 
 {% block content %}
 
-<div class="container-fluid">
+<style>
+    .group-page {
+        max-width: 1500px;
+        margin: 0 auto;
+    }
+
+    .group-page .card {
+        overflow: hidden;
+        border: 0;
+        border-radius: 18px;
+        box-shadow: 0 7px 24px rgba(15, 23, 42, 0.06);
+    }
+
+    @media (max-width: 767.98px) {
+        .group-page {
+            padding: 0;
+        }
+
+        .group-page .card {
+            border-radius: 16px;
+        }
+
+        .group-page .card-header,
+        .group-page .card-body {
+            padding: 16px !important;
+        }
+
+        .group-page .group-heading-layout {
+            align-items: stretch !important;
+            flex-direction: column;
+        }
+
+        .group-page .group-heading-actions {
+            width: 100%;
+            text-align: left !important;
+        }
+
+        .group-page .group-heading-actions > .d-flex {
+            width: 100%;
+        }
+
+        .group-page .group-heading-actions .btn {
+            width: 100%;
+        }
+
+        .group-page .card-header .d-flex {
+            align-items: stretch !important;
+            flex-direction: column;
+        }
+
+        .group-page .card-header .btn {
+            width: 100%;
+        }
+
+        .group-page .athlete-roster-controls {
+            width: 100%;
+            align-items: stretch !important;
+            flex-direction: column;
+        }
+
+        .group-page .athlete-roster-controls .btn {
+            width: 100%;
+        }
+
+        .group-page .athlete-card {
+            padding: 17px !important;
+        }
+
+        .group-page .athlete-card .btn {
+            min-height: 44px;
+        }
+
+        .group-page .athlete-card > .d-flex:first-child {
+            align-items: stretch !important;
+            flex-direction: column;
+        }
+
+        .group-page h2 {
+            font-size: 1.65rem;
+        }
+    }
+</style>
+
+<div class="container-fluid group-page">
 
     <!-- ======================================================
          BACK
@@ -32,7 +115,7 @@
 
         <div class="card-body p-4">
 
-            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 group-heading-layout">
 
                 <div>
 
@@ -65,7 +148,7 @@
                 </div>
 
 
-                <div class="text-end">
+                <div class="text-end group-heading-actions">
 
                     <div class="d-flex flex-wrap gap-2 justify-content-end mb-3">
 
@@ -339,7 +422,7 @@
                 </div>
 
 
-                <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center gap-2 athlete-roster-controls">
 
                     <span class="badge text-bg-primary fs-6">
 
@@ -367,7 +450,7 @@
 
             {% for item in athlete_data %}
 
-                <div class="border rounded-4 p-4 mb-3">
+                <div class="border rounded-4 p-4 mb-3 athlete-card">
 
 
                     <!-- Athlete Header -->

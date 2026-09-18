@@ -11,6 +11,23 @@
         rel="stylesheet"
     >
 
+    <script>
+        try {
+            if (
+                window.matchMedia("(min-width: 768px)").matches
+                && window.localStorage.getItem(
+                    "newschool-sidebar-collapsed"
+                ) === "true"
+            ) {
+                document.documentElement.classList.add(
+                    "sidebar-precollapsed"
+                );
+            }
+        } catch (error) {
+            // Continue normally if browser storage is unavailable.
+        }
+    </script>
+
     <style>
         :root {
             --app-background: #f5f6fa;
@@ -23,11 +40,31 @@
             --primary-soft: #eef4ff;
         }
 
+        html {
+            max-width: 100%;
+        }
+
         body {
+            max-width: 100%;
             min-height: 100vh;
             margin: 0;
             overflow-x: hidden;
             background: var(--app-background);
+        }
+
+        img,
+        video,
+        canvas,
+        svg {
+            max-width: 100%;
+        }
+
+        button,
+        a,
+        input,
+        select,
+        textarea {
+            touch-action: manipulation;
         }
 
         .app-shell { min-height: 100vh; }
@@ -48,6 +85,19 @@
         }
 
         .sidebar.collapsed { width: 90px; }
+
+        @media (min-width: 768px) {
+            .sidebar-precollapsed .sidebar {
+                width: 90px;
+            }
+
+            .sidebar-precollapsed .brand-text,
+            .sidebar-precollapsed .sidebar-label,
+            .sidebar-precollapsed .sidebar-section,
+            .sidebar-precollapsed .toggle-label {
+                display: none;
+            }
+        }
 
         .sidebar-brand {
             display: flex;
@@ -189,7 +239,19 @@
         }
 
         .topbar-search { width: min(420px, 100%); }
-        .main-content { padding: 24px; }
+        .main-content {
+            width: 100%;
+            min-width: 0;
+            padding: 24px;
+        }
+
+        .main-content > * {
+            min-width: 0;
+        }
+
+        .table-responsive {
+            -webkit-overflow-scrolling: touch;
+        }
 
         .notification-button {
             position: relative;
@@ -275,6 +337,10 @@
         .sidebar-overlay { display: none; }
 
         @media (max-width: 767.98px) {
+            body.mobile-menu-open {
+                overflow: hidden;
+            }
+
             .sidebar {
                 position: fixed;
                 left: -310px;
@@ -302,10 +368,69 @@
 
             .mobile-menu-button { display: inline-flex; }
             .sidebar-toggle { display: none; }
-            .topbar { padding: 12px 16px; }
-            .main-content { padding: 16px; }
+            .topbar {
+                min-height: 64px;
+                padding: 10px 12px;
+            }
+
+            .topbar-title {
+                max-width: 42vw;
+                overflow: hidden;
+                font-size: 0.95rem;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .main-content {
+                padding: 14px 12px 28px;
+            }
+
             .topbar-search { display: none; }
             .user-menu-details { display: none; }
+
+            .mobile-menu-button,
+            .notification-button,
+            .user-menu-button {
+                min-width: 44px;
+                min-height: 44px;
+            }
+
+            .user-menu-button {
+                padding: 4px 7px;
+            }
+
+            .notification-menu {
+                position: fixed !important;
+                top: 68px !important;
+                right: 10px !important;
+                left: 10px !important;
+                width: auto;
+                max-width: none;
+                transform: none !important;
+            }
+
+            .notification-list {
+                max-height: min(55vh, 420px);
+            }
+
+            input:not([type="checkbox"]):not([type="radio"]),
+            select,
+            textarea {
+                font-size: 16px !important;
+            }
+
+            .btn,
+            .form-control,
+            .form-select {
+                min-height: 44px;
+            }
+
+            .dropdown-item,
+            .sidebar-link {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+            }
         }
     </style>
 
@@ -704,10 +829,47 @@
     const mobileMenuButton = document.getElementById("mobile-menu-button");
     const sidebarOverlay = document.getElementById("sidebar-overlay");
     const toggleIcon = document.getElementById("toggle-icon");
+    const sidebarPreferenceKey = "newschool-sidebar-collapsed";
+
+    if (sidebar && window.innerWidth >= 768) {
+        try {
+            const sidebarWasCollapsed = (
+                window.localStorage.getItem(sidebarPreferenceKey)
+                === "true"
+            );
+
+            sidebar.classList.toggle(
+                "collapsed",
+                sidebarWasCollapsed
+            );
+
+            if (toggleIcon) {
+                toggleIcon.textContent = (
+                    sidebarWasCollapsed ? "▶" : "◀"
+                );
+            }
+
+            document.documentElement.classList.remove(
+                "sidebar-precollapsed"
+            );
+        } catch (error) {
+            // The sidebar still works if browser storage is unavailable.
+        }
+    }
 
     if (sidebar && sidebarToggle) {
         sidebarToggle.addEventListener("click", function () {
             sidebar.classList.toggle("collapsed");
+
+            try {
+                window.localStorage.setItem(
+                    sidebarPreferenceKey,
+                    sidebar.classList.contains("collapsed")
+                );
+            } catch (error) {
+                // Ignore storage errors and keep the current page usable.
+            }
+
             if (toggleIcon) {
                 toggleIcon.textContent = sidebar.classList.contains("collapsed") ? "▶" : "◀";
             }
@@ -717,16 +879,26 @@
     function closeMobileSidebar() {
         if (sidebar) sidebar.classList.remove("mobile-open");
         if (sidebarOverlay) sidebarOverlay.classList.remove("active");
+        document.body.classList.remove("mobile-menu-open");
     }
 
     if (mobileMenuButton && sidebar && sidebarOverlay) {
         mobileMenuButton.addEventListener("click", function () {
             sidebar.classList.add("mobile-open");
             sidebarOverlay.classList.add("active");
+            document.body.classList.add("mobile-menu-open");
         });
 
         sidebarOverlay.addEventListener("click", closeMobileSidebar);
+
+        sidebar.querySelectorAll("a.sidebar-link").forEach(function (link) {
+            link.addEventListener("click", closeMobileSidebar);
+        });
     }
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") closeMobileSidebar();
+    });
 
     window.addEventListener("resize", function () {
         if (window.innerWidth >= 768) closeMobileSidebar();

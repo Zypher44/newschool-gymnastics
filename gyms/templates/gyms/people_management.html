@@ -6,7 +6,85 @@ People | {{ gym.name }}
 
 {% block content %}
 
-<div class="container-fluid">
+<style>
+    .people-page {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .people-page .card {
+        overflow: hidden;
+        border: 0;
+        border-radius: 18px;
+        box-shadow: 0 7px 24px rgba(15, 23, 42, 0.06);
+    }
+
+    @media (max-width: 767.98px) {
+        .people-page {
+            padding: 0;
+        }
+
+        .people-page > .d-flex:first-of-type {
+            align-items: stretch !important;
+            flex-direction: column;
+        }
+
+        .people-page > .d-flex:first-of-type > .btn {
+            width: 100%;
+        }
+
+        .people-page .card {
+            border-radius: 16px;
+        }
+
+        .people-page .card-header,
+        .people-page .card-body {
+            padding: 16px !important;
+        }
+
+        .people-page .card-header .d-flex {
+            align-items: stretch !important;
+            flex-direction: column;
+        }
+
+        .people-page .card-header .btn {
+            width: 100%;
+        }
+
+        .people-page .person-row,
+        .people-page .card-body > .d-flex.flex-wrap.justify-content-between {
+            align-items: stretch !important;
+            flex-direction: column;
+        }
+
+        .people-page .person-actions,
+        .people-page .card-body > .d-flex.flex-wrap.justify-content-between > .d-flex.flex-wrap.gap-2 {
+            width: 100%;
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .people-page .person-actions form,
+        .people-page .person-actions .btn,
+        .people-page .person-actions form .btn,
+        .people-page .card-body > .d-flex.flex-wrap.justify-content-between > .d-flex.flex-wrap.gap-2 form,
+        .people-page .card-body > .d-flex.flex-wrap.justify-content-between > .d-flex.flex-wrap.gap-2 .btn {
+            width: 100%;
+        }
+
+        .people-page h2 {
+            font-size: 1.65rem;
+        }
+    }
+
+    @media (max-width: 420px) {
+        .people-page .person-actions {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="container-fluid people-page">
 
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
 
@@ -151,7 +229,7 @@ People | {{ gym.name }}
 
             {% for membership in athletes %}
 
-                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 border-bottom py-3">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 border-bottom py-3 person-row">
 
                     <div>
 
@@ -189,7 +267,7 @@ People | {{ gym.name }}
                     </div>
 
 
-                    <div class="d-flex flex-wrap gap-2">
+                    <div class="d-flex flex-wrap gap-2 person-actions">
 
                         {% if membership.is_active %}
 
