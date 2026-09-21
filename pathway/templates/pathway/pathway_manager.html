@@ -1,57 +1,30 @@
 {% extends "base.html" %}
 
-{% block title %}
-HP Pathway Manager
-{% endblock %}
-
-{% block page_header %}
-HP Pathway
-{% endblock %}
+{% block title %}HP Pathway Manager{% endblock %}
+{% block page_header %}HP Pathway{% endblock %}
 
 {% block content %}
-
 <style>
-    .pathway-shell {
-        max-width: 1400px;
-        margin: 0 auto;
-    }
-
+    .pathway-shell { max-width: 1400px; margin: 0 auto; }
     .pathway-hero {
         padding: 30px;
         color: white;
         border-radius: 24px;
-        background:
-            linear-gradient(
-                135deg,
-                #111827,
-                #1e40af,
-                #4f46e5
-            );
-        box-shadow:
-            0 16px 45px
-            rgba(15, 23, 42, 0.16);
+        background: linear-gradient(135deg, #111827, #1e40af, #4f46e5);
+        box-shadow: 0 16px 45px rgba(15, 23, 42, 0.16);
     }
-
     .pathway-card {
         border: 0;
         border-radius: 20px;
-        box-shadow:
-            0 8px 24px
-            rgba(15, 23, 42, 0.06);
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
     }
-
     .athlete-row {
         padding: 18px;
         border: 1px solid #e5e7eb;
         border-radius: 16px;
         background: white;
     }
-
-    .level-arrow {
-        color: #94a3b8;
-        font-weight: 700;
-    }
-
+    .level-arrow { color: #94a3b8; font-weight: 700; }
     .status-pill {
         display: inline-flex;
         padding: 5px 10px;
@@ -59,224 +32,96 @@ HP Pathway
         font-size: 0.78rem;
         font-weight: 700;
     }
+    .status-developing { color: #664d03; background: #fff3cd; }
+    .status-on-track { color: #084298; background: #cfe2ff; }
+    .status-ready { color: #146c43; background: #d1e7dd; }
+    .status-hold { color: #842029; background: #f8d7da; }
 
-    .status-developing {
-        color: #664d03;
-        background: #fff3cd;
-    }
-
-    .status-on-track {
-        color: #084298;
-        background: #cfe2ff;
-    }
-
-    .status-ready {
-        color: #146c43;
-        background: #d1e7dd;
-    }
-
-    .status-hold {
-        color: #842029;
-        background: #f8d7da;
+    @media (max-width: 767.98px) {
+        .pathway-hero { padding: 21px 18px; border-radius: 18px; }
+        .pathway-hero h1 { font-size: 1.65rem; }
+        .pathway-counts { width: 100%; flex-wrap: wrap; }
+        .pathway-counts .badge { flex: 1 1 140px; padding: 10px; }
+        .pathway-card { border-radius: 16px; }
+        .pathway-card .card-header,
+        .pathway-card .card-body { padding: 16px !important; }
+        .athlete-row { padding: 16px; }
+        .athlete-path { align-items: flex-start !important; flex-direction: column; }
+        .athlete-path .level-arrow { transform: rotate(90deg); }
+        .athlete-manage .btn { width: 100%; }
     }
 </style>
 
-
 <div class="container-fluid py-4">
-
     <div class="pathway-shell">
-
         <section class="pathway-hero mb-4">
-
             <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
-
                 <div>
-
-                    <div class="small text-uppercase fw-semibold opacity-75 mb-2">
-                        Head Coach
-                    </div>
-
-                    <h1 class="h2 fw-bold mb-2">
-                        High Performance Pathway
-                    </h1>
-
+                    <div class="small text-uppercase fw-semibold opacity-75 mb-2">Head Coach</div>
+                    <h1 class="h2 fw-bold mb-2">High Performance Pathway</h1>
                     <p class="mb-0 opacity-75">
-                        Manage each athlete's current stage,
-                        target stage and individual development pathway.
+                        Manage each athlete's current stage, target stage and individual development pathway.
                     </p>
-
                 </div>
-
-
-                <div class="d-flex gap-2">
-
-                    <span class="badge text-bg-light fs-6">
-                        {{ pathway_count }}
-                        Active Pathways
-                    </span>
-
-                    <span class="badge text-bg-light fs-6">
-                        {{ athlete_count }}
-                        Athletes
-                    </span>
-
+                <div class="d-flex gap-2 pathway-counts">
+                    <span class="badge text-bg-light fs-6">{{ pathway_count }} Active Pathways</span>
+                    <span class="badge text-bg-light fs-6">{{ athlete_count }} Athletes</span>
                 </div>
-
             </div>
-
         </section>
-
 
         <section class="card pathway-card">
-
             <div class="card-header bg-white border-0 p-4">
-
-                <h2 class="h4 mb-1">
-                    Athlete Pathways
-                </h2>
-
+                <h2 class="h4 mb-1">Athlete Pathways</h2>
                 <p class="text-muted mb-0">
-                    Select an athlete to configure their
-                    individual High Performance pathway.
+                    Select an athlete to configure their individual High Performance pathway.
                 </p>
-
             </div>
-
-
             <div class="card-body p-4 pt-0">
-
                 <div class="d-grid gap-3">
-
                     {% for row in athlete_rows %}
-
                         <div class="athlete-row">
-
                             <div class="row align-items-center g-3">
-
                                 <div class="col-12 col-lg-3">
-
-                                    <div class="fw-bold">
-                                        {{ row.athlete.get_full_name|default:row.athlete.username }}
-                                    </div>
-
-                                    <div class="small text-muted">
-                                        {{ row.athlete.username }}
-                                    </div>
-
+                                    <div class="fw-bold">{{ row.athlete.get_full_name|default:row.athlete.username }}</div>
+                                    <div class="small text-muted">{{ row.athlete.username }}</div>
                                 </div>
-
-
                                 <div class="col-12 col-lg-4">
-
                                     {% if row.pathway %}
-
-                                        <div class="small text-muted mb-1">
-                                            Pathway
+                                        <div class="small text-muted mb-1">Pathway</div>
+                                        <div class="d-flex flex-wrap align-items-center gap-2 athlete-path">
+                                            <strong>{% if row.pathway.current_level %}{{ row.pathway.current_level.name }}{% else %}Not Assigned{% endif %}</strong>
+                                            <span class="level-arrow">→</span>
+                                            <strong class="text-primary">{% if row.pathway.target_level %}{{ row.pathway.target_level.name }}{% else %}No Target{% endif %}</strong>
                                         </div>
-
-                                        <div class="d-flex flex-wrap align-items-center gap-2">
-
-                                            <strong>
-                                                {% if row.pathway.current_level %}
-                                                    {{ row.pathway.current_level.name }}
-                                                {% else %}
-                                                    Not Assigned
-                                                {% endif %}
-                                            </strong>
-
-                                            <span class="level-arrow">
-                                                →
-                                            </span>
-
-                                            <strong class="text-primary">
-                                                {% if row.pathway.target_level %}
-                                                    {{ row.pathway.target_level.name }}
-                                                {% else %}
-                                                    No Target
-                                                {% endif %}
-                                            </strong>
-
-                                        </div>
-
-
                                     {% else %}
-
-                                        <span class="text-muted">
-                                            Pathway not configured
-                                        </span>
-
+                                        <span class="text-muted">Pathway not configured</span>
                                     {% endif %}
-
                                 </div>
-
-
                                 <div class="col-12 col-lg-3">
-
                                     {% if row.pathway %}
-
                                         {% if row.pathway.status == 'ready' %}
-
-                                            <span class="status-pill status-ready">
-                                                Ready for Next Level
-                                            </span>
-
+                                            <span class="status-pill status-ready">Ready for Next Level</span>
                                         {% elif row.pathway.status == 'on_track' %}
-
-                                            <span class="status-pill status-on-track">
-                                                On Track
-                                            </span>
-
+                                            <span class="status-pill status-on-track">On Track</span>
                                         {% elif row.pathway.status == 'hold' %}
-
-                                            <span class="status-pill status-hold">
-                                                Hold
-                                            </span>
-
+                                            <span class="status-pill status-hold">Hold</span>
                                         {% else %}
-
-                                            <span class="status-pill status-developing">
-                                                Developing
-                                            </span>
-
+                                            <span class="status-pill status-developing">Developing</span>
                                         {% endif %}
-
                                     {% endif %}
-
                                 </div>
-
-
-                                <div class="col-12 col-lg-2 text-lg-end">
-
-                                    <a
-                                        href="{% url 'pathway:athlete_pathway_editor' row.athlete.id %}"
-                                        class="btn btn-primary"
-                                    >
-                                        Manage
-                                    </a>
-
+                                <div class="col-12 col-lg-2 text-lg-end athlete-manage">
+                                    <a href="{% url 'pathway:athlete_pathway_editor' row.athlete.id %}" class="btn btn-primary">Manage</a>
                                 </div>
-
                             </div>
-
                         </div>
-
                     {% empty %}
-
-                        <div class="alert alert-secondary mb-0">
-                            No active athletes were found.
-                        </div>
-
+                        <div class="alert alert-secondary mb-0">No active athletes were found.</div>
                     {% endfor %}
-
                 </div>
-
             </div>
-
         </section>
-
     </div>
-
 </div>
-
 {% endblock %}
-

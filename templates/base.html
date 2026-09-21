@@ -605,7 +605,7 @@
                         <span class="sidebar-label">Routine Consistency</span>
                     </a>
 
-                    <a href="{% url 'parent_dashboard' %}" class="sidebar-link">
+                    <a href="{% url 'parent_events' %}" class="sidebar-link">
                         <span class="sidebar-icon">📅</span>
                         <span class="sidebar-label">Upcoming Events</span>
                     </a>
@@ -784,6 +784,7 @@
                                     <a href="{% url 'director_dashboard' %}" class="dropdown-item">🏢 Director Dashboard</a>
                                 {% elif user.role == 'parent' %}
                                     <a href="{% url 'parent_dashboard' %}" class="dropdown-item">🏠 Parent Home</a>
+                                    <a href="{% url 'parent_events' %}" class="dropdown-item">📅 Upcoming Events</a>
                                     <a href="{% url 'video_library:family_library' %}" class="dropdown-item">🎥 Athlete Videos</a>
                                 {% elif user.role == 'athlete' %}
                                     <a href="{% url 'athlete_dashboard' %}" class="dropdown-item">🏠 Athlete Home</a>

@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+
+{% block title %}{{ athlete.get_full_name|default:athlete.username }} Pathway{% endblock %}
+
+{% block page_header %}Athlete Pathway{% endblock %}
+
+{% block content %}
+
+<style>
+    .parent-pathway-shell {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .parent-pathway-hero {
+        padding: 30px;
+        color: white;
+        border-radius: 24px;
+        background: linear-gradient(135deg, #111827, #1e40af, #4f46e5);
+        box-shadow: 0 16px 45px rgba(15, 23, 42, 0.16);
+    }
+
+    .summary-card,
+    .event-card {
+        border: 0;
+        border-radius: 20px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    }
+
+    .progress {
+        height: 12px;
+        border-radius: 999px;
+        background: #e2e8f0;
+    }
+
+    .progress-bar {
+        border-radius: 999px;
+    }
+
+    .requirement-row {
+        padding: 16px 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .requirement-row:last-child {
+        border-bottom: 0;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .status-not-started {
+        color: #475569;
+        background: #e2e8f0;
+    }
+
+    .status-developing {
+        color: #854d0e;
+        background: #fef3c7;
+    }
+
+    .status-achieved {
+        color: #1e40af;
+        background: #dbeafe;
+    }
+
+    .status-ready {
+        color: #166534;
+        background: #dcfce7;
+    }
+
+    @media (max-width: 767.98px) {
+        .parent-pathway-hero {
+            padding: 22px;
+        }
+
+        .requirement-heading {
+            flex-direction: column;
+        }
+    }
+</style>
+
+
+<div class="container-fluid py-4">
+    <div class="parent-pathway-shell">
+
+        <section class="parent-pathway-hero mb-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-3">
+                <div>
+                    <div class="small text-uppercase fw-semibold opacity-75 mb-2">
+                        Parent View · Read Only
+                    </div>
+
+                    <h1 class="h2 fw-bold mb-2">
+                        {{ athlete.get_full_name|default:athlete.username }}
+                    </h1>
+
+                    <p class="mb-0 opacity-75">
+                        Follow the pathway progress shared by your child's coaching team.
+                    </p>
+                </div>
+
+                <a
+                    href="{% url 'pathway:pathway_overview' %}"
+                    class="btn btn-light"
+                >
+                    ← Back to HP Pathway
+                </a>
+            </div>
+        </section>
+
+
+        <div class="row g-4 mb-4">
+            <div class="col-12 col-lg-4">
+                <section class="card summary-card h-100">
+                    <div class="card-body p-4">
+                        <div class="small text-muted mb-1">Overall Progress</div>
+                        <div class="display-5 fw-bold text-primary mb-2">
+                            {{ overall_percentage }}%
+                        </div>
+
+                        <div class="progress mb-3" role="progressbar" aria-label="Overall pathway progress" aria-valuenow="{{ overall_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar bg-primary" style="width: {{ overall_percentage }}%;"></div>
+                        </div>
+
+                        <div class="small text-muted">
+                            {{ total_completed }} of {{ total_required }} required items competition ready
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="col-12 col-lg-8">
+                <section class="card summary-card h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+                            <div>
+                                <div class="small text-muted">Development Path</div>
+                                <div class="h4 fw-bold mb-0">
+                                    {% if athlete_pathway.current_level %}
+                                        {{ athlete_pathway.current_level.name }}
+                                    {% else %}
+                                        Not assigned
+                                    {% endif %}
+
+                                    <span class="text-muted mx-2">→</span>
+
+                                    <span class="text-primary">
+                                        {% if athlete_pathway.target_level %}
+                                            {{ athlete_pathway.target_level.name }}
+                                        {% else %}
+                                            No target
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <span class="badge text-bg-primary fs-6">
+                                {{ athlete_pathway.get_status_display }}
+                            </span>
+                        </div>
+
+                        {% if athlete_pathway.target_date %}
+                            <div class="small text-muted">
+                                Target date: {{ athlete_pathway.target_date|date:"F j, Y" }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </section>
+            </div>
+        </div>
+
+
+        <div class="row g-4 mb-4">
+            {% for progress in level_progress %}
+                <div class="col-12 col-md-6">
+                    <section class="card summary-card h-100">
+                        <div class="card-body p-4">
+                            <div class="small text-uppercase fw-semibold text-primary mb-1">
+                                {{ progress.label }}
+                            </div>
+
+                            <div class="d-flex justify-content-between gap-3 mb-2">
+                                <h2 class="h4 fw-bold mb-0">
+                                    {{ progress.level.name }}
+                                </h2>
+
+                                <span class="h5 fw-bold mb-0">
+                                    {{ progress.completion_percentage }}%
+                                </span>
+                            </div>
+
+                            <div class="progress mb-2" role="progressbar" aria-label="{{ progress.level.name }} progress" aria-valuenow="{{ progress.completion_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                <div class="progress-bar bg-success" style="width: {{ progress.completion_percentage }}%;"></div>
+                            </div>
+
+                            <div class="small text-muted">
+                                {{ progress.completed_count }} of {{ progress.required_count }} required items competition ready
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-secondary mb-0">
+                        No current or target pathway level has been assigned.
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+
+        {% for section in event_sections %}
+            <section class="card event-card mb-4">
+                <div class="card-header bg-white border-0 p-4 pb-2">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-3">
+                        <div>
+                            <div class="small text-uppercase fw-semibold text-primary mb-1">
+                                Event Progress
+                            </div>
+
+                            <h2 class="h4 fw-bold mb-0">
+                                {{ section.event.name }}
+                            </h2>
+                        </div>
+
+                        <div class="text-md-end">
+                            <div class="h5 fw-bold mb-0">
+                                {{ section.completion_percentage }}%
+                            </div>
+                            <div class="small text-muted">
+                                {{ section.completed_count }} of {{ section.required_count }} ready
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="progress mt-3" role="progressbar" aria-label="{{ section.event.name }} progress" aria-valuenow="{{ section.completion_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-bar bg-primary" style="width: {{ section.completion_percentage }}%;"></div>
+                    </div>
+                </div>
+
+                <div class="card-body px-4 pt-2 pb-4">
+                    {% for item in section.requirements %}
+                        <div class="requirement-row">
+                            <div class="d-flex requirement-heading justify-content-between align-items-start gap-3">
+                                <div>
+                                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                        <span class="badge text-bg-light border">
+                                            {{ item.requirement.level.name }}
+                                        </span>
+
+                                        <span class="badge text-bg-light border">
+                                            {{ item.requirement.get_requirement_type_display }}
+                                        </span>
+
+                                        {% if item.requirement.is_required %}
+                                            <span class="badge text-bg-primary">Required</span>
+                                        {% else %}
+                                            <span class="badge text-bg-secondary">Optional</span>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="fw-bold">
+                                        {% if item.custom_title %}
+                                            {{ item.custom_title }}
+                                        {% else %}
+                                            {{ item.requirement.title }}
+                                        {% endif %}
+                                    </div>
+
+                                    {% if item.requirement.description %}
+                                        <div class="small text-muted mt-1">
+                                            {{ item.requirement.description }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <div>
+                                    {% if item.status == 'competition_ready' %}
+                                        <span class="status-pill status-ready">Competition Ready</span>
+                                    {% elif item.status == 'achieved' %}
+                                        <span class="status-pill status-achieved">Achieved</span>
+                                    {% elif item.status == 'developing' %}
+                                        <span class="status-pill status-developing">Developing</span>
+                                    {% else %}
+                                        <span class="status-pill status-not-started">Not Started</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="text-muted py-3">
+                            No visible requirements are available for this event.
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        {% empty %}
+            <div class="alert alert-secondary">
+                No pathway requirements have been shared for this athlete yet.
+            </div>
+        {% endfor %}
+
+        <div class="alert alert-light border">
+            This page is read-only. Pathway progress is maintained by the Head Coach.
+            Internal coaching notes and hidden requirements are not shown.
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -16,6 +16,8 @@ from .forms_routines import (
     AthleteRoutineElementForm,
 )
 
+from parents_portal.models import ParentAthleteLink
+
 from .models import (
     AthletePathway,
     AthletePathwayRequirement,
@@ -996,42 +998,24 @@ def bulk_update_athlete_pathway_requirements(
 
 
 @login_required
-def pathway_overview(
-    request,
-):
-    if not can_view_pathway(
-        request.user
-    ):
-
+def pathway_overview(request):
+    if not can_view_pathway(request.user):
         messages.error(
             request,
-            (
-                'You do not have access '
-                'to the HP Pathway.'
-            ),
+            'You do not have access to the HP Pathway.',
         )
 
-        return redirect(
-            'role_redirect'
-        )
-
+        return redirect('role_redirect')
 
     levels = (
         PathwayLevel.objects
-        .filter(
-            is_active=True,
-        )
-        .order_by(
-            'order',
-        )
+        .filter(is_active=True)
+        .order_by('order')
     )
-
 
     level_cards = []
 
-
     for level in levels:
-
         requirements = (
             PathwayRequirement.objects
             .filter(
@@ -1040,41 +1024,378 @@ def pathway_overview(
             )
         )
 
-
         level_cards.append({
             'level': level,
-
             'requirement_count': (
                 requirements
-                .filter(
-                    is_required=True,
-                )
+                .filter(is_required=True)
                 .count()
             ),
-
             'bonus_count': (
                 requirements
                 .filter(
                     requirement_type=(
-                        PathwayRequirement
-                        .TYPE_BONUS
+                        PathwayRequirement.TYPE_BONUS
                     ),
                 )
                 .count()
             ),
         })
 
+    parent_pathway_cards = []
+
+    if request.user.role == 'parent':
+        parent_links = (
+            ParentAthleteLink.objects
+            .filter(
+                parent=request.user,
+                approved=True,
+            )
+            .select_related('athlete')
+            .order_by(
+                'athlete__first_name',
+                'athlete__last_name',
+                'athlete__username',
+            )
+        )
+
+        for link in parent_links:
+            athlete = link.athlete
+
+            athlete_pathway = (
+                AthletePathway.objects
+                .filter(athlete=athlete)
+                .select_related(
+                    'current_level',
+                    'target_level',
+                )
+                .first()
+            )
+
+            current_progress = None
+            target_progress = None
+
+            if athlete_pathway:
+                visible_requirements = (
+                    AthletePathwayRequirement.objects
+                    .filter(
+                        athlete_pathway=athlete_pathway,
+                        requirement__is_active=True,
+                        requirement__is_required=True,
+                        is_hidden_from_parent=False,
+                    )
+                    .select_related(
+                        'requirement',
+                        'requirement__level',
+                    )
+                )
+
+                def calculate_level_progress(level):
+                    if level is None:
+                        return None
+
+                    level_requirements = (
+                        visible_requirements
+                        .filter(
+                            requirement__level=level,
+                        )
+                    )
+
+                    required_count = (
+                        level_requirements.count()
+                    )
+
+                    completed_count = (
+                        level_requirements
+                        .filter(
+                            status=(
+                                AthletePathwayRequirement
+                                .STATUS_COMPETITION_READY
+                            ),
+                        )
+                        .count()
+                    )
+
+                    if required_count:
+                        percentage = round(
+                            (
+                                completed_count
+                                / required_count
+                            )
+                            * 100
+                        )
+                    else:
+                        percentage = 0
+
+                    return {
+                        'level': level,
+                        'required_count': required_count,
+                        'completed_count': completed_count,
+                        'percentage': percentage,
+                    }
+
+                current_progress = (
+                    calculate_level_progress(
+                        athlete_pathway.current_level
+                    )
+                )
+
+                if (
+                    athlete_pathway.target_level_id
+                    == athlete_pathway.current_level_id
+                ):
+                    target_progress = current_progress
+                else:
+                    target_progress = (
+                        calculate_level_progress(
+                            athlete_pathway.target_level
+                        )
+                    )
+
+            parent_pathway_cards.append({
+                'athlete': athlete,
+                'pathway': athlete_pathway,
+                'current_progress': current_progress,
+                'target_progress': target_progress,
+            })
 
     return render(
         request,
         'pathway/pathway_overview.html',
         {
-            'level_cards': (
-                level_cards
+            'level_cards': level_cards,
+            'parent_pathway_cards': (
+                parent_pathway_cards
             ),
         },
     )
 
+@login_required
+def parent_athlete_pathway(
+    request,
+    athlete_id,
+):
+    if request.user.role != 'parent':
+        messages.error(
+            request,
+            'Only parents can access this page.',
+        )
+
+        return redirect('role_redirect')
+
+    parent_link = get_object_or_404(
+        ParentAthleteLink.objects
+        .select_related('athlete'),
+        parent=request.user,
+        athlete_id=athlete_id,
+        approved=True,
+    )
+
+    athlete = parent_link.athlete
+
+    athlete_pathway = get_object_or_404(
+        AthletePathway.objects
+        .select_related(
+            'athlete',
+            'current_level',
+            'target_level',
+        ),
+        athlete=athlete,
+    )
+
+    selected_levels = []
+
+    if athlete_pathway.current_level_id:
+        selected_levels.append({
+            'level': athlete_pathway.current_level,
+            'label': 'Current Level',
+        })
+
+    if athlete_pathway.target_level_id:
+        if (
+            athlete_pathway.target_level_id
+            == athlete_pathway.current_level_id
+        ):
+            if selected_levels:
+                selected_levels[0]['label'] = (
+                    'Current & Target Level'
+                )
+        else:
+            selected_levels.append({
+                'level': athlete_pathway.target_level,
+                'label': 'Target Level',
+            })
+
+    selected_level_ids = [
+        item['level'].id
+        for item in selected_levels
+    ]
+
+    athlete_requirements = list(
+        AthletePathwayRequirement.objects
+        .filter(
+            athlete_pathway=athlete_pathway,
+            requirement__is_active=True,
+            requirement__level_id__in=(
+                selected_level_ids
+            ),
+            is_hidden_from_parent=False,
+        )
+        .select_related(
+            'requirement',
+            'requirement__level',
+            'requirement__event',
+        )
+        .order_by(
+            'requirement__level__order',
+            'requirement__event__order',
+            'requirement__display_order',
+            'requirement__requirement_number',
+        )
+    )
+
+    level_progress = []
+
+    for selected_level in selected_levels:
+        level = selected_level['level']
+
+        required_items = [
+            item
+            for item in athlete_requirements
+            if (
+                item.requirement.level_id == level.id
+                and item.requirement.is_required
+            )
+        ]
+
+        completed_items = [
+            item
+            for item in required_items
+            if (
+                item.status
+                == AthletePathwayRequirement
+                .STATUS_COMPETITION_READY
+            )
+        ]
+
+        required_count = len(required_items)
+        completed_count = len(completed_items)
+
+        if required_count:
+            completion_percentage = round(
+                (
+                    completed_count
+                    / required_count
+                )
+                * 100
+            )
+        else:
+            completion_percentage = 0
+
+        level_progress.append({
+            'level': level,
+            'label': selected_level['label'],
+            'required_count': required_count,
+            'completed_count': completed_count,
+            'completion_percentage': (
+                completion_percentage
+            ),
+        })
+
+    events = (
+        PathwayEvent.objects
+        .all()
+        .order_by('order')
+    )
+
+    event_sections = []
+
+    for event in events:
+        event_requirements = [
+            item
+            for item in athlete_requirements
+            if item.requirement.event_id == event.id
+        ]
+
+        if not event_requirements:
+            continue
+
+        required_items = [
+            item
+            for item in event_requirements
+            if item.requirement.is_required
+        ]
+
+        completed_items = [
+            item
+            for item in required_items
+            if (
+                item.status
+                == AthletePathwayRequirement
+                .STATUS_COMPETITION_READY
+            )
+        ]
+
+        required_count = len(required_items)
+        completed_count = len(completed_items)
+
+        if required_count:
+            completion_percentage = round(
+                (
+                    completed_count
+                    / required_count
+                )
+                * 100
+            )
+        else:
+            completion_percentage = 0
+
+        event_sections.append({
+            'event': event,
+            'requirements': event_requirements,
+            'required_count': required_count,
+            'completed_count': completed_count,
+            'completion_percentage': (
+                completion_percentage
+            ),
+        })
+
+    total_required = sum(
+        item['required_count']
+        for item in level_progress
+    )
+
+    total_completed = sum(
+        item['completed_count']
+        for item in level_progress
+    )
+
+    if total_required:
+        overall_percentage = round(
+            (
+                total_completed
+                / total_required
+            )
+            * 100
+        )
+    else:
+        overall_percentage = 0
+
+    return render(
+        request,
+        'pathway/parent_athlete_pathway.html',
+        {
+            'athlete': athlete,
+            'athlete_pathway': athlete_pathway,
+            'level_progress': level_progress,
+            'event_sections': event_sections,
+            'total_required': total_required,
+            'total_completed': total_completed,
+            'overall_percentage': (
+                overall_percentage
+            ),
+        },
+    )
 
 # ============================================================
 # READ-ONLY LEVEL DETAIL

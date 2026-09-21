@@ -1,12 +1,8 @@
 {% extends "base.html" %}
 
-{% block title %}
-HP Pathway Overview
-{% endblock %}
+{% block title %}HP Pathway Overview{% endblock %}
 
-{% block page_header %}
-HP Pathway
-{% endblock %}
+{% block page_header %}HP Pathway{% endblock %}
 
 {% block content %}
 
@@ -20,48 +16,32 @@ HP Pathway
         padding: 34px;
         color: white;
         border-radius: 26px;
-        background:
-            linear-gradient(
-                135deg,
-                #111827,
-                #1e40af,
-                #4f46e5
-            );
-        box-shadow:
-            0 16px 45px
-            rgba(15, 23, 42, 0.16);
+        background: linear-gradient(135deg, #111827, #1e40af, #4f46e5);
+        box-shadow: 0 16px 45px rgba(15, 23, 42, 0.16);
     }
 
     .pathway-flow {
         display: grid;
-        grid-template-columns:
-            repeat(
-                4,
-                minmax(0, 1fr)
-            );
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 18px;
     }
 
-    .level-card {
+    .level-card,
+    .child-pathway-card {
         position: relative;
         height: 100%;
         padding: 24px;
         border: 1px solid #e5e7eb;
         border-radius: 22px;
         background: white;
-        box-shadow:
-            0 8px 24px
-            rgba(15, 23, 42, 0.06);
-        transition:
-            transform 0.2s ease,
-            box-shadow 0.2s ease;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .level-card:hover {
-        transform: translateY(-5px);
-        box-shadow:
-            0 14px 34px
-            rgba(15, 23, 42, 0.11);
+    .level-card:hover,
+    .child-pathway-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 34px rgba(15, 23, 42, 0.11);
     }
 
     .level-number {
@@ -101,13 +81,42 @@ HP Pathway
         font-weight: 700;
     }
 
+    .children-section {
+        padding: 28px;
+        border: 1px solid #dbeafe;
+        border-radius: 24px;
+        background: linear-gradient(135deg, #eff6ff, #eef2ff);
+    }
+
+    .child-pathway-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .pathway-route {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 14px;
+        border-radius: 14px;
+        background: #f8fafc;
+    }
+
+    .progress {
+        height: 10px;
+        border-radius: 999px;
+        background: #e2e8f0;
+    }
+
+    .progress-bar {
+        border-radius: 999px;
+    }
+
     @media (max-width: 1100px) {
         .pathway-flow {
-            grid-template-columns:
-                repeat(
-                    2,
-                    minmax(0, 1fr)
-                );
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
         .level-arrow {
@@ -115,24 +124,24 @@ HP Pathway
         }
     }
 
-    @media (max-width: 700px) {
-        .pathway-flow {
+    @media (max-width: 767.98px) {
+        .pathway-flow,
+        .child-pathway-grid {
             grid-template-columns: 1fr;
         }
 
-        .overview-hero {
-            padding: 24px;
+        .overview-hero,
+        .children-section {
+            padding: 22px;
         }
     }
 </style>
 
 
 <div class="container-fluid py-4">
-
     <div class="overview-shell">
 
         <section class="overview-hero mb-4">
-
             <div class="small text-uppercase fw-semibold opacity-75 mb-2">
                 GymCan High Performance Pathway
             </div>
@@ -142,50 +151,35 @@ HP Pathway
             </h1>
 
             <p class="lead mb-0 opacity-75">
-                Explore each stage of the High Performance pathway
-                and understand the skills and requirements athletes
-                work toward on Vault, Bars, Beam and Floor.
+                Explore each stage of the High Performance pathway and
+                understand the skills and requirements athletes work toward
+                on Vault, Bars, Beam and Floor.
             </p>
-
         </section>
 
 
         <div class="mb-4">
-
-            <h2 class="h4 mb-1">
-                High Performance Progression
-            </h2>
+            <h2 class="h4 mb-1">High Performance Progression</h2>
 
             <p class="text-muted mb-0">
-                Select any level to see what is required
-                to compete at that stage.
+                Select any level to see what is required to compete at that stage.
             </p>
-
         </div>
 
 
         <div class="pathway-flow">
-
             {% for card in level_cards %}
-
                 <div>
-
                     <article class="level-card">
-
                         <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
-
                             <div class="level-number">
                                 {{ forloop.counter }}
                             </div>
 
                             {% if not forloop.last %}
-                                <span class="level-arrow">
-                                    →
-                                </span>
+                                <span class="level-arrow">→</span>
                             {% endif %}
-
                         </div>
-
 
                         <div class="small text-uppercase fw-semibold text-primary mb-1">
                             HP Level
@@ -195,91 +189,51 @@ HP Pathway
                             {{ card.level.name }}
                         </h2>
 
-
                         {% if card.level.minimum_age %}
-
                             <div class="text-muted mb-3">
-
-                                Ages
-                                {{ card.level.minimum_age }}
-
+                                Ages {{ card.level.minimum_age }}
                                 {% if card.level.maximum_age %}
-                                    –
-                                    {{ card.level.maximum_age }}
+                                    – {{ card.level.maximum_age }}
                                 {% endif %}
-
                             </div>
-
                         {% endif %}
 
-
                         {% if card.level.description %}
-
                             <p class="text-muted">
                                 {{ card.level.description }}
                             </p>
-
                         {% endif %}
 
-
                         <div class="d-flex flex-wrap gap-2 mb-4">
-
-                            <span class="event-pill">
-                                🏃 Vault
-                            </span>
-
-                            <span class="event-pill">
-                                🤸 Bars
-                            </span>
-
-                            <span class="event-pill">
-                                ⚖️ Beam
-                            </span>
-
-                            <span class="event-pill">
-                                🎵 Floor
-                            </span>
-
+                            <span class="event-pill">🏃 Vault</span>
+                            <span class="event-pill">🤸 Bars</span>
+                            <span class="event-pill">⚖️ Beam</span>
+                            <span class="event-pill">🎵 Floor</span>
                         </div>
 
-
                         <div class="row g-2 mb-4">
-
                             <div class="col-6">
-
                                 <div class="level-stat">
-
                                     <div class="fw-bold">
                                         {{ card.requirement_count }}
                                     </div>
-
                                     <div class="small text-muted">
                                         Core Requirements
                                     </div>
-
                                 </div>
-
                             </div>
 
-
                             <div class="col-6">
-
                                 <div class="level-stat">
-
                                     <div class="fw-bold">
                                         {{ card.bonus_count }}
                                     </div>
-
                                     <div class="small text-muted">
                                         Bonus Opportunities
                                     </div>
-
                                 </div>
-
                             </div>
-
                         </div>
-
 
                         <a
                             href="{% url 'pathway:pathway_level_detail' card.level.id %}"
@@ -287,39 +241,137 @@ HP Pathway
                         >
                             View Level Requirements →
                         </a>
-
                     </article>
-
                 </div>
-
+            {% empty %}
+                <div class="alert alert-secondary mb-0">
+                    No active pathway levels are available.
+                </div>
             {% endfor %}
-
         </div>
 
 
+        {% if request.user.role == 'parent' %}
+            <section class="children-section mt-5">
+                <div class="mb-4">
+                    <div class="small text-uppercase fw-semibold text-primary mb-1">
+                        Family Pathways
+                    </div>
+
+                    <h2 class="h3 fw-bold mb-1">
+                        My Children's Pathways
+                    </h2>
+
+                    <p class="text-muted mb-0">
+                        View the current and target pathway progress shared by your child's coaching team.
+                    </p>
+                </div>
+
+                <div class="child-pathway-grid">
+                    {% for row in parent_pathway_cards %}
+                        <article class="child-pathway-card">
+                            <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                                <div>
+                                    <div class="small text-muted mb-1">Athlete</div>
+                                    <h3 class="h4 fw-bold mb-0">
+                                        {{ row.athlete.get_full_name|default:row.athlete.username }}
+                                    </h3>
+                                </div>
+
+                                {% if row.pathway %}
+                                    <span class="badge text-bg-primary">
+                                        {{ row.pathway.get_status_display }}
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            {% if row.pathway %}
+                                <div class="pathway-route mb-4">
+                                    <div>
+                                        <div class="small text-muted">Current</div>
+                                        <strong>
+                                            {{ row.pathway.current_level.name|default:"Not assigned" }}
+                                        </strong>
+                                    </div>
+
+                                    <span class="text-muted fw-bold">→</span>
+
+                                    <div>
+                                        <div class="small text-muted">Target</div>
+                                        <strong class="text-primary">
+                                            {{ row.pathway.target_level.name|default:"Not assigned" }}
+                                        </strong>
+                                    </div>
+                                </div>
+
+                                {% if row.current_progress %}
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between gap-3 mb-1">
+                                            <span class="small fw-semibold">
+                                                {{ row.current_progress.level.name }}
+                                            </span>
+                                            <span class="small fw-bold">
+                                                {{ row.current_progress.percentage }}%
+                                            </span>
+                                        </div>
+
+                                        <div class="progress" role="progressbar" aria-label="Current level progress" aria-valuenow="{{ row.current_progress.percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                            <div class="progress-bar bg-primary" style="width: {{ row.current_progress.percentage }}%;"></div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                {% if row.target_progress and row.pathway.target_level_id != row.pathway.current_level_id %}
+                                    <div class="mb-4">
+                                        <div class="d-flex justify-content-between gap-3 mb-1">
+                                            <span class="small fw-semibold">
+                                                {{ row.target_progress.level.name }}
+                                            </span>
+                                            <span class="small fw-bold">
+                                                {{ row.target_progress.percentage }}%
+                                            </span>
+                                        </div>
+
+                                        <div class="progress" role="progressbar" aria-label="Target level progress" aria-valuenow="{{ row.target_progress.percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                            <div class="progress-bar bg-success" style="width: {{ row.target_progress.percentage }}%;"></div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                <a
+                                    href="{% url 'pathway:parent_athlete_pathway' row.athlete.id %}"
+                                    class="btn btn-success w-100"
+                                >
+                                    View Child's Progress →
+                                </a>
+                            {% else %}
+                                <div class="alert alert-light border mb-0">
+                                    A pathway has not been configured for this athlete yet.
+                                </div>
+                            {% endif %}
+                        </article>
+                    {% empty %}
+                        <div class="alert alert-light border mb-0">
+                            No approved child connections were found. Connect an athlete from the Parent Dashboard first.
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
+
         <section class="card border-0 shadow-sm rounded-4 mt-4">
-
             <div class="card-body p-4">
-
-                <h3 class="h5 mb-2">
-                    How to Use the Pathway
-                </h3>
+                <h3 class="h5 mb-2">How to Use the Pathway</h3>
 
                 <p class="text-muted mb-0">
-                    The pathway shows the technical requirements
-                    associated with each HP level. Individual athlete
-                    progress is managed separately by the Head Coach,
-                    so this page is designed simply to help athletes
-                    and families understand what each stage requires
-                    and what comes next.
+                    The pathway shows the technical requirements associated with each HP level.
+                    Individual progress is maintained by the Head Coach, while parents can view
+                    progress shared for their approved linked children.
                 </p>
-
             </div>
-
         </section>
-
     </div>
-
 </div>
 
 {% endblock %}

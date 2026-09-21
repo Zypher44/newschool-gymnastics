@@ -90,4 +90,10 @@ urlpatterns = [
         views.athlete_d_score_dashboard,
         name='athlete_d_score_dashboard',
     ),
+
+    path(
+        'parent/athlete/<int:athlete_id>/',
+        views.parent_athlete_pathway,
+        name='parent_athlete_pathway',
+    ),
 ]

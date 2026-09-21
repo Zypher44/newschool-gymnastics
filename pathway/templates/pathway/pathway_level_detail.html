@@ -155,11 +155,92 @@ HP Pathway
 
     @media (max-width: 767px) {
         .level-hero {
-            padding: 24px;
+            padding: 21px 18px;
+            border-radius: 18px;
+        }
+
+        .level-hero h1 {
+            font-size: clamp(1.7rem, 9vw, 2.25rem);
+        }
+
+        .level-shell > .card,
+        .event-section {
+            border-radius: 16px !important;
+        }
+
+        .level-shell .card-header,
+        .level-shell .card-body,
+        .information-card > div {
+            padding: 16px !important;
+        }
+
+        .level-flow {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .level-flow-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            text-align: center;
         }
 
         .level-flow-arrow {
             display: none;
+        }
+
+        .level-page-navigation {
+            align-items: stretch !important;
+            flex-direction: column;
+        }
+
+        .level-page-navigation > .btn,
+        .level-page-navigation .pathway-navigation,
+        .level-page-navigation .pathway-navigation .btn {
+            width: 100%;
+        }
+
+        .pathway-navigation {
+            display: grid;
+            grid-template-columns: 1fr;
+        }
+
+        .event-icon {
+            width: 46px;
+            height: 46px;
+            min-width: 46px;
+            border-radius: 13px;
+            font-size: 1.3rem;
+        }
+
+        .requirement-item {
+            padding: 15px;
+        }
+
+        .requirement-item > .d-flex {
+            flex-direction: column;
+        }
+
+        .requirement-number {
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
+        }
+
+        .requirement-meta > * {
+            white-space: normal;
+        }
+
+        .level-bottom-navigation .d-flex {
+            width: 100%;
+            display: grid !important;
+            grid-template-columns: 1fr;
+        }
+
+        .level-bottom-navigation .btn {
+            width: 100%;
         }
     }
 </style>
@@ -337,7 +418,7 @@ HP Pathway
              NAVIGATION
              ===================================================== -->
 
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 level-page-navigation">
 
             <a
                 href="{% url 'pathway:pathway_overview' %}"
@@ -623,7 +704,7 @@ HP Pathway
              BOTTOM NAVIGATION
              ===================================================== -->
 
-        <section class="card border-0 shadow-sm rounded-4 mt-4">
+        <section class="card border-0 shadow-sm rounded-4 mt-4 level-bottom-navigation">
 
             <div class="card-body p-4">
 
