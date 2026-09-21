@@ -50,6 +50,7 @@
             margin: 0;
             overflow-x: hidden;
             background: var(--app-background);
+            overflow-wrap: anywhere;
         }
 
         img,
@@ -222,6 +223,8 @@
             flex-grow: 1;
         }
 
+        .min-w-0 { min-width: 0; }
+
         .topbar {
             position: sticky;
             top: 0;
@@ -343,13 +346,14 @@
 
             .sidebar {
                 position: fixed;
-                left: -310px;
-                width: 300px;
+                left: -100%;
+                width: min(300px, 88vw);
+                height: 100dvh;
                 transition: left 0.25s ease;
             }
 
             .sidebar.mobile-open { left: 0; }
-            .sidebar.collapsed { width: 300px; }
+            .sidebar.collapsed { width: min(300px, 88vw); }
 
             .sidebar.collapsed .brand-text,
             .sidebar.collapsed .sidebar-label,
@@ -383,6 +387,15 @@
 
             .main-content {
                 padding: 14px 12px 28px;
+            }
+
+            .main-content > .container-fluid {
+                padding-right: 0;
+                padding-left: 0;
+            }
+
+            .table-responsive table {
+                min-width: 560px;
             }
 
             .topbar-search { display: none; }
@@ -675,6 +688,9 @@
                             type="button"
                             class="btn btn-outline-secondary mobile-menu-button"
                             id="mobile-menu-button"
+                            aria-label="Open navigation menu"
+                            aria-controls="sidebar"
+                            aria-expanded="false"
                         >
                             ☰
                         </button>
@@ -882,6 +898,7 @@
         if (sidebar) sidebar.classList.remove("mobile-open");
         if (sidebarOverlay) sidebarOverlay.classList.remove("active");
         document.body.classList.remove("mobile-menu-open");
+        if (mobileMenuButton) mobileMenuButton.setAttribute("aria-expanded", "false");
     }
 
     if (mobileMenuButton && sidebar && sidebarOverlay) {
@@ -889,6 +906,7 @@
             sidebar.classList.add("mobile-open");
             sidebarOverlay.classList.add("active");
             document.body.classList.add("mobile-menu-open");
+            mobileMenuButton.setAttribute("aria-expanded", "true");
         });
 
         sidebarOverlay.addEventListener("click", closeMobileSidebar);

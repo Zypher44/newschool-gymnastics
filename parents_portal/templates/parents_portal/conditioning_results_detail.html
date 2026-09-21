@@ -4,182 +4,51 @@
 {% block page_header %}Conditioning Result{% endblock %}
 
 {% block content %}
-
 <style>
     .result-shell { max-width: 1200px; margin: 0 auto; }
-    .result-card {
-        border: 0;
-        border-radius: 18px;
-        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
-    }
-
+    .result-card { border: 0; border-radius: 18px; box-shadow: 0 8px 24px rgba(15,23,42,.06); }
     @media (max-width: 575.98px) {
         .result-header .btn { width: 100%; }
+        .result-card .card-header, .result-card .card-body { padding: 1rem !important; }
+        .result-stat-value { font-size: 1.55rem !important; }
+        .exercise-heading { flex-direction: column; }
+        .exercise-heading .badge { align-self: flex-start; }
     }
 </style>
 
-<div class="container-fluid py-4">
-    <div class="result-shell">
-        <div class="result-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-            <div>
-                <div class="small text-uppercase fw-semibold text-primary mb-1">
-                    {{ athlete.get_full_name|default:athlete.username }}
-                </div>
-                <h1 class="h2 fw-bold mb-1">{{ athlete_result.session.title }}</h1>
-                <p class="text-muted mb-0">
-                    {{ athlete_result.session.testing_date|date:"l, F j, Y" }}
-                </p>
-            </div>
-
-            <a href="{% url 'parent_conditioning_history' %}?athlete={{ athlete.id }}" class="btn btn-outline-secondary">
-                ← Conditioning History
-            </a>
-        </div>
-
-        <div class="row g-3 mb-4">
-            <div class="col-6 col-lg-3">
-                <div class="card result-card text-center h-100">
-                    <div class="card-body p-3 p-md-4">
-                        <div class="fs-2 mb-2">📊</div>
-                        <div class="small text-muted">Total Score</div>
-                        <div class="h2 fw-bold mb-0">{{ athlete_result.total_score }}</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-6 col-lg-3">
-                <div class="card result-card text-center h-100">
-                    <div class="card-body p-3 p-md-4">
-                        <div class="fs-2 mb-2">⏮️</div>
-                        <div class="small text-muted">Previous</div>
-                        <div class="h2 fw-bold mb-0">{{ previous_score|default_if_none:"—" }}</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-6 col-lg-3">
-                <div class="card result-card text-center h-100">
-                    <div class="card-body p-3 p-md-4">
-                        <div class="fs-2 mb-2">📈</div>
-                        <div class="small text-muted">Change</div>
-                        <div class="h2 fw-bold mb-0 {% if score_change > 0 %}text-success{% elif score_change < 0 %}text-danger{% endif %}">
-                            {% if score_change is not None %}
-                                {% if score_change > 0 %}+{% endif %}{{ score_change }}
-                            {% else %}—{% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-6 col-lg-3">
-                <div class="card result-card text-center h-100">
-                    <div class="card-body p-3 p-md-4">
-                        <div class="fs-2 mb-2">🏅</div>
-                        <div class="small text-muted">Ranking</div>
-                        <div class="h2 fw-bold mb-0">
-                            {% if athlete_result.session.show_rankings_to_parents %}
-                                {% if athlete_result.rank %}#{{ athlete_result.rank }}{% else %}—{% endif %}
-                            {% else %}
-                                <span class="fs-6 text-muted">Hidden</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <section class="card result-card mb-4">
-            <div class="card-header bg-white border-0 p-4 pb-2">
-                <h2 class="h5 fw-bold mb-1">Exercise Results</h2>
-                <div class="small text-muted">Published conditioning exercise results</div>
-            </div>
-
-            <div class="card-body p-4">
-                <div class="row g-3">
-                    {% for exercise_result in exercise_results %}
-                        <div class="col-12 col-md-6">
-                            <article class="border rounded-3 p-3 h-100">
-                                <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
-                                    <div>
-                                        <div class="fw-bold">{{ exercise_result.exercise.name }}</div>
-                                        <div class="small text-muted">{{ exercise_result.exercise.get_unit_display }}</div>
-                                    </div>
-
-                                    {% if exercise_result.not_completed %}
-                                        <span class="badge text-bg-secondary">Not Completed</span>
-                                    {% else %}
-                                        <span class="badge text-bg-success">Completed</span>
-                                    {% endif %}
-                                </div>
-
-                                <div class="row g-2">
-                                    <div class="col-6">
-                                        <div class="small text-muted">Result</div>
-                                        <div class="fw-semibold">
-                                            {% if exercise_result.not_completed %}
-                                                —
-                                            {% elif exercise_result.raw_result %}
-                                                {{ exercise_result.raw_result }}
-                                            {% else %}—{% endif %}
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="small text-muted">Points</div>
-                                        <div class="fw-bold">{{ exercise_result.score }}</div>
-                                    </div>
-                                </div>
-                            </article>
-                        </div>
-                    {% empty %}
-                        <div class="col-12 text-center text-muted py-4">
-                            No exercise results are available.
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </section>
-
-        <section class="card result-card">
-            <div class="card-header bg-white border-0 p-4 pb-2">
-                <h2 class="h5 fw-bold mb-1">Conditioning Guidelines</h2>
-            </div>
-            <div class="card-body p-4">
-                <div class="accordion" id="parent-conditioning-guidelines">
-                    {% for exercise_result in exercise_results %}
-                        <div class="accordion-item">
-                            <h3 class="accordion-header" id="exercise-heading-{{ exercise_result.exercise.id }}">
-                                <button
-                                    class="accordion-button collapsed"
-                                    type="button"
-                                    data-bs-toggle="collapse"
-                                    data-bs-target="#exercise-guideline-{{ exercise_result.exercise.id }}"
-                                >
-                                    {{ exercise_result.exercise.name }}
-                                </button>
-                            </h3>
-                            <div
-                                id="exercise-guideline-{{ exercise_result.exercise.id }}"
-                                class="accordion-collapse collapse"
-                                data-bs-parent="#parent-conditioning-guidelines"
-                            >
-                                <div class="accordion-body">
-                                    {% if exercise_result.exercise.guidelines %}
-                                        {{ exercise_result.exercise.guidelines|linebreaks }}
-                                    {% else %}
-                                        <span class="text-muted">No guidelines were provided.</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </section>
-
-        <div class="alert alert-light border mt-4 mb-0">
-            This page only includes verified results published to parents. Internal coach notes are not displayed.
-        </div>
+<div class="container-fluid py-4"><div class="result-shell">
+    <div class="result-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div><div class="small text-uppercase fw-semibold text-primary mb-1">{{ athlete.get_full_name|default:athlete.username }}</div><h1 class="h2 fw-bold mb-1">{{ athlete_result.session.title }}</h1><p class="text-muted mb-0">{{ athlete_result.session.testing_date|date:"l, F j, Y" }}</p></div>
+        <a href="{% url 'parent_conditioning_history' %}?athlete={{ athlete.id }}" class="btn btn-outline-secondary">← Conditioning History</a>
     </div>
-</div>
 
+    <div class="row g-2 g-md-3 mb-4">
+        <div class="col-6 col-lg-3"><div class="card result-card text-center h-100"><div class="card-body p-3 p-md-4"><div class="fs-2 mb-2">📊</div><div class="small text-muted">Total Score</div><div class="result-stat-value h2 fw-bold mb-0">{{ athlete_result.total_score }}</div></div></div></div>
+        <div class="col-6 col-lg-3"><div class="card result-card text-center h-100"><div class="card-body p-3 p-md-4"><div class="fs-2 mb-2">⏮️</div><div class="small text-muted">Previous</div><div class="result-stat-value h2 fw-bold mb-0">{{ previous_score|default_if_none:"—" }}</div></div></div></div>
+        <div class="col-6 col-lg-3"><div class="card result-card text-center h-100"><div class="card-body p-3 p-md-4"><div class="fs-2 mb-2">📈</div><div class="small text-muted">Change</div><div class="result-stat-value h2 fw-bold mb-0 {% if score_change > 0 %}text-success{% elif score_change < 0 %}text-danger{% endif %}">{% if score_change is not None %}{% if score_change > 0 %}+{% endif %}{{ score_change }}{% else %}—{% endif %}</div></div></div></div>
+        <div class="col-6 col-lg-3"><div class="card result-card text-center h-100"><div class="card-body p-3 p-md-4"><div class="fs-2 mb-2">🏅</div><div class="small text-muted">Ranking</div><div class="result-stat-value h2 fw-bold mb-0">{% if athlete_result.session.show_rankings_to_parents %}{% if athlete_result.rank %}#{{ athlete_result.rank }}{% else %}—{% endif %}{% else %}<span class="fs-6 text-muted">Hidden</span>{% endif %}</div></div></div></div>
+    </div>
+
+    <section class="card result-card mb-4">
+        <div class="card-header bg-white border-0 p-4 pb-2"><h2 class="h5 fw-bold mb-1">Exercise Results</h2><div class="small text-muted">Published conditioning exercise results</div></div>
+        <div class="card-body p-4"><div class="row g-3">
+            {% for exercise_result in exercise_results %}
+                <div class="col-12 col-md-6"><article class="border rounded-3 p-3 h-100">
+                    <div class="exercise-heading d-flex justify-content-between align-items-start gap-2 mb-2"><div><div class="fw-bold">{{ exercise_result.exercise.name }}</div><div class="small text-muted">{{ exercise_result.exercise.get_unit_display }}</div></div>{% if exercise_result.not_completed %}<span class="badge text-bg-secondary">Not Completed</span>{% else %}<span class="badge text-bg-success">Completed</span>{% endif %}</div>
+                    <div class="row g-2"><div class="col-6"><div class="small text-muted">Result</div><div class="fw-semibold">{% if exercise_result.not_completed %}—{% elif exercise_result.raw_result %}{{ exercise_result.raw_result }}{% else %}—{% endif %}</div></div><div class="col-6"><div class="small text-muted">Points</div><div class="fw-bold">{{ exercise_result.score }}</div></div></div>
+                </article></div>
+            {% empty %}<div class="col-12 text-center text-muted py-4">No exercise results are available.</div>{% endfor %}
+        </div></div>
+    </section>
+
+    <section class="card result-card">
+        <div class="card-header bg-white border-0 p-4 pb-2"><h2 class="h5 fw-bold mb-1">Conditioning Guidelines</h2></div>
+        <div class="card-body p-4"><div class="accordion" id="parent-conditioning-guidelines">
+            {% for exercise_result in exercise_results %}
+                <div class="accordion-item"><h3 class="accordion-header" id="exercise-heading-{{ exercise_result.exercise.id }}"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#exercise-guideline-{{ exercise_result.exercise.id }}">{{ exercise_result.exercise.name }}</button></h3><div id="exercise-guideline-{{ exercise_result.exercise.id }}" class="accordion-collapse collapse" data-bs-parent="#parent-conditioning-guidelines"><div class="accordion-body">{% if exercise_result.exercise.guidelines %}{{ exercise_result.exercise.guidelines|linebreaks }}{% else %}<span class="text-muted">No guidelines were provided.</span>{% endif %}</div></div></div>
+            {% endfor %}
+        </div></div>
+    </section>
+    <div class="alert alert-light border mt-4 mb-0">This page only includes verified results published to parents. Internal coach notes are not displayed.</div>
+</div></div>
 {% endblock %}
