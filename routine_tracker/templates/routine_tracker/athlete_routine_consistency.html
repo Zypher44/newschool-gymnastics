@@ -234,15 +234,15 @@ Routine Consistency
                 <div class="summary-card">
 
                     <div class="small text-muted">
-                        Hits
+                        Wows
                     </div>
 
                     <div class="summary-value text-success">
-                        {{ overall_stats.hits }}
+                        {{ overall_stats.wows }}
                     </div>
 
                     <div class="small text-muted">
-                        Full routine hits
+                        Exceptional routines
                     </div>
 
                 </div>
@@ -255,7 +255,7 @@ Routine Consistency
                 <div class="summary-card">
 
                     <div class="small text-muted">
-                        Hit Rate
+                        Success Rate
                     </div>
 
                     <div class="summary-value">
@@ -263,7 +263,7 @@ Routine Consistency
                     </div>
 
                     <div class="small text-muted">
-                        Hits ÷ attempts
+                        Wow + Hit ÷ attempts
                     </div>
 
                 </div>
@@ -284,7 +284,7 @@ Routine Consistency
                     </div>
 
                     <div class="small text-muted">
-                        Hit + partial credit for Mid
+                        Wow + partial credit for Hit
                     </div>
 
                 </div>
@@ -341,10 +341,23 @@ Routine Consistency
                         <div class="metric-row">
 
                             <span>
-                                Hits
+                                Wows
                             </span>
 
                             <span class="metric-value hit-value">
+                                {{ event_row.stats.wows }}
+                            </span>
+
+                        </div>
+
+
+                        <div class="metric-row">
+
+                            <span>
+                                Hits
+                            </span>
+
+                            <span class="metric-value">
                                 {{ event_row.stats.hits }}
                             </span>
 
@@ -354,20 +367,7 @@ Routine Consistency
                         <div class="metric-row">
 
                             <span>
-                                Mids
-                            </span>
-
-                            <span class="metric-value">
-                                {{ event_row.stats.mids }}
-                            </span>
-
-                        </div>
-
-
-                        <div class="metric-row">
-
-                            <span>
-                                Missed
+                                Misses
                             </span>
 
                             <span class="metric-value">
@@ -380,7 +380,7 @@ Routine Consistency
                         <div class="metric-row">
 
                             <span>
-                                Hit Rate
+                                Success Rate
                             </span>
 
                             <span class="metric-value hit-value">
@@ -432,13 +432,13 @@ Routine Consistency
                         <strong>Attempts</strong>
                         show routine volume.
 
-                        <strong>Hit Rate</strong>
-                        shows how often full routines were hit.
+                        <strong>Success Rate</strong>
+                        shows how often routines were marked Wow or Hit.
 
                         <strong>Routine Quality</strong>
-                        also gives partial credit to Mid routines,
-                        helping show progress even when every routine
-                        is not yet a full hit.
+                        gives full credit to Wow routines and partial
+                        credit to Hit routines, helping show both
+                        successful volume and exceptional quality.
 
                     </div>
 

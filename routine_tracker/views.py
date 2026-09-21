@@ -3,11 +3,6 @@ from datetime import (
     timedelta,
 )
 
-from datetime import (
-    datetime,
-    timedelta,
-)
-
 from parents_portal.models import (
     ParentAthleteLink,
 )
@@ -81,6 +76,16 @@ def build_stats(
         attempts
     )
 
+    wow_count = sum(
+        1
+        for attempt in attempts
+        if (
+            attempt.result
+            ==
+            DailyRoutineAttempt.RESULT_WOW
+        )
+    )
+
     hit_count = sum(
         1
         for attempt in attempts
@@ -88,16 +93,6 @@ def build_stats(
             attempt.result
             ==
             DailyRoutineAttempt.RESULT_HIT
-        )
-    )
-
-    mid_count = sum(
-        1
-        for attempt in attempts
-        if (
-            attempt.result
-            ==
-            DailyRoutineAttempt.RESULT_MID
         )
     )
 
@@ -114,9 +109,14 @@ def build_stats(
 
     if attempt_count:
 
+        success_count = (
+            wow_count
+            + hit_count
+        )
+
         hit_rate = round(
             (
-                hit_count
+                success_count
                 /
                 attempt_count
             )
@@ -126,10 +126,10 @@ def build_stats(
         quality = round(
             (
                 (
-                    hit_count
+                    wow_count
                     +
                     (
-                        mid_count
+                        hit_count
                         * 0.5
                     )
                 )
@@ -141,15 +141,17 @@ def build_stats(
 
     else:
 
+        success_count = 0
         hit_rate = 0
         quality = 0
 
 
     return {
         'attempts': attempt_count,
+        'wows': wow_count,
         'hits': hit_count,
-        'mids': mid_count,
         'missed': missed_count,
+        'success_count': success_count,
         'hit_rate': hit_rate,
         'quality': quality,
     }
@@ -902,6 +904,7 @@ def parent_routine_consistency_home(
         ParentAthleteLink.objects
         .filter(
             parent=request.user,
+            approved=True,
         )
         .select_related(
             'athlete',
@@ -971,6 +974,7 @@ def parent_routine_consistency(
         ParentAthleteLink.objects
         .filter(
             parent=request.user,
+            approved=True,
         )
         .select_related(
             'athlete',

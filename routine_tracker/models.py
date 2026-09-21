@@ -3,7 +3,6 @@ from django.db import models
 
 
 class DailyRoutineSession(models.Model):
-
     practice_date = models.DateField(
         unique=True,
     )
@@ -41,51 +40,27 @@ class DailyRoutineSession(models.Model):
 
 
 class DailyRoutineAttempt(models.Model):
-
     EVENT_VAULT = 'vault'
     EVENT_BARS = 'bars'
     EVENT_BEAM = 'beam'
     EVENT_FLOOR = 'floor'
 
     EVENT_CHOICES = [
-        (
-            EVENT_VAULT,
-            'Vault',
-        ),
-        (
-            EVENT_BARS,
-            'Bars',
-        ),
-        (
-            EVENT_BEAM,
-            'Beam',
-        ),
-        (
-            EVENT_FLOOR,
-            'Floor',
-        ),
+        (EVENT_VAULT, 'Vault'),
+        (EVENT_BARS, 'Bars'),
+        (EVENT_BEAM, 'Beam'),
+        (EVENT_FLOOR, 'Floor'),
     ]
 
-
+    RESULT_WOW = 'wow'
     RESULT_HIT = 'hit'
-    RESULT_MID = 'mid'
     RESULT_MISSED = 'missed'
 
     RESULT_CHOICES = [
-        (
-            RESULT_HIT,
-            'Hit',
-        ),
-        (
-            RESULT_MID,
-            'Mid',
-        ),
-        (
-            RESULT_MISSED,
-            'Missed',
-        ),
+        (RESULT_WOW, 'Wow'),
+        (RESULT_HIT, 'Hit'),
+        (RESULT_MISSED, 'Miss'),
     ]
-
 
     session = models.ForeignKey(
         DailyRoutineSession,
@@ -133,9 +108,7 @@ class DailyRoutineAttempt(models.Model):
         auto_now_add=True,
     )
 
-
     class Meta:
-
         ordering = [
             'athlete__first_name',
             'athlete__last_name',
@@ -165,9 +138,7 @@ class DailyRoutineAttempt(models.Model):
             ),
         ]
 
-
     def __str__(self):
-
         return (
             f'{self.athlete} - '
             f'{self.get_event_display()} '

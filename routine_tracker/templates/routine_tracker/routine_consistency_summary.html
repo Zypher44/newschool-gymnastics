@@ -178,11 +178,11 @@ Routine Consistency
                 <div class="summary-card">
 
                     <div class="small text-muted">
-                        Hits
+                        Wows
                     </div>
 
                     <div class="summary-value text-success">
-                        {{ overall_stats.hits }}
+                        {{ overall_stats.wows }}
                     </div>
 
                 </div>
@@ -195,7 +195,7 @@ Routine Consistency
                 <div class="summary-card">
 
                     <div class="small text-muted">
-                        Hit Rate
+                        Success Rate
                     </div>
 
                     <div class="summary-value">
@@ -264,7 +264,7 @@ Routine Consistency
                         <div class="d-flex flex-wrap gap-2">
 
                             <span class="hit-badge">
-                                Hit Rate:
+                                Success Rate:
                                 {{ row.overall.hit_rate }}%
                             </span>
 
@@ -309,6 +309,17 @@ Routine Consistency
 
                                     <div class="metric-row">
                                         <span>
+                                            Wows
+                                        </span>
+
+                                        <strong>
+                                            {{ event_row.stats.wows }}
+                                        </strong>
+                                    </div>
+
+
+                                    <div class="metric-row">
+                                        <span>
                                             Hits
                                         </span>
 
@@ -320,18 +331,7 @@ Routine Consistency
 
                                     <div class="metric-row">
                                         <span>
-                                            Mids
-                                        </span>
-
-                                        <strong>
-                                            {{ event_row.stats.mids }}
-                                        </strong>
-                                    </div>
-
-
-                                    <div class="metric-row">
-                                        <span>
-                                            Missed
+                                            Misses
                                         </span>
 
                                         <strong>
@@ -345,7 +345,7 @@ Routine Consistency
 
                                     <div class="metric-row">
                                         <span>
-                                            Hit Rate
+                                            Success Rate
                                         </span>
 
                                         <strong>

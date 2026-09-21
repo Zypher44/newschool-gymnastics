@@ -33,4 +33,17 @@ urlpatterns = [
         views.parent_video_detail,
         name='parent_video_detail',
     ),
+
+
+    path(
+        'conditioning/',
+        views.parent_conditioning_history,
+        name='parent_conditioning_history',
+    ),
+
+    path(
+        'conditioning/results/<int:result_id>/',
+        views.parent_conditioning_result_detail,
+        name='parent_conditioning_result_detail',
+    ),
 ]

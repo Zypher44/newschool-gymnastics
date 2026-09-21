@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}Conditioning Testing Progress{% endblock %}
+{% block page_header %}Conditioning Testing{% endblock %}
+
+{% block content %}
+
+<style>
+    .conditioning-shell { max-width: 1300px; margin: 0 auto; }
+    .conditioning-hero {
+        padding: 28px;
+        color: white;
+        border-radius: 22px;
+        background: linear-gradient(135deg, #111827, #1e40af, #4f46e5);
+        box-shadow: 0 14px 38px rgba(15, 23, 42, 0.15);
+    }
+    .conditioning-card {
+        border: 0;
+        border-radius: 18px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    }
+    .mobile-result { display: none; }
+
+    @media (max-width: 767.98px) {
+        .conditioning-hero { padding: 22px; }
+        .desktop-results { display: none; }
+        .mobile-result { display: block; }
+        .athlete-selector { width: 100%; }
+        .athlete-selector .btn { width: 100%; }
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="conditioning-shell">
+
+        <section class="conditioning-hero mb-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-3">
+                <div>
+                    <div class="small text-uppercase fw-semibold opacity-75 mb-2">
+                        Parent View
+                    </div>
+                    <h1 class="h2 fw-bold mb-2">Conditioning Testing Progress</h1>
+                    <p class="mb-0 opacity-75">
+                        Follow your child's published conditioning scores and improvement over time.
+                    </p>
+                </div>
+
+                {% if linked_athletes|length > 1 %}
+                    <div class="dropdown athlete-selector">
+                        <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            {{ selected_athlete.get_full_name|default:selected_athlete.username }}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            {% for athlete in linked_athletes %}
+                                <li>
+                                    <a
+                                        class="dropdown-item {% if selected_athlete and athlete.id == selected_athlete.id %}active{% endif %}"
+                                        href="{% url 'parent_conditioning_history' %}?athlete={{ athlete.id }}"
+                                    >
+                                        {{ athlete.get_full_name|default:athlete.username }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+
+        {% if not selected_athlete %}
+            <section class="card conditioning-card">
+                <div class="card-body text-center py-5">
+                    <div class="display-5 mb-3">🔗</div>
+                    <h2 class="h4 fw-bold">No connected child</h2>
+                    <p class="text-muted mb-3">
+                        Connect an athlete and wait for director approval before viewing results.
+                    </p>
+                    <a href="{% url 'connect_athlete' %}" class="btn btn-primary">
+                        Connect Athlete
+                    </a>
+                </div>
+            </section>
+
+        {% elif history_rows %}
+            <div class="mb-3">
+                <div class="small text-muted">Viewing athlete</div>
+                <h2 class="h4 fw-bold mb-0">
+                    {{ selected_athlete.get_full_name|default:selected_athlete.username }}
+                </h2>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-md-4">
+                    <div class="card conditioning-card text-center h-100">
+                        <div class="card-body p-4">
+                            <div class="fs-2 mb-2">📊</div>
+                            <div class="text-muted small">Latest Score</div>
+                            <div class="display-6 fw-bold">{{ latest_result.total_score }}</div>
+                            <div class="small text-muted">
+                                {{ latest_result.session.testing_date|date:"M d, Y" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <div class="card conditioning-card text-center h-100">
+                        <div class="card-body p-4">
+                            <div class="fs-2 mb-2">🏆</div>
+                            <div class="text-muted small">Personal Best</div>
+                            <div class="display-6 fw-bold">{{ personal_best.total_score }}</div>
+                            <div class="small text-muted">{{ personal_best.session.title }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <div class="card conditioning-card text-center h-100">
+                        <div class="card-body p-4">
+                            <div class="fs-2 mb-2">📅</div>
+                            <div class="text-muted small">Testing Sessions</div>
+                            <div class="display-6 fw-bold">{{ history_rows|length }}</div>
+                            <div class="small text-muted">Published results</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <section class="card conditioning-card mb-4">
+                <div class="card-header bg-white border-0 p-4 pb-2">
+                    <h2 class="h5 fw-bold mb-1">Score Progress</h2>
+                    <div class="small text-muted">Published conditioning scores over time</div>
+                </div>
+                <div class="card-body" style="height: 340px;">
+                    <canvas id="conditioningProgressChart"></canvas>
+                </div>
+            </section>
+
+            <section class="card conditioning-card">
+                <div class="card-header bg-white border-0 p-4 pb-2">
+                    <h2 class="h5 fw-bold mb-1">Conditioning History</h2>
+                    <div class="small text-muted">Select a session to view each exercise result</div>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="table-responsive desktop-results">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Session</th>
+                                    <th>Score</th>
+                                    <th>Previous</th>
+                                    <th>Change</th>
+                                    <th>Ranking</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in history_rows %}
+                                    <tr>
+                                        <td>{{ item.result.session.testing_date|date:"M d, Y" }}</td>
+                                        <td class="fw-semibold">{{ item.result.session.title }}</td>
+                                        <td class="fw-bold">{{ item.result.total_score }}</td>
+                                        <td>{{ item.previous_score|default_if_none:"—" }}</td>
+                                        <td>
+                                            {% if item.score_change is not None %}
+                                                {% if item.score_change > 0 %}
+                                                    <span class="badge text-bg-success">+{{ item.score_change }}</span>
+                                                {% elif item.score_change < 0 %}
+                                                    <span class="badge text-bg-danger">{{ item.score_change }}</span>
+                                                {% else %}
+                                                    <span class="badge text-bg-secondary">0</span>
+                                                {% endif %}
+                                            {% else %}—{% endif %}
+                                        </td>
+                                        <td>
+                                            {% if item.result.session.show_rankings_to_parents %}
+                                                {% if item.result.rank %}
+                                                    <span class="badge text-bg-primary">#{{ item.result.rank }}</span>
+                                                {% else %}—{% endif %}
+                                            {% else %}
+                                                <span class="text-muted">Hidden</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end">
+                                            <a href="{% url 'parent_conditioning_result_detail' item.result.id %}" class="btn btn-sm btn-outline-primary">
+                                                View Results
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mobile-result">
+                        {% for item in history_rows %}
+                            <article class="border rounded-3 p-3 mb-3">
+                                <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+                                    <div>
+                                        <div class="fw-bold">{{ item.result.session.title }}</div>
+                                        <div class="small text-muted">
+                                            {{ item.result.session.testing_date|date:"M d, Y" }}
+                                        </div>
+                                    </div>
+                                    <div class="h4 fw-bold mb-0">{{ item.result.total_score }}</div>
+                                </div>
+
+                                <div class="d-flex flex-wrap gap-2 mb-3">
+                                    {% if item.score_change is not None %}
+                                        <span class="badge {% if item.score_change > 0 %}text-bg-success{% elif item.score_change < 0 %}text-bg-danger{% else %}text-bg-secondary{% endif %}">
+                                            Change:
+                                            {% if item.score_change > 0 %}+{% endif %}{{ item.score_change }}
+                                        </span>
+                                    {% endif %}
+
+                                    {% if item.result.session.show_rankings_to_parents and item.result.rank %}
+                                        <span class="badge text-bg-primary">Rank #{{ item.result.rank }}</span>
+                                    {% endif %}
+                                </div>
+
+                                <a href="{% url 'parent_conditioning_result_detail' item.result.id %}" class="btn btn-outline-primary w-100">
+                                    View Results
+                                </a>
+                            </article>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            {{ chart_labels|json_script:"conditioning-chart-labels" }}
+            {{ chart_scores|json_script:"conditioning-chart-scores" }}
+            <script>
+                const conditioningLabels = JSON.parse(
+                    document.getElementById('conditioning-chart-labels').textContent
+                );
+                const conditioningScores = JSON.parse(
+                    document.getElementById('conditioning-chart-scores').textContent
+                );
+                const chartCanvas = document.getElementById('conditioningProgressChart');
+
+                if (chartCanvas) {
+                    new Chart(chartCanvas, {
+                        type: 'line',
+                        data: {
+                            labels: conditioningLabels,
+                            datasets: [{
+                                label: 'Total Score',
+                                data: conditioningScores,
+                                tension: 0.3,
+                                fill: false,
+                                borderColor: '#2563eb',
+                                backgroundColor: '#2563eb',
+                                borderWidth: 3,
+                                pointRadius: 5,
+                                pointHoverRadius: 7
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: { y: { beginAtZero: true } },
+                            plugins: { legend: { display: false } }
+                        }
+                    });
+                }
+            </script>
+
+        {% else %}
+            <section class="card conditioning-card">
+                <div class="card-body text-center py-5">
+                    <div class="display-4 mb-3">📊</div>
+                    <h2 class="h4 fw-bold">No conditioning results yet</h2>
+                    <p class="text-muted mb-0">
+                        Verified results will appear here after the coach publishes them to parents.
+                    </p>
+                </div>
+            </section>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

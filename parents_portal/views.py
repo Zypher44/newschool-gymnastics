@@ -899,3 +899,259 @@ def connect_athlete(request):
             'pending_links': pending_links,
         },
     )
+
+# ============================================================
+# PARENT CONDITIONING TESTING HISTORY
+# ============================================================
+
+
+@login_required
+def parent_conditioning_history(request):
+    if request.user.role != 'parent':
+        return parent_access_denied(request)
+
+    links = list(
+        get_parent_links(request.user)
+    )
+
+    linked_athletes = [
+        link.athlete
+        for link in links
+    ]
+
+    selected_athlete = None
+
+    selected_athlete_id = (
+        request.GET.get('athlete')
+    )
+
+    if linked_athletes:
+        if selected_athlete_id:
+            selected_athlete = next(
+                (
+                    athlete
+                    for athlete in linked_athletes
+                    if (
+                        str(athlete.id)
+                        == selected_athlete_id
+                    )
+                ),
+                None,
+            )
+
+            if selected_athlete is None:
+                raise Http404(
+                    'This athlete is not linked '
+                    'to your account.'
+                )
+
+        else:
+            selected_athlete = (
+                linked_athletes[0]
+            )
+
+    athlete_results = []
+
+    if selected_athlete:
+        athlete_results = list(
+            AthleteTestingResult.objects
+            .filter(
+                athlete=selected_athlete,
+                status='verified',
+                session__published_to_parents=True,
+            )
+            .select_related(
+                'session',
+                'verified_by',
+            )
+            .prefetch_related(
+                'exercise_results__exercise',
+            )
+            .order_by(
+                '-session__testing_date',
+                '-session__created_at',
+            )
+        )
+
+    history_rows = []
+
+    for index, result in enumerate(
+        athlete_results
+    ):
+        previous_result = None
+
+        if index + 1 < len(athlete_results):
+            previous_result = (
+                athlete_results[index + 1]
+            )
+
+        previous_score = (
+            previous_result.total_score
+            if previous_result
+            else None
+        )
+
+        score_change = None
+
+        if previous_result:
+            score_change = (
+                result.total_score
+                - previous_result.total_score
+            )
+
+        history_rows.append({
+            'result': result,
+            'previous_score': previous_score,
+            'score_change': score_change,
+        })
+
+    chart_results = list(
+        reversed(athlete_results)
+    )
+
+    chart_labels = [
+        result.session.testing_date.strftime(
+            '%b %d'
+        )
+        for result in chart_results
+    ]
+
+    chart_scores = [
+        float(result.total_score)
+        for result in chart_results
+    ]
+
+    latest_result = (
+        athlete_results[0]
+        if athlete_results
+        else None
+    )
+
+    personal_best = None
+
+    if athlete_results:
+        personal_best = max(
+            athlete_results,
+            key=lambda result: (
+                result.total_score
+            ),
+        )
+
+    return render(
+        request,
+        (
+            'parents_portal/'
+            'conditioning_history.html'
+        ),
+        {
+            'linked_athletes': linked_athletes,
+            'selected_athlete': (
+                selected_athlete
+            ),
+            'history_rows': history_rows,
+            'latest_result': latest_result,
+            'personal_best': personal_best,
+            'chart_labels': chart_labels,
+            'chart_scores': chart_scores,
+        },
+    )
+
+
+# ============================================================
+# PARENT CONDITIONING RESULT DETAIL
+# ============================================================
+
+
+@login_required
+def parent_conditioning_result_detail(
+    request,
+    result_id,
+):
+    if request.user.role != 'parent':
+        return parent_access_denied(request)
+
+    linked_athlete_ids = (
+        get_parent_linked_athlete_ids(
+            request.user
+        )
+    )
+
+    athlete_result = get_object_or_404(
+        AthleteTestingResult.objects
+        .select_related(
+            'athlete',
+            'session',
+            'verified_by',
+        )
+        .prefetch_related(
+            'exercise_results__exercise',
+        ),
+        id=result_id,
+        athlete_id__in=linked_athlete_ids,
+        status='verified',
+        session__published_to_parents=True,
+    )
+
+    athlete = athlete_result.athlete
+
+    exercise_results = (
+        athlete_result
+        .exercise_results
+        .select_related('exercise')
+        .order_by(
+            'exercise__display_order',
+            'exercise__name',
+        )
+    )
+
+    # Only compare against results the parent
+    # is authorized to see.
+    previous_result = (
+        AthleteTestingResult.objects
+        .filter(
+            athlete=athlete,
+            status='verified',
+            session__published_to_parents=True,
+            session__testing_date__lt=(
+                athlete_result
+                .session
+                .testing_date
+            ),
+        )
+        .select_related('session')
+        .order_by(
+            '-session__testing_date',
+            '-session__created_at',
+        )
+        .first()
+    )
+
+    previous_score = None
+    score_change = None
+
+    if previous_result:
+        previous_score = (
+            previous_result.total_score
+        )
+
+        score_change = (
+            athlete_result.total_score
+            - previous_result.total_score
+        )
+
+    return render(
+        request,
+        (
+            'parents_portal/'
+            'conditioning_result_detail.html'
+        ),
+        {
+            'athlete': athlete,
+            'athlete_result': athlete_result,
+            'exercise_results': (
+                exercise_results
+            ),
+            'previous_score': previous_score,
+            'score_change': score_change,
+        },
+    )
