@@ -105,7 +105,7 @@ class MultipleVideoField(
             'widget',
             MultipleVideoInput(
                 attrs={
-                    'accept': 'video/*',
+                    'accept': '.mp4,video/mp4',
                     'multiple': True,
                     'class': 'form-control',
                 },
@@ -392,10 +392,6 @@ class VideoUploadForm(forms.Form):
 
         allowed_extensions = {
             '.mp4',
-            '.mov',
-            '.m4v',
-            '.webm',
-            '.avi',
         }
 
         maximum_file_size = (
@@ -415,7 +411,7 @@ class VideoUploadForm(forms.Form):
                 errors.append(
                     (
                         f'{uploaded_file.name}: '
-                        f'unsupported video format.'
+                        'only MP4 videos are currently supported.'
                     )
                 )
 
