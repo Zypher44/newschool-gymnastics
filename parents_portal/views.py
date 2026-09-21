@@ -22,6 +22,11 @@ from surveys.models import DailySurvey
 from video_library.models import Video
 
 from .forms import ConnectAthleteForm
+from .access import (
+    get_approved_parent_athlete_ids,
+    get_approved_parent_links,
+    get_parent_gym_ids as get_active_parent_gym_ids,
+)
 from .models import ParentAthleteLink
 
 
@@ -46,12 +51,7 @@ def get_parent_links(user):
     """
 
     return (
-        ParentAthleteLink.objects
-        .filter(
-            parent=user,
-            approved=True,
-        )
-        .select_related('athlete')
+        get_approved_parent_links(user)
         .order_by(
             'athlete__first_name',
             'athlete__last_name',
@@ -65,17 +65,7 @@ def get_parent_linked_athlete_ids(user):
     Return IDs for athletes with approved parent links.
     """
 
-    return (
-        ParentAthleteLink.objects
-        .filter(
-            parent=user,
-            approved=True,
-        )
-        .values_list(
-            'athlete_id',
-            flat=True,
-        )
-    )
+    return get_approved_parent_athlete_ids(user)
 
 
 def get_parent_gym_ids(user):
@@ -84,23 +74,7 @@ def get_parent_gym_ids(user):
     linked athletes.
     """
 
-    linked_athlete_ids = (
-        get_parent_linked_athlete_ids(user)
-    )
-
-    return (
-        GymMembership.objects
-        .filter(
-            user_id__in=linked_athlete_ids,
-            role='athlete',
-            is_active=True,
-        )
-        .values_list(
-            'gym_id',
-            flat=True,
-        )
-        .distinct()
-    )
+    return get_active_parent_gym_ids(user)
 
 
 # ============================================================
@@ -144,8 +118,8 @@ def get_parent_videos(
                 )
             )
         )
-        .exclude(
-            status=Video.STATUS_ARCHIVED,
+        .filter(
+            status=Video.STATUS_READY,
         )
         .select_related(
             'primary_athlete',

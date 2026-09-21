@@ -16,7 +16,7 @@ from .forms_routines import (
     AthleteRoutineElementForm,
 )
 
-from parents_portal.models import ParentAthleteLink
+from parents_portal.access import get_approved_parent_links
 
 from .models import (
     AthletePathway,
@@ -1046,12 +1046,7 @@ def pathway_overview(request):
 
     if request.user.role == 'parent':
         parent_links = (
-            ParentAthleteLink.objects
-            .filter(
-                parent=request.user,
-                approved=True,
-            )
-            .select_related('athlete')
+            get_approved_parent_links(request.user)
             .order_by(
                 'athlete__first_name',
                 'athlete__last_name',
@@ -1184,11 +1179,8 @@ def parent_athlete_pathway(
         return redirect('role_redirect')
 
     parent_link = get_object_or_404(
-        ParentAthleteLink.objects
-        .select_related('athlete'),
-        parent=request.user,
+        get_approved_parent_links(request.user),
         athlete_id=athlete_id,
-        approved=True,
     )
 
     athlete = parent_link.athlete

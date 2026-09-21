@@ -2,7 +2,7 @@ from datetime import datetime, time
 from pathlib import Path
 import statistics
 from django.urls import reverse
-from parents_portal.models import ParentAthleteLink
+from parents_portal.access import get_approved_parent_links
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -480,12 +480,7 @@ def family_video_library(request):
 
     else:
         approved_links = (
-            ParentAthleteLink.objects
-            .filter(
-                parent=user,
-                approved=True
-            )
-            .select_related('athlete')
+            get_approved_parent_links(user)
             .order_by(
                 'athlete__first_name',
                 'athlete__last_name',
