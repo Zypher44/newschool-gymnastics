@@ -237,6 +237,7 @@ class Video(models.Model):
     # --------------------------------------------------------
 
     STATUS_UPLOADING = 'uploading'
+    STATUS_PROCESSING = 'processing'
     STATUS_READY = 'ready'
     STATUS_FAILED = 'failed'
     STATUS_ARCHIVED = 'archived'
@@ -245,6 +246,10 @@ class Video(models.Model):
         (
             STATUS_UPLOADING,
             'Uploading',
+        ),
+        (
+            STATUS_PROCESSING,
+            'Converting to MP4',
         ),
         (
             STATUS_READY,
@@ -486,6 +491,10 @@ class Video(models.Model):
 
     content_type = models.CharField(
         max_length=100,
+        blank=True,
+    )
+
+    processing_error = models.TextField(
         blank=True,
     )
 

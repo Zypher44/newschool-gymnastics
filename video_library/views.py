@@ -21,7 +21,6 @@ from .ai.comparison_summary import build_comparison_summary
 from .ai.frame_service import extract_analysis_frames
 from .ai.pose_overlay_service import generate_pose_overlay_frames
 from .ai.pose_service import analyze_extracted_frames
-from .ai.thumbnail_service import generate_video_thumbnail
 from .ai.video_service import process_video_file
 
 from .forms import TechniqueProfileForm, VideoUploadForm
@@ -997,7 +996,7 @@ def video_upload(request):
                             '',
                         ),
                         ai_status=ai_status,
-                        status=Video.STATUS_READY,
+                        status=Video.STATUS_UPLOADING,
                     )
 
                     video.tagged_athletes.set(
@@ -1008,33 +1007,6 @@ def video_upload(request):
 
                     uploaded_videos.append(video)
 
-            thumbnail_failures = []
-
-            for video in uploaded_videos:
-                try:
-                    generate_video_thumbnail(video)
-
-                    video.refresh_from_db(
-                        fields=['thumbnail'],
-                    )
-
-                    print(
-                        'THUMBNAIL GENERATED:',
-                        video.id,
-                        video.thumbnail.name,
-                    )
-
-                except Exception as error:
-                    thumbnail_failures.append(
-                        video.id
-                    )
-
-                    print(
-                        'THUMBNAIL GENERATION FAILED:',
-                        video.id,
-                        repr(error),
-                    )
-
             video_count = len(uploaded_videos)
 
             messages.success(
@@ -1043,20 +1015,9 @@ def video_upload(request):
                     f'{video_count} '
                     f'video'
                     f'{"s" if video_count != 1 else ""} '
-                    'uploaded successfully.'
+                    'uploaded and queued for MP4 conversion.'
                 ),
             )
-
-            if thumbnail_failures:
-                messages.warning(
-                    request,
-                    (
-                        f'{len(thumbnail_failures)} '
-                        'thumbnail'
-                        f'{"s" if len(thumbnail_failures) != 1 else ""} '
-                        'could not be generated.'
-                    ),
-                )
 
             return redirect(
                 'video_library:dashboard'
