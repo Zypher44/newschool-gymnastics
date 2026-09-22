@@ -19,7 +19,6 @@
     }
 
     .settings-card {
-        height: 100%;
         border: 0;
         border-radius: 20px;
         box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
@@ -48,6 +47,15 @@
         font-size: 0.82rem;
     }
 
+    .helptext ul {
+        margin: 8px 0 0;
+        padding-left: 18px;
+    }
+
+    .helptext li + li {
+        margin-top: 4px;
+    }
+
     @media (max-width: 575.98px) {
         .settings-hero { padding: 22px; }
         .settings-card .card-body { padding: 20px !important; }
@@ -71,7 +79,7 @@
 
         <div class="row g-4">
             <div class="col-12 col-lg-7">
-                <section class="card settings-card">
+                <section class="card settings-card mb-4">
                     <div class="card-body p-4">
                         <h2 class="h4 fw-bold mb-1">Personal Information</h2>
                         <p class="text-muted mb-4">
@@ -139,32 +147,10 @@
                         </form>
                     </div>
                 </section>
-            </div>
-
-            <div class="col-12 col-lg-5">
-                <section class="card settings-card mb-4">
-                    <div class="card-body p-4">
-                        <h2 class="h5 fw-bold mb-3">Account Details</h2>
-
-                        <div class="mb-3">
-                            <div class="small text-muted mb-1">Username</div>
-                            <div class="account-value">{{ user.username }}</div>
-                        </div>
-
-                        <div>
-                            <div class="small text-muted mb-1">Account Role</div>
-                            <div class="account-value">{{ user.get_role_display }}</div>
-                        </div>
-
-                        <p class="small text-muted mt-3 mb-0">
-                            Contact your gym director if your username or role is incorrect.
-                        </p>
-                    </div>
-                </section>
 
                 <section class="card settings-card">
                     <div class="card-body p-4">
-                        <h2 class="h5 fw-bold mb-1">Change Password</h2>
+                        <h2 class="h4 fw-bold mb-1">Change Password</h2>
                         <p class="text-muted mb-4">
                             Use a unique password that you do not use elsewhere.
                         </p>
@@ -196,6 +182,28 @@
                                 Change Password
                             </button>
                         </form>
+                    </div>
+                </section>
+            </div>
+
+            <div class="col-12 col-lg-5">
+                <section class="card settings-card">
+                    <div class="card-body p-4">
+                        <h2 class="h5 fw-bold mb-3">Account Details</h2>
+
+                        <div class="mb-3">
+                            <div class="small text-muted mb-1">Username</div>
+                            <div class="account-value">{{ user.username }}</div>
+                        </div>
+
+                        <div>
+                            <div class="small text-muted mb-1">Account Role</div>
+                            <div class="account-value">{{ user.get_role_display }}</div>
+                        </div>
+
+                        <p class="small text-muted mt-3 mb-0">
+                            Contact your gym director if your username or role is incorrect.
+                        </p>
                     </div>
                 </section>
             </div>
