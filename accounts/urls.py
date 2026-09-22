@@ -3,6 +3,7 @@ from django.urls import path
 
 from . import public_views
 from . import redirect_views
+from . import views
 
 from .redirect_views import role_redirect
 
@@ -32,6 +33,12 @@ urlpatterns = [
         'signup/',
         public_views.signup,
         name='signup',
+    ),
+
+    path(
+        'settings/',
+        views.account_settings,
+        name='account_settings',
     ),
 
     path(
