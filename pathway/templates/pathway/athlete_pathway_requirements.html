@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
 {% block title %}
-{{ athlete.get_full_name|default:athlete.username }} Skill Tree
+{{ athlete.get_full_name|default:athlete.username }} Pathway Skill Tree
 {% endblock %}
 
 {% block page_header %}
-HP Skill Tree
+Pathway Skill Tree
 {% endblock %}
 
 {% block content %}
@@ -287,6 +287,10 @@ HP Skill Tree
 <div class="container-fluid py-4">
 
     <div class="tree-shell">
+
+        {% if athlete_pathway.has_usag_optional_level %}
+            {% include "pathway/includes/usag_notice.html" %}
+        {% endif %}
 
 
         <!-- =====================================================
@@ -967,39 +971,42 @@ HP Skill Tree
                 Pathway Setup
             </a>
 
-            <a
-        href="{% url 'pathway:bars_d_score_calculator' athlete.id %}"
-        class="btn btn-success"
-        >
-        🧮 Bars D-Score
-        py</a>
-            <a
-    href="{% url 'pathway:beam_d_score_calculator' athlete.id %}"
-    class="btn btn-success"
->
-    🧮 Beam D-Score
-</a>
+            {% if not athlete_pathway.has_usag_optional_level %}
+                <a
+                    href="{% url 'pathway:bars_d_score_calculator' athlete.id %}"
+                    class="btn btn-success"
+                >
+                    🧮 Bars D-Score
+                </a>
+                <a
+                    href="{% url 'pathway:beam_d_score_calculator' athlete.id %}"
+                    class="btn btn-success"
+                >
+                    🧮 Beam D-Score
+                </a>
 
-            <a
-    href="{% url 'pathway:floor_d_score_calculator' athlete.id %}"
-    class="btn btn-success"
->
-    🧮 Floor D-Score
-</a>
-            <a
-    href="{% url 'pathway:vault_d_score_calculator' athlete.id %}"
-    class="btn btn-success"
->
-    🧮 Vault D-Score
-</a>
+                <a
+                    href="{% url 'pathway:floor_d_score_calculator' athlete.id %}"
+                    class="btn btn-success"
+                >
+                    🧮 Floor D-Score
+                </a>
+                <a
+                    href="{% url 'pathway:vault_d_score_calculator' athlete.id %}"
+                    class="btn btn-success"
+                >
+                    🧮 Vault D-Score
+                </a>
+
+                <a
+                    href="{% url 'pathway:athlete_d_score_dashboard' athlete.id %}"
+                    class="btn btn-dark"
+                >
+                    🧮 D-Score Dashboard
+                </a>
+            {% endif %}
 
         </div>
-    <a
-    href="{% url 'pathway:athlete_d_score_dashboard' athlete.id %}"
-    class="btn btn-dark"
->
-    🧮 D-Score Dashboard
-</a>
 
     </div>
 

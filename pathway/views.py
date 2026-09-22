@@ -1,3 +1,5 @@
+from functools import wraps
+
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
@@ -93,6 +95,28 @@ def can_view_pathway(
             'parent',
         ]
     )
+
+
+def hp_scoring_only(view):
+    """Do not apply the existing HP calculator to an optional pathway."""
+    @wraps(view)
+    def wrapped(request, athlete_id, *args, **kwargs):
+        if is_coach(request.user):
+            pathway = (
+                AthletePathway.objects
+                .select_related('current_level', 'target_level')
+                .filter(athlete_id=athlete_id).first()
+            )
+            if pathway and pathway.has_usag_optional_level:
+                messages.info(
+                    request,
+                    'USAG optional pathways use different start-value rules. '
+                    'Use the coach-assessed checklist; the HP D-score calculator '
+                    'does not calculate USAG optional scores.',
+                )
+                return redirect('pathway:athlete_pathway_requirements', athlete_id=athlete_id)
+        return view(request, athlete_id, *args, **kwargs)
+    return wrapped
 
 
 # ============================================================
@@ -1044,6 +1068,13 @@ def pathway_overview(request):
 
     parent_pathway_cards = []
 
+    program_sections = [
+        {'code': code, 'name': name,
+         'cards': [card for card in level_cards if card['level'].program == code]}
+        for code, name in PathwayLevel.PROGRAM_CHOICES
+        if any(card['level'].program == code for card in level_cards)
+    ]
+
     if request.user.role == 'parent':
         parent_links = (
             get_approved_parent_links(request.user)
@@ -1159,6 +1190,7 @@ def pathway_overview(request):
         'pathway/pathway_overview.html',
         {
             'level_cards': level_cards,
+            'program_sections': program_sections,
             'parent_pathway_cards': (
                 parent_pathway_cards
             ),
@@ -1468,6 +1500,7 @@ def pathway_level_detail(
         PathwayLevel.objects
         .filter(
             is_active=True,
+            program=level.program,
             order__lt=level.order,
         )
         .order_by(
@@ -1481,6 +1514,7 @@ def pathway_level_detail(
         PathwayLevel.objects
         .filter(
             is_active=True,
+            program=level.program,
             order__gt=level.order,
         )
         .order_by(
@@ -1492,6 +1526,9 @@ def pathway_level_detail(
 
     context = {
         'level': level,
+        'progression_levels': PathwayLevel.objects.filter(
+            is_active=True, program=level.program,
+        ).order_by('order', 'name'),
 
         'event_sections': (
             event_sections
@@ -1520,6 +1557,7 @@ def pathway_level_detail(
 
 
 @login_required
+@hp_scoring_only
 def bars_d_score_calculator(
     request,
     athlete_id,
@@ -1846,6 +1884,7 @@ def bars_d_score_calculator(
 
 
 @login_required
+@hp_scoring_only
 def beam_d_score_calculator(
     request,
     athlete_id,
@@ -2298,6 +2337,7 @@ def delete_routine_element(
 
 
 @login_required
+@hp_scoring_only
 def floor_d_score_calculator(
     request,
     athlete_id,
@@ -2635,6 +2675,7 @@ def floor_d_score_calculator(
 
 
 @login_required
+@hp_scoring_only
 def vault_d_score_calculator(
     request,
     athlete_id,
@@ -2977,6 +3018,7 @@ def vault_d_score_calculator(
     )
 
 @login_required
+@hp_scoring_only
 def athlete_d_score_dashboard(
     request,
     athlete_id,

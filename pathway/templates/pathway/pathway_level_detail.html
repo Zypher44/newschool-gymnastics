@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
 {% block title %}
-{{ level.name }} HP Pathway
+{{ level.name }} Pathway
 {% endblock %}
 
 {% block page_header %}
-HP Pathway
+Athlete Pathways
 {% endblock %}
 
 {% block content %}
@@ -261,7 +261,7 @@ HP Pathway
                 <div class="col-12 col-lg-8">
 
                     <div class="small text-uppercase fw-semibold opacity-75 mb-2">
-                        High Performance Pathway
+                        {{ level.get_program_display }}
                     </div>
 
                     <h1 class="display-6 fw-bold mb-2">
@@ -346,66 +346,18 @@ HP Pathway
             <div class="card-body p-4">
 
                 <div class="small text-uppercase fw-semibold text-muted mb-3">
-                    HP Progression
+                    {{ level.get_program_display }} Progression
                 </div>
 
                 <div class="level-flow">
 
-                    <span
-                        class="
-                            level-flow-item
-                            {% if level.code == 'aspire' %}
-                                current
-                            {% endif %}
-                        "
-                    >
-                        Aspire
-                    </span>
-
-                    <span class="level-flow-arrow">
-                        →
-                    </span>
-
-                    <span
-                        class="
-                            level-flow-item
-                            {% if level.code == 'youth_1' %}
-                                current
-                            {% endif %}
-                        "
-                    >
-                        Youth 1
-                    </span>
-
-                    <span class="level-flow-arrow">
-                        →
-                    </span>
-
-                    <span
-                        class="
-                            level-flow-item
-                            {% if level.code == 'youth_2' %}
-                                current
-                            {% endif %}
-                        "
-                    >
-                        Youth 2
-                    </span>
-
-                    <span class="level-flow-arrow">
-                        →
-                    </span>
-
-                    <span
-                        class="
-                            level-flow-item
-                            {% if level.code == 'youth_3' %}
-                                current
-                            {% endif %}
-                        "
-                    >
-                        Novice / Youth 3
-                    </span>
+                    {% for progression_level in progression_levels %}
+                        <a href="{% url 'pathway:pathway_level_detail' progression_level.id %}"
+                           class="level-flow-item text-decoration-none {% if level.id == progression_level.id %}current{% endif %}">
+                            {{ progression_level.name }}
+                        </a>
+                        {% if not forloop.last %}<span class="level-flow-arrow" aria-hidden="true">→</span>{% endif %}
+                    {% endfor %}
 
                 </div>
 

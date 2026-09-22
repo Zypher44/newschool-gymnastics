@@ -110,10 +110,15 @@
                     href="{% url 'pathway:pathway_overview' %}"
                     class="btn btn-light"
                 >
-                    ← Back to HP Pathway
+                    ← Back to Athlete Pathways
                 </a>
             </div>
         </section>
+
+
+        {% if athlete_pathway.has_usag_optional_level %}
+            {% include "pathway/includes/usag_notice.html" %}
+        {% endif %}
 
 
         <div class="row g-4 mb-4">
