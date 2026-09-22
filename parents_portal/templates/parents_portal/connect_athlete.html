@@ -1,238 +1,143 @@
 {% extends "base.html" %}
 
-{% block title %}
-Connect Athlete
+{% block title %}Connect an Athlete{% endblock %}
+{% block page_header %}Connect an Athlete{% endblock %}
+
+{% block extra_css %}
+<style>
+    .connect-shell { max-width: 880px; margin: 0 auto; }
+    .connect-hero {
+        padding: 28px;
+        color: white;
+        border-radius: 24px;
+        background: linear-gradient(135deg, #111827, #1e40af, #4f46e5);
+        box-shadow: 0 16px 45px rgba(15, 23, 42, 0.16);
+    }
+    .connect-card {
+        border: 0;
+        border-radius: 20px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    }
+    @media (max-width: 575.98px) {
+        .connect-hero { padding: 22px; }
+        .connect-card .card-body { padding: 20px !important; }
+        .connect-actions { display: grid !important; gap: 10px; }
+        .connect-actions .btn { width: 100%; }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-
-<div class="container-fluid">
-
-    <div class="row justify-content-center">
-
-        <div class="col-xl-7">
-
-            <div class="mb-4">
-
-                <a
-                    href="{% url 'parent_dashboard' %}"
-                    class="text-decoration-none"
-                >
-                    ← Parent Dashboard
-                </a>
-
-                <h2 class="fw-bold mt-3 mb-1">
-                    Connect an Athlete
-                </h2>
-
-                <p class="text-muted mb-0">
-                    Request access to your child's athlete account.
-                </p>
-
+<div class="container-fluid py-3 py-md-4">
+    <div class="connect-shell">
+        <section class="connect-hero mb-4">
+            <div class="small text-uppercase fw-semibold opacity-75 mb-2">
+                Parent Portal
             </div>
+            <h1 class="h2 fw-bold mb-2">Connect an Athlete</h1>
+            <p class="mb-0 opacity-75">
+                Request access to your child’s athlete account.
+            </p>
+        </section>
 
+        <section class="card connect-card mb-4">
+            <div class="card-body p-4">
+                <div class="alert alert-info border-0 mb-4">
+                    <div class="fw-bold mb-1">How it works</div>
+                    Enter your athlete’s exact name and date of birth.
+                    Your Gym Director must approve the request before
+                    athlete information becomes available.
+                </div>
 
-            <div class="card mb-4">
+                <form method="post" novalidate>
+                    {% csrf_token %}
 
-                <div class="card-body p-4">
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
 
-                    <div class="alert alert-info">
-
-                        <strong>How it works</strong>
-
-                        <div class="mt-1">
-                            Enter your athlete's username and date of birth.
-                            Your Gym Director will approve the connection
-                            before athlete information becomes available.
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold" for="{{ form.first_name.id_for_label }}">
+                                {{ form.first_name.label }}
+                            </label>
+                            {{ form.first_name }}
+                            {% for error in form.first_name.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
                         </div>
 
-                    </div>
-
-
-                    <form method="post">
-
-                        {% csrf_token %}
-
-
-                        <div class="mb-3">
-
-                            <label class="form-label fw-semibold">
-                                Athlete Username
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold" for="{{ form.last_name.id_for_label }}">
+                                {{ form.last_name.label }}
                             </label>
-
-                            <div class="mb-3">
-    <label class="form-label">
-        Athlete First Name
-    </label>
-
-    {{ form.first_name }}
-
-    {% for error in form.first_name.errors %}
-        <div class="text-danger small mt-1">
-            {{ error }}
-        </div>
-    {% endfor %}
-</div>
-
-<div class="mb-3">
-    <label class="form-label">
-        Athlete Last Name
-    </label>
-
-    {{ form.last_name }}
-
-    {% for error in form.last_name.errors %}
-        <div class="text-danger small mt-1">
-            {{ error }}
-        </div>
-    {% endfor %}
-</div>
-
-<div class="mb-3">
-    <label class="form-label">
-        Athlete Date of Birth
-    </label>
-
-    {{ form.date_of_birth }}
-
-    {% for error in form.date_of_birth.errors %}
-        <div class="text-danger small mt-1">
-            {{ error }}
-        </div>
-    {% endfor %}
-</div>
-
-<div class="mb-3">
-    <label class="form-label">
-        Relationship
-    </label>
-
-    {{ form.relationship }}
-
-    {% for error in form.relationship.errors %}
-        <div class="text-danger small mt-1">
-            {{ error }}
-        </div>
-    {% endfor %}
-</div>
-
-                            <div class="form-text">
-                                Enter the exact username associated with the athlete.
-                            </div>
-
+                            {{ form.last_name }}
+                            {% for error in form.last_name.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
                         </div>
 
-
-                        <div class="mb-3">
-
-                            <label class="form-label fw-semibold">
-                                Athlete Date of Birth
+                        <div class="col-12">
+                            <label class="form-label fw-semibold" for="{{ form.date_of_birth.id_for_label }}">
+                                {{ form.date_of_birth.label }}
                             </label>
-
                             {{ form.date_of_birth }}
-
+                            {% for error in form.date_of_birth.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
                         </div>
 
-
-                        <div class="mb-4">
-
-                            <label class="form-label fw-semibold">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold" for="{{ form.relationship.id_for_label }}">
                                 Your Relationship
                             </label>
-
                             {{ form.relationship }}
-
+                            {% for error in form.relationship.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
                         </div>
+                    </div>
 
-
-                        {% if form.non_field_errors %}
-
-                            <div class="alert alert-danger">
-                                {{ form.non_field_errors }}
-                            </div>
-
-                        {% endif %}
-
-
-                        <div class="d-flex justify-content-between">
-
-                            <a
-                                href="{% url 'parent_dashboard' %}"
-                                class="btn btn-light border"
-                            >
-                                Cancel
-                            </a>
-
-                            <button
-                                type="submit"
-                                class="btn btn-primary"
-                            >
-                                Request Connection
-                            </button>
-
-                        </div>
-
-                    </form>
-
-                </div>
-
+                    <div class="connect-actions d-flex justify-content-between mt-4">
+                        <a href="{% url 'parent_dashboard' %}" class="btn btn-light border">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            Request Connection
+                        </button>
+                    </div>
+                </form>
             </div>
+        </section>
 
-
-            {% if pending_links %}
-
-                <div class="card">
-
-                    <div class="card-header bg-white border-0 pt-4 px-4">
-
-                        <h5 class="fw-bold mb-1">
-                            Pending Requests
-                        </h5>
-
-                        <small class="text-muted">
-                            Waiting for Gym Director approval
-                        </small>
-
-                    </div>
-
-
-                    <div class="card-body">
-
-                        {% for link in pending_links %}
-
-                            <div class="d-flex justify-content-between align-items-center border-bottom py-3">
-
-                                <div>
-
-                                    <div class="fw-semibold">
-                                        {{ link.athlete.get_full_name|default:link.athlete.username }}
-                                    </div>
-
-                                    <div class="small text-muted">
-                                        {{ link.relationship }}
-                                    </div>
-
-                                </div>
-
-
-                                <span class="badge text-bg-warning">
-                                    Pending Approval
-                                </span>
-
-                            </div>
-
-                        {% endfor %}
-
-                    </div>
-
+        {% if pending_links %}
+            <section class="card connect-card">
+                <div class="card-header bg-white border-0 p-4 pb-2">
+                    <h2 class="h5 fw-bold mb-1">Pending Requests</h2>
+                    <p class="text-muted mb-0">
+                        Waiting for Gym Director approval.
+                    </p>
                 </div>
 
-            {% endif %}
-
-        </div>
-
+                <div class="card-body p-4 pt-2">
+                    {% for link in pending_links %}
+                        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 border-bottom py-3">
+                            <div>
+                                <div class="fw-semibold">
+                                    {{ link.athlete.get_full_name|default:link.athlete.username }}
+                                </div>
+                                <div class="small text-muted">{{ link.relationship }}</div>
+                            </div>
+                            <span class="badge text-bg-warning align-self-start align-self-sm-center">
+                                Pending Approval
+                            </span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
     </div>
-
 </div>
-
 {% endblock %}
