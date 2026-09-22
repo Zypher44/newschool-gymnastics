@@ -121,10 +121,10 @@
 
     .level-stat-label {
         display: block;
-        overflow-wrap: normal;
-        word-break: normal;
-        white-space: nowrap;
-        font-size: .78rem;
+        overflow-wrap: normal !important;
+        word-break: keep-all !important;
+        white-space: nowrap !important;
+        font-size: .74rem;
         line-height: 1.25;
     }
 
@@ -292,7 +292,7 @@
                                         {{ card.requirement_count }}
                                     </div>
                                     <div class="level-stat-label text-muted">
-                                        Core Requirements
+                                        Core&nbsp;Requirements
                                     </div>
                                 </div>
                             </div>
@@ -303,7 +303,7 @@
                                         {{ card.bonus_count }}
                                     </div>
                                     <div class="level-stat-label text-muted">
-                                        Bonus Opportunities
+                                        Bonus&nbsp;Opportunities
                                     </div>
                                 </div>
                             </div>
