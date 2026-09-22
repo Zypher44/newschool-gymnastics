@@ -9,6 +9,19 @@ from django.db import models
 
 class PathwayLevel(models.Model):
 
+    PROGRAM_HP = 'hp'
+    PROGRAM_USAG_OPTIONAL = 'usag_optional_2026'
+    PROGRAM_CHOICES = [
+        (PROGRAM_HP, 'High Performance'),
+        (PROGRAM_USAG_OPTIONAL, 'USAG Optional 2026–2030'),
+    ]
+
+    program = models.CharField(
+        max_length=30,
+        choices=PROGRAM_CHOICES,
+        default=PROGRAM_HP,
+    )
+
     name = models.CharField(
         max_length=100,
         unique=True,
@@ -355,6 +368,13 @@ class AthletePathway(models.Model):
         return (
             f'{self.athlete} - '
             f'{self.current_level or "No Level"}'
+        )
+
+    @property
+    def has_usag_optional_level(self):
+        return any(
+            level and level.program == PathwayLevel.PROGRAM_USAG_OPTIONAL
+            for level in (self.current_level, self.target_level)
         )
 
 

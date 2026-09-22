@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
-{% block title %}HP Pathway Overview{% endblock %}
+{% block title %}Athlete Pathways{% endblock %}
 
-{% block page_header %}HP Pathway{% endblock %}
+{% block page_header %}Athlete Pathways{% endblock %}
 
 {% block content %}
 
@@ -143,7 +143,7 @@
 
         <section class="overview-hero mb-4">
             <div class="small text-uppercase fw-semibold opacity-75 mb-2">
-                GymCan High Performance Pathway
+                Competitive and High Performance Pathways
             </div>
 
             <h1 class="display-6 fw-bold mb-2">
@@ -151,29 +151,34 @@
             </h1>
 
             <p class="lead mb-0 opacity-75">
-                Explore each stage of the High Performance pathway and
+                Explore competitive and High Performance pathways and
                 understand the skills and requirements athletes work toward
                 on Vault, Bars, Beam and Floor.
             </p>
         </section>
 
 
-        <div class="mb-4">
-            <h2 class="h4 mb-1">High Performance Progression</h2>
+        {% for section in program_sections %}
+        <div class="mb-4 mt-4">
+            <h2 class="h4 mb-1">{{ section.name }}</h2>
 
             <p class="text-muted mb-0">
-                Select any level to see what is required to compete at that stage.
+                Select a level to explore its coach-assessed requirements.
             </p>
         </div>
 
+        {% if section.code == 'usag_optional_2026' %}
+            {% include 'pathway/includes/usag_notice.html' %}
+        {% endif %}
+
 
         <div class="pathway-flow">
-            {% for card in level_cards %}
+            {% for card in section.cards %}
                 <div>
                     <article class="level-card">
                         <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
                             <div class="level-number">
-                                {{ forloop.counter }}
+                                {% if section.code == 'usag_optional_2026' %}{{ card.level.order }}{% else %}{{ forloop.counter }}{% endif %}
                             </div>
 
                             {% if not forloop.last %}
@@ -182,7 +187,7 @@
                         </div>
 
                         <div class="small text-uppercase fw-semibold text-primary mb-1">
-                            HP Level
+                            {{ section.name }}
                         </div>
 
                         <h2 class="h3 fw-bold mb-2">
@@ -198,7 +203,9 @@
                             </div>
                         {% endif %}
 
-                        {% if card.level.description %}
+                        {% if section.code == 'usag_optional_2026' %}
+                            <p class="text-muted">Track selected routine requirements on Vault, Bars, Beam and Floor.</p>
+                        {% elif card.level.description %}
                             <p class="text-muted">
                                 {{ card.level.description }}
                             </p>
@@ -249,6 +256,9 @@
                 </div>
             {% endfor %}
         </div>
+        {% empty %}
+            <p class="text-muted">No active pathway levels are available.</p>
+        {% endfor %}
 
 
         {% if request.user.role == 'parent' %}
@@ -365,7 +375,7 @@
                 <h3 class="h5 mb-2">How to Use the Pathway</h3>
 
                 <p class="text-muted mb-0">
-                    The pathway shows the technical requirements associated with each HP level.
+                    Each program has its own requirements. Checklist completion does not determine competition eligibility.
                     Individual progress is maintained by the Head Coach, while parents can view
                     progress shared for their approved linked children.
                 </p>
