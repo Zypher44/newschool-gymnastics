@@ -64,6 +64,11 @@
                         <div class="level-name text-primary">{% if athlete_pathway.target_level %}{{ athlete_pathway.target_level.name }}{% else %}Not Assigned{% endif %}</div>
                     </div>
                 </div>
+                {% if athlete_pathway.current_level %}
+                    <div class="small text-muted mt-3">
+                        Program: <strong>{{ athlete_pathway.current_level.get_program_display }}</strong>
+                    </div>
+                {% endif %}
             </section>
         {% endif %}
 

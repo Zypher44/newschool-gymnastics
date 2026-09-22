@@ -32,6 +32,10 @@ Athlete Pathways
             rgba(15, 23, 42, 0.16);
     }
 
+    .level-hero.usag-optional-hero {
+        background: linear-gradient(135deg, #7c2d12, #c2410c, #ea580c);
+    }
+
     .pathway-navigation {
         display: flex;
         flex-wrap: wrap;
@@ -254,7 +258,7 @@ Athlete Pathways
              HERO
              ===================================================== -->
 
-        <section class="level-hero mb-4">
+        <section class="level-hero {% if level.program == 'usag_optional_2026' %}usag-optional-hero{% endif %} mb-4">
 
             <div class="row align-items-center g-4">
 
@@ -335,6 +339,10 @@ Athlete Pathways
             </div>
 
         </section>
+
+        {% if level.program == 'usag_optional_2026' %}
+            {% include "pathway/includes/usag_notice.html" %}
+        {% endif %}
 
 
         <!-- =====================================================
