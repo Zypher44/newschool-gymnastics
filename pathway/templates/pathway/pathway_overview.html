@@ -119,6 +119,15 @@
         background: #f8fafc;
     }
 
+    .level-stat-label {
+        display: block;
+        overflow-wrap: normal;
+        word-break: normal;
+        white-space: nowrap;
+        font-size: .78rem;
+        line-height: 1.25;
+    }
+
     .event-pill {
         display: inline-flex;
         padding: 6px 10px;
@@ -282,7 +291,7 @@
                                     <div class="fw-bold">
                                         {{ card.requirement_count }}
                                     </div>
-                                    <div class="small text-muted">
+                                    <div class="level-stat-label text-muted">
                                         Core Requirements
                                     </div>
                                 </div>
@@ -293,7 +302,7 @@
                                     <div class="fw-bold">
                                         {{ card.bonus_count }}
                                     </div>
-                                    <div class="small text-muted">
+                                    <div class="level-stat-label text-muted">
                                         Bonus Opportunities
                                     </div>
                                 </div>
