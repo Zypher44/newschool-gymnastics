@@ -89,6 +89,11 @@
                                 <div class="col-12 col-lg-4">
                                     {% if row.pathway %}
                                         <div class="small text-muted mb-1">Pathway</div>
+                                        {% if row.pathway.current_level %}
+                                            <span class="badge text-bg-light border mb-2">
+                                                {{ row.pathway.current_level.get_program_display }}
+                                            </span>
+                                        {% endif %}
                                         <div class="d-flex flex-wrap align-items-center gap-2 athlete-path">
                                             <strong>{% if row.pathway.current_level %}{{ row.pathway.current_level.name }}{% else %}Not Assigned{% endif %}</strong>
                                             <span class="level-arrow">→</span>

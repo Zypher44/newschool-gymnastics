@@ -26,6 +26,53 @@
         gap: 18px;
     }
 
+    .program-section {
+        padding: 24px;
+        border-radius: 26px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+    }
+
+    .program-section.usag-program {
+        background: #fffaf0;
+        border-color: #fed7aa;
+    }
+
+    .program-heading {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .program-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 7px 11px;
+        border-radius: 999px;
+        color: #1e40af;
+        background: #dbeafe;
+        font-size: .75rem;
+        font-weight: 800;
+        letter-spacing: .03em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .usag-program .program-badge {
+        color: #9a3412;
+        background: #ffedd5;
+    }
+
+    .usag-program .level-card {
+        border-color: #fed7aa;
+    }
+
+    .usag-program .level-number {
+        color: #c2410c;
+        background: #ffedd5;
+    }
+
     .level-card,
     .child-pathway-card {
         position: relative;
@@ -159,18 +206,29 @@
 
 
         {% for section in program_sections %}
-        <div class="mb-4 mt-4">
-            <h2 class="h4 mb-1">{{ section.name }}</h2>
+        <section class="program-section {% if section.code == 'usag_optional_2026' %}usag-program{% endif %} mb-4 mt-4">
+            <div class="program-heading mb-4">
+                <div>
+                    <div class="small text-uppercase fw-semibold text-muted mb-1">
+                        Separate development path
+                    </div>
+                    <h2 class="h3 mb-1">{{ section.name }}</h2>
+                    <p class="text-muted mb-0">
+                        {% if section.code == 'usag_optional_2026' %}
+                            USAG Optional Levels 6–10 are tracked independently from the HP pathway.
+                        {% else %}
+                            GymCan High Performance pathway stages and requirements.
+                        {% endif %}
+                    </p>
+                </div>
+                <span class="program-badge">
+                    {% if section.code == 'usag_optional_2026' %}USAG Optional{% else %}HP Pathway{% endif %}
+                </span>
+            </div>
 
-            <p class="text-muted mb-0">
-                Select a level to explore its coach-assessed requirements.
-            </p>
-        </div>
-
-        {% if section.code == 'usag_optional_2026' %}
-            {% include 'pathway/includes/usag_notice.html' %}
-        {% endif %}
-
+            {% if section.code == 'usag_optional_2026' %}
+                {% include 'pathway/includes/usag_notice.html' %}
+            {% endif %}
 
         <div class="pathway-flow">
             {% for card in section.cards %}
@@ -187,7 +245,7 @@
                         </div>
 
                         <div class="small text-uppercase fw-semibold text-primary mb-1">
-                            {{ section.name }}
+                            {% if section.code == 'usag_optional_2026' %}USAG Optional Level{% else %}HP Level{% endif %}
                         </div>
 
                         <h2 class="h3 fw-bold mb-2">
@@ -256,6 +314,7 @@
                 </div>
             {% endfor %}
         </div>
+        </section>
         {% empty %}
             <p class="text-muted">No active pathway levels are available.</p>
         {% endfor %}
@@ -296,6 +355,11 @@
                             </div>
 
                             {% if row.pathway %}
+                                {% if row.pathway.current_level %}
+                                    <div class="small text-muted mb-2">
+                                        {{ row.pathway.current_level.get_program_display }}
+                                    </div>
+                                {% endif %}
                                 <div class="pathway-route mb-4">
                                     <div>
                                         <div class="small text-muted">Current</div>
