@@ -662,6 +662,11 @@
                 </a>
 
                 <div class="sidebar-account">
+                    <a href="{% url 'account_settings' %}" class="sidebar-link">
+                        <span class="sidebar-icon">⚙️</span>
+                        <span class="sidebar-label">Account Settings</span>
+                    </a>
+
                     <form method="post" action="{% url 'logout' %}">
                         {% csrf_token %}
                         <button type="submit" class="sidebar-link">
@@ -794,6 +799,7 @@
                             </button>
 
                             <div class="dropdown-menu dropdown-menu-end">
+                                <a href="{% url 'account_settings' %}" class="dropdown-item">⚙️ Account Settings</a>
                                 <a href="{% url 'notification_list' %}" class="dropdown-item">🔔 Notifications</a>
                                 <a href="{% url 'communication_inbox' %}" class="dropdown-item">💬 Messages</a>
 
