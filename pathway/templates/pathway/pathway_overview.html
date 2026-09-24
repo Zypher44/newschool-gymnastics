@@ -122,10 +122,20 @@
     .level-stat-label {
         display: block;
         overflow-wrap: normal !important;
-        word-break: keep-all !important;
-        white-space: nowrap !important;
-        font-size: .74rem;
+        word-break: normal !important;
+        white-space: normal !important;
+        font-size: .875rem;
         line-height: 1.25;
+    }
+
+    .level-stat-label span {
+        display: block;
+    }
+
+    .level-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr));
+        gap: 8px;
     }
 
     .event-pill {
@@ -285,25 +295,25 @@
                             <span class="event-pill">🎵 Floor</span>
                         </div>
 
-                        <div class="row g-2 mb-4">
-                            <div class="col-6">
+                        <div class="level-stats mb-4">
+                            <div class="level-stat-column">
                                 <div class="level-stat">
                                     <div class="fw-bold">
                                         {{ card.requirement_count }}
                                     </div>
                                     <div class="level-stat-label text-muted">
-                                        Core&nbsp;Requirements
+                                        <span>Core</span><span>Requirements</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="col-6">
+                            <div class="level-stat-column">
                                 <div class="level-stat">
                                     <div class="fw-bold">
                                         {{ card.bonus_count }}
                                     </div>
                                     <div class="level-stat-label text-muted">
-                                        Bonus&nbsp;Opportunities
+                                        <span>Bonus</span><span>Opportunities</span>
                                     </div>
                                 </div>
                             </div>
