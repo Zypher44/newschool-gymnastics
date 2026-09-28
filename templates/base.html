@@ -490,10 +490,6 @@
             </div>
 
             <div class="sidebar-navigation">
-                {% if user.role == 'director' or user.role == 'coach' or user.role == 'head_coach' or user.role == 'parent' or user.role == 'athlete' %}
-                    <a href="{% url 'gym_calendar' %}" class="sidebar-link"><span class="sidebar-icon">📅</span><span class="sidebar-label">Calendar</span></a>
-                {% endif %}
-
                 {% if user.role == 'director' %}
                     <div class="sidebar-section">Gym Management</div>
 
@@ -505,6 +501,11 @@
                     <a href="{% url 'people_management' %}" class="sidebar-link">
                         <span class="sidebar-icon">👥</span>
                         <span class="sidebar-label">Manage People</span>
+                    </a>
+
+                    <a href="{% url 'gym_calendar' %}" class="sidebar-link">
+                        <span class="sidebar-icon">📅</span>
+                        <span class="sidebar-label">Calendar</span>
                     </a>
 
                     <a href="{% url 'director_event_list' %}" class="sidebar-link">
@@ -565,6 +566,11 @@
                     </a>
 
                     <div class="sidebar-section">Planning</div>
+
+                    <a href="{% url 'gym_calendar' %}" class="sidebar-link">
+                        <span class="sidebar-icon">📅</span>
+                        <span class="sidebar-label">Calendar</span>
+                    </a>
 
                     <a href="{% url 'pathway:pathway_manager' %}" class="sidebar-link">
                         <span class="sidebar-icon">🌳</span>
@@ -663,6 +669,13 @@
                 {% endif %}
 
                 <div class="sidebar-section">Communication</div>
+
+                {% if user.role == 'parent' or user.role == 'athlete' %}
+                    <a href="{% url 'gym_calendar' %}" class="sidebar-link">
+                        <span class="sidebar-icon">📅</span>
+                        <span class="sidebar-label">Calendar</span>
+                    </a>
+                {% endif %}
 
                 <a href="{% url 'notification_list' %}" class="sidebar-link">
                     <span class="sidebar-icon">
@@ -829,6 +842,9 @@
                                 <a href="{% url 'account_settings' %}" class="dropdown-item">⚙️ Account Settings</a>
                                 <a href="{% url 'notification_list' %}" class="dropdown-item">🔔 Notifications</a>
                                 <a href="{% url 'communication_inbox' %}" class="dropdown-item">💬 Messages</a>
+                                {% if user.role == 'director' or user.role == 'coach' or user.role == 'head_coach' or user.role == 'parent' or user.role == 'athlete' %}
+                                    <a href="{% url 'gym_calendar' %}" class="dropdown-item">📅 Calendar</a>
+                                {% endif %}
 
                                 {% if user.role == 'director' %}
                                     <a href="{% url 'director_dashboard' %}" class="dropdown-item">🏢 Director Dashboard</a>

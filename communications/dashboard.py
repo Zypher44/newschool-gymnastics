@@ -251,6 +251,7 @@ def get_dashboard_communication_data(user):
             get_recent_conversations(user)
         ),
         'director_options': [],
+        'gym_directors': User.objects.none(),
         'coach_options': [],
         'athlete_coaches': [],
         'parent_options': [],
@@ -265,6 +266,7 @@ def get_dashboard_communication_data(user):
         'coach',
         'head_coach',
     ]:
+        data['gym_directors'] = get_allowed_message_recipients(user).filter(role='director')
         data['coach_options'] = (
             get_coach_quick_message_options(user)
         )
@@ -275,6 +277,7 @@ def get_dashboard_communication_data(user):
         )
 
     elif user.role == 'parent':
+        data['gym_directors'] = get_allowed_message_recipients(user).filter(role='director')
         data['parent_options'] = (
             get_parent_quick_message_options(user)
         )

@@ -159,8 +159,16 @@
             required
         >
             <option value="">
-                Choose an athlete or parent
+                Choose a director, athlete or parent
             </option>
+
+            {% if dashboard_communication.gym_directors %}
+                <optgroup label="Gym Director">
+                    {% for director in dashboard_communication.gym_directors %}
+                        <option value="{{ director.id }}">🏢 {{ director.get_full_name|default:director.username }} — Director</option>
+                    {% endfor %}
+                </optgroup>
+            {% endif %}
 
             {% for option in dashboard_communication.coach_options %}
 
@@ -205,57 +213,6 @@
         id="communication-related-athlete"
     >
 
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">
-                        Recipient
-                    </label>
-
-                    <select
-                        name="recipient"
-                        id="communication-recipient"
-                        class="form-select"
-                        required
-                    >
-                        <option value="">
-                            Choose an athlete or parent
-                        </option>
-
-                        {% for option in dashboard_communication.coach_options %}
-                            <optgroup
-                                label="{{ option.athlete_name }}"
-                            >
-                                <option
-                                    value="{{ option.athlete.id }}"
-                                    data-athlete="{{ option.athlete.id }}"
-                                >
-                                    🤸 {{ option.athlete_name }}
-                                </option>
-
-                                {% for parent in option.parents %}
-                                    <option
-                                        value="{{ parent.id }}"
-                                        data-athlete="{{ option.athlete.id }}"
-                                    >
-                                        👨‍👩‍👧
-                                        {% if parent.get_full_name %}
-                                            {{ parent.get_full_name }}
-                                        {% else %}
-                                            {{ parent.username }}
-                                        {% endif %}
-                                        — Parent
-                                    </option>
-                                {% endfor %}
-                            </optgroup>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <input
-                    type="hidden"
-                    name="related_athlete"
-                    id="communication-related-athlete"
-                >
-
             {% elif user.role == 'athlete' %}
 
                 <div class="mb-3">
@@ -294,7 +251,7 @@
 
                 <div class="mb-3">
                     <label class="form-label fw-semibold">
-                        Coach
+                        Recipient
                     </label>
 
                     <select
@@ -304,8 +261,16 @@
                         required
                     >
                         <option value="">
-                            Choose a coach
+                            Choose a director or coach
                         </option>
+
+                        {% if dashboard_communication.gym_directors %}
+                            <optgroup label="Gym Director">
+                                {% for director in dashboard_communication.gym_directors %}
+                                    <option value="{{ director.id }}">🏢 {{ director.get_full_name|default:director.username }} — Director</option>
+                                {% endfor %}
+                            </optgroup>
+                        {% endif %}
 
                         {% for option in dashboard_communication.parent_options %}
                             <optgroup

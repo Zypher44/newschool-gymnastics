@@ -864,72 +864,8 @@ Parent Dashboard
 
 
                 <!-- COMMUNICATIONS -->
-
                 {% if dashboard_communication %}
-
-                    <div class="card">
-
-                        <div class="card-header bg-white border-0 pt-4 px-4">
-
-                            <h5 class="fw-bold mb-1">
-                                Communications
-                            </h5>
-
-                            <small class="text-muted">
-                                Gym updates and announcements
-                            </small>
-
-                        </div>
-
-
-                        <div class="card-body">
-
-                            {% if dashboard_communication.unread_count %}
-
-                                <div class="alert alert-primary mb-3">
-
-                                    <strong>
-                                        {{ dashboard_communication.unread_count }}
-                                    </strong>
-
-                                    unread message{{ dashboard_communication.unread_count|pluralize }}
-
-                                </div>
-
-                            {% endif %}
-
-
-                            {% for item in dashboard_communication.recent_items %}
-
-                                <div class="border-bottom py-3">
-
-                                    <div class="fw-semibold">
-                                        {{ item.title }}
-                                    </div>
-
-
-                                    {% if item.created_at %}
-
-                                        <div class="small text-muted">
-                                            {{ item.created_at|date:"M j, Y" }}
-                                        </div>
-
-                                    {% endif %}
-
-                                </div>
-
-                            {% empty %}
-
-                                <div class="text-muted text-center py-3">
-                                    No recent communications.
-                                </div>
-
-                            {% endfor %}
-
-                        </div>
-
-                    </div>
-
+                    {% include "communications/dashboard_communication_card.html" %}
                 {% endif %}
 
             </div>

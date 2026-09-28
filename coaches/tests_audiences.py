@@ -9,7 +9,7 @@ from communications.services import get_allowed_message_recipients
 from gyms.models import Gym, GymMembership, TrainingGroup, TrainingGroupCoach, TrainingGroupAthlete
 from parents_portal.models import ParentAthleteLink
 from .audiences import visible_events
-from .models import TeamEvent
+from .models import CoachAthleteAssignment, TeamEvent
 
 
 class GymAudienceTests(TestCase):
@@ -36,6 +36,37 @@ class GymAudienceTests(TestCase):
         TrainingGroupCoach.objects.create(group=self.other_group, coach=self.people['coach_other_group'])
         TrainingGroupAthlete.objects.create(group=self.group, athlete=self.people['athlete_test'])
         ParentAthleteLink.objects.create(parent=self.people['parent_test'], athlete=self.people['athlete_test'], approved=True)
+        CoachAthleteAssignment.objects.create(coach=self.people['coach_test'], athlete=self.people['athlete_test'])
+
+    def test_dashboard_message_choices_and_parent_coach_message(self):
+        director = self.people['director_test']
+        coach = self.people['coach_test']
+        parent = self.people['parent_test']
+
+        self.client.force_login(coach)
+        response = self.client.get(reverse('coach_dashboard'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f'value="{director.pk}"')
+        self.assertContains(response, 'Choose a director, athlete or parent')
+        self.assertEqual(response.content.count(b'id="communication-recipient"'), 1)
+
+        self.client.force_login(parent)
+        response = self.client.get(reverse('parent_dashboard'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f'value="{director.pk}"')
+        self.assertContains(response, f'value="{coach.pk}"')
+        for recipient in (coach, director):
+            response = self.client.post(reverse('dashboard_message_send'), {
+                'recipient': recipient.pk, 'message': f'Hello {recipient.username}',
+            })
+            self.assertEqual(response.status_code, 302)
+            self.assertTrue(Message.objects.filter(sender=parent, body=f'Hello {recipient.username}').exists())
+
+        response = self.client.post(reverse('dashboard_message_send'), {
+            'recipient': self.people['external_director'].pk, 'message': 'Wrong gym',
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Message.objects.filter(body='Wrong gym').exists())
 
     def test_parent_and_coach_can_message_director_in_same_gym(self):
         director = self.people['director_test']
@@ -98,3 +129,19 @@ class GymAudienceTests(TestCase):
         response = self.client.get(reverse('routine_tracker:daily_routine_tracker'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'athlete_test')
+
+    def test_calendar_sidebar_and_account_menu_placement(self):
+        for name, section, following in (
+            ('director_test', 'Gym Management', 'Gym Events'),
+            ('coach_test', 'Planning', 'Pathway Manager'),
+            ('parent_test', 'Communication', 'Notifications'),
+        ):
+            self.client.force_login(self.people[name])
+            response = self.client.get(reverse('gym_calendar'))
+            self.assertEqual(response.status_code, 200)
+            html = response.content.decode()
+            sidebar = html.split('<div class="sidebar-navigation">', 1)[1].split('<div class="sidebar-account">', 1)[0]
+            self.assertEqual(sidebar.count('href="/calendar/"'), 1)
+            self.assertLess(sidebar.index(section), sidebar.index('href="/calendar/"'))
+            self.assertLess(sidebar.index('href="/calendar/"'), sidebar.index(following))
+            self.assertIn('href="/calendar/" class="dropdown-item">📅 Calendar', html)
