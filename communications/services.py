@@ -196,56 +196,22 @@ def get_allowed_message_recipients(user):
             )
         )
 
-    if user.role == 'head_coach':
+    if user.role in ['head_coach', 'coach']:
         return (
             User.objects
             .exclude(id=user.id)
             .filter(
                 gym_memberships__gym_id=gym_id,
+                gym_memberships__role__in=['director', 'coach', 'head_coach', 'athlete', 'parent'],
                 gym_memberships__is_active=True,
                 role__in=[
+                    'director',
                     'coach',
                     'head_coach',
                     'athlete',
                     'parent',
                 ]
             )
-            .distinct()
-            .order_by(
-                'role',
-                'first_name',
-                'username'
-            )
-        )
-
-    if user.role == 'coach':
-        athletes = get_athletes_for_coach(user)
-
-        athlete_ids = athletes.values_list(
-            'id',
-            flat=True
-        )
-
-        parent_ids = (
-            ParentAthleteLink.objects
-            .filter(
-                athlete_id__in=athlete_ids,
-                approved=True
-            )
-            .values_list(
-                'parent_id',
-                flat=True
-            )
-        )
-
-        return (
-            User.objects
-            .filter(
-                id__in=list(athlete_ids) + list(parent_ids),
-                gym_memberships__gym_id=gym_id,
-                gym_memberships__is_active=True,
-            )
-            .exclude(id=user.id)
             .distinct()
             .order_by(
                 'role',
@@ -285,13 +251,17 @@ def get_allowed_message_recipients(user):
             )
         )
 
+        director_ids = GymMembership.objects.filter(
+            gym_id=gym_id, role='director', is_active=True,
+        ).values_list('user_id', flat=True)
         return (
             User.objects
             .filter(
-                id__in=coach_ids,
+                id__in=list(coach_ids) + list(director_ids),
                 gym_memberships__gym_id=gym_id,
                 gym_memberships__is_active=True,
                 role__in=[
+                    'director',
                     'coach',
                     'head_coach',
                 ]

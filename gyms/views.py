@@ -15,6 +15,7 @@ from athletes.models import (
     AthleteVideo,
 )
 from coaches.models import CoachNote, CoachProfile, TeamEvent
+from coaches.audiences import requested_event_audience, selectable_groups
 from parents_portal.models import (
     ParentAthleteLink,
     ParentProfile,
@@ -296,6 +297,8 @@ def edit_gym_event(request, event_id):
         gym=gym
     )
 
+    groups = selectable_groups(request.user)
+
     if request.method == 'POST':
         title = request.POST.get(
             'title',
@@ -314,12 +317,24 @@ def edit_gym_event(request, event_id):
                 {
                     'gym': gym,
                     'event': event,
+                    'groups': groups,
+                    'audiences': TeamEvent.AUDIENCES,
                     'error': (
                         'An event title and date are required.'
                     ),
                 }
             )
 
+        try:
+            audience, group = requested_event_audience(request)
+        except ValueError as error:
+            return render(request, 'gyms/event_form.html', {
+                'gym': gym, 'event': event, 'groups': groups,
+                'audiences': TeamEvent.AUDIENCES, 'error': str(error),
+            })
+
+        event.audience = audience
+        event.training_group = group
         event.title = title
         event.event_date = event_date
         event.start_time = (
@@ -342,6 +357,8 @@ def edit_gym_event(request, event_id):
         event.save(
             update_fields=[
                 'title',
+                'audience',
+                'training_group',
                 'event_date',
                 'start_time',
                 'end_time',
@@ -365,6 +382,8 @@ def edit_gym_event(request, event_id):
         {
             'gym': gym,
             'event': event,
+            'groups': groups,
+            'audiences': TeamEvent.AUDIENCES,
         }
     )
 

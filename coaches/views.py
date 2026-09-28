@@ -18,6 +18,7 @@ from gyms.models import (
     TrainingGroupAthlete,
 )
 from gyms.tenant import single_active_gym_id
+from .audiences import selectable_groups, requested_event_audience, visible_events
 
 User = get_user_model()
 
@@ -207,7 +208,7 @@ def get_team_skill_stats(athletes):
     }
 
 
-def get_upcoming_events(today, gym):
+def get_upcoming_events(today, gym, user):
     """
     Return upcoming events belonging to the selected gym.
     """
@@ -216,7 +217,7 @@ def get_upcoming_events(today, gym):
         return TeamEvent.objects.none()
 
     return (
-        TeamEvent.objects
+        visible_events(user)
         .filter(
             gym=gym,
             event_date__gte=today
@@ -705,6 +706,7 @@ def coach_dashboard(request):
     upcoming_events = get_upcoming_events(
         today,
         gym,
+        request.user,
     )
 
     recent_activity = get_recent_activity(
@@ -1112,6 +1114,7 @@ def add_event(request):
         )
 
     gym = gym_membership.gym
+    groups = selectable_groups(request.user)
 
     if request.method == 'POST':
         title = request.POST.get(
@@ -1130,14 +1133,26 @@ def add_event(request):
                 'coaches/add_event.html',
                 {
                     'gym': gym,
+                    'groups': groups,
+                    'audiences': TeamEvent.AUDIENCES,
                     'error': (
                         'An event title and date are required.'
                     ),
                 }
             )
 
+        try:
+            audience, group = requested_event_audience(request)
+        except ValueError as error:
+            return render(request, 'coaches/add_event.html', {
+                'gym': gym, 'groups': groups,
+                'audiences': TeamEvent.AUDIENCES, 'error': str(error),
+            })
+
         TeamEvent.objects.create(
             gym=gym,
+            audience=audience,
+            training_group=group,
             title=title,
             event_date=event_date,
             start_time=(
@@ -1173,6 +1188,8 @@ def add_event(request):
         'coaches/add_event.html',
         {
             'gym': gym,
+            'groups': groups,
+            'audiences': TeamEvent.AUDIENCES,
         }
     )
 

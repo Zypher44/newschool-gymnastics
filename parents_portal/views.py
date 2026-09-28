@@ -11,6 +11,7 @@ from django.utils import timezone
 
 from athletes.models import AttendanceRecord
 from coaches.models import TeamEvent
+from coaches.audiences import visible_events
 from communications.dashboard import (
     get_dashboard_communication_data,
 )
@@ -463,7 +464,7 @@ def parent_dashboard(request):
 
     if selected_gym:
         upcoming_events = (
-            TeamEvent.objects
+            visible_events(request.user)
             .filter(
                 gym=selected_gym,
                 event_date__gte=today,
@@ -596,7 +597,7 @@ def parent_events(request):
     )
 
     events = (
-        TeamEvent.objects
+        visible_events(request.user)
         .filter(
             gym_id__in=allowed_gym_ids,
         )

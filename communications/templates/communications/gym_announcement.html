@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Message Gym Members{% endblock %}
+{% block page_header %}Message Gym Members{% endblock %}
+{% block content %}
+<div class="card border-0 shadow-sm mx-auto" style="max-width:760px">
+    <div class="card-body p-4">
+        <h1 class="h3 mb-2">Message gym members</h1>
+        <p class="text-muted">Each recipient receives a private conversation and can reply to you.</p>
+        {% if error %}<div class="alert alert-danger" role="alert">{{ error }}</div>{% endif %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label" for="audience">Send to</label>
+                <select name="audience" id="audience" class="form-select" required>
+                    <option value="">Choose recipients</option>
+                    <option value="all" {% if request.POST.audience == 'all' %}selected{% endif %}>Everyone in my gym</option>
+                    <option value="coaches" {% if request.POST.audience == 'coaches' %}selected{% endif %}>Coaches</option>
+                    <option value="parents" {% if request.POST.audience == 'parents' %}selected{% endif %}>Parents</option>
+                    <option value="group" {% if request.POST.audience == 'group' %}selected{% endif %}>Training group</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="training_group">Training group (when selected above)</label>
+                <select name="training_group" id="training_group" class="form-select">
+                    <option value="">Choose a group</option>
+                    {% for group in groups %}
+                        <option value="{{ group.pk }}" {% if request.POST.training_group == group.pk|stringformat:'s' %}selected{% endif %}>{{ group.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3"><label class="form-label" for="subject">Subject (optional)</label><input id="subject" name="subject" maxlength="180" value="{{ request.POST.subject }}" class="form-control"></div>
+            <div class="mb-3"><label class="form-label" for="message">Message</label><textarea id="message" name="message" rows="5" class="form-control" required>{{ request.POST.message }}</textarea></div>
+            <button class="btn btn-primary" type="submit">Send messages</button>
+            <a class="btn btn-outline-secondary" href="{% url 'communication_inbox' %}">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

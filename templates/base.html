@@ -328,10 +328,19 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-shrink: 0;
             padding: 6px 10px;
             border: 1px solid #e5e7eb;
             border-radius: 13px;
             background: white;
+        }
+
+        .user-menu-details { white-space: nowrap; }
+        .user-avatar { flex-shrink: 0; }
+
+        @media (max-width: 1200px) {
+            .topbar-search { display: none; }
+            .topbar-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         }
 
         .user-avatar {
@@ -481,6 +490,9 @@
             </div>
 
             <div class="sidebar-navigation">
+                {% if user.role == 'director' or user.role == 'coach' or user.role == 'head_coach' or user.role == 'parent' or user.role == 'athlete' %}
+                    <a href="{% url 'gym_calendar' %}" class="sidebar-link"><span class="sidebar-icon">📅</span><span class="sidebar-label">Calendar</span></a>
+                {% endif %}
 
                 {% if user.role == 'director' %}
                     <div class="sidebar-section">Gym Management</div>
@@ -808,7 +820,7 @@
                                     <span class="d-block fw-semibold">
                                         {{ user.get_full_name|default:user.username }}
                                     </span>
-                                    <span class="d-block small text-muted">{{ user.role|title }}</span>
+                                    <span class="d-block small text-muted">{{ user.get_role_display }}</span>
                                 </span>
                                 <span>▾</span>
                             </button>

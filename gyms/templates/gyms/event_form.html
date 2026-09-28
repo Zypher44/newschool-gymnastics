@@ -53,6 +53,24 @@ Edit Event | {{ gym.name }}
 
                 {% csrf_token %}
 
+                <div class="mb-3">
+                    <label for="event-audience" class="form-label fw-semibold">Who should see this event?</label>
+                    <select id="event-audience" name="audience" class="form-select">
+                        {% for code, label in audiences %}
+                            <option value="{{ code }}" {% if event.audience == code %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="event-group" class="form-label fw-semibold">Training group (when selected above)</label>
+                    <select id="event-group" name="training_group" class="form-select">
+                        <option value="">Choose a group</option>
+                        {% for group in groups %}
+                            <option value="{{ group.pk }}" {% if event.training_group_id == group.pk %}selected{% endif %}>{{ group.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
 
                 <div class="mb-3">
 

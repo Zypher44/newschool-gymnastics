@@ -96,6 +96,9 @@
             </div>
 
             <div class="col-lg-4 mt-4 mt-lg-0 text-lg-end">
+                {% if user.role == 'director' or user.role == 'coach' or user.role == 'head_coach' %}
+                    <a href="{% url 'gym_announcement' %}" class="btn btn-outline-light fw-semibold mb-2">Message an audience</a>
+                {% endif %}
                 <a
                     href="{% url 'conversation_create' %}"
                     class="btn btn-light fw-semibold"

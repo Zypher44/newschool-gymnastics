@@ -4,6 +4,7 @@ from . import views
 
 
 urlpatterns = [
+    path('messages/announce/', views.gym_announcement, name='gym_announcement'),
     path(
         'messages/',
         views.communication_inbox,

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Gym Calendar{% endblock %}
+{% block page_header %}Gym Calendar{% endblock %}
+{% block extra_css %}
+<style>
+    .gym-calendar { table-layout: fixed; min-width: 740px; }
+    .gym-calendar td { height: 110px; vertical-align: top; width: 14.285%; }
+    .gym-calendar .outside-month { background: #f7f9fc; color: #697386; }
+    .gym-calendar .calendar-event { display: block; font-size: .82rem; overflow-wrap: anywhere; margin-top: 4px; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div><h1 class="h3 mb-0">{{ month|date:'F Y' }}</h1><div class="text-muted">Events for your gym</div></div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary" href="?month={{ previous_month }}" aria-label="Previous month">← Previous</a>
+        <a class="btn btn-outline-primary" href="?month={{ next_month }}" aria-label="Next month">Next →</a>
+        {% if can_create %}<a class="btn btn-primary" href="{% url 'add_event' %}">+ Create Event</a>{% endif %}
+    </div>
+</div>
+<div class="table-responsive card border-0 shadow-sm mb-4">
+    <table class="table table-bordered gym-calendar mb-0">
+        <thead><tr><th>Sunday</th><th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th><th>Saturday</th></tr></thead>
+        <tbody>
+            {% for week in weeks %}<tr>
+                {% for day in week %}<td class="{% if not day.in_month %}outside-month{% endif %}">
+                    <span class="{% if day.today %}badge text-bg-primary{% endif %}">{{ day.date|date:'j' }}</span>
+                    {% for event in day.events %}<span class="calendar-event text-primary">
+                        {% if event.start_time %}{{ event.start_time|time:'g:i A' }} · {% endif %}{{ event.title }}
+                        {% if event.training_group %}<small class="d-block">{{ event.training_group.name }}</small>{% endif %}
+                    </span>{% endfor %}
+                </td>{% endfor %}
+            </tr>{% endfor %}
+        </tbody>
+    </table>
+</div>
+<h2 class="h5">Events this month</h2>
+<ul class="list-group mb-4">
+    {% for event in events %}<li class="list-group-item d-flex justify-content-between gap-3">
+        <div><strong>{{ event.title }}</strong><span class="text-muted"> · {{ event.event_date|date:'M j' }}{% if event.start_time %}, {{ event.start_time|time:'g:i A' }}{% endif %}</span>
+            {% if event.location %}<div class="small">{{ event.location }}</div>{% endif %}
+            {% if event.description %}<div class="small text-muted">{{ event.description }}</div>{% endif %}
+        </div><span class="badge text-bg-light align-self-start">{% if event.training_group %}{{ event.training_group.name }}{% else %}{{ event.get_audience_display }}{% endif %}</span>
+    </li>{% empty %}<li class="list-group-item text-muted">No events this month.</li>{% endfor %}
+</ul>
+{% endblock %}

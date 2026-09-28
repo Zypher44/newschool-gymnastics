@@ -2,11 +2,13 @@ from django.contrib import admin
 from django.urls import include, path
 from accounts import public_views
 from accounts import signup_v2
+from coaches.calendar_views import gym_calendar
 from django.conf import settings
 from django.conf.urls.static import static
 
 
 urlpatterns = [
+    path('calendar/', gym_calendar, name='gym_calendar'),
     path('accounts/signup/director/', signup_v2.director_signup, name='director_signup'),
     path('accounts/signup/', signup_v2.member_signup, name='signup'),
     path(
