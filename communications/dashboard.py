@@ -1,4 +1,5 @@
 from django.db.models import Max
+from gyms.tenant import single_active_gym_id
 
 from accounts.models import User
 from coaches.models import CoachAthleteAssignment
@@ -35,6 +36,8 @@ def get_recent_conversations(user, limit=3):
         ConversationParticipant.objects
         .filter(
             user=user,
+            conversation__gym_id=single_active_gym_id(user, [user.role]),
+            conversation__gym__isnull=False,
             is_archived=False,
             conversation__is_archived=False
         )
@@ -91,77 +94,53 @@ def get_recent_conversations(user, limit=3):
 
 
 def get_coach_quick_message_options(coach):
-    """
-    Return athletes and linked parents available to a coach.
-    """
+    """Return athletes and parents this coach is allowed to message."""
+
+    allowed_recipients = get_allowed_message_recipients(coach)
 
     if coach.role == 'head_coach':
-        athletes = (
-            User.objects
-            .filter(role='athlete')
-            .order_by(
-                'first_name',
-                'last_name',
-                'username'
-            )
-        )
-
+        athletes = User.objects.filter(role='athlete')
     else:
         athlete_ids = (
             CoachAthleteAssignment.objects
             .filter(coach=coach)
-            .values_list(
-                'athlete_id',
-                flat=True
-            )
+            .values_list('athlete_id', flat=True)
+        )
+        athletes = User.objects.filter(
+            id__in=athlete_ids,
+            role='athlete',
         )
 
-        athletes = (
-            User.objects
-            .filter(
-                id__in=athlete_ids,
-                role='athlete'
-            )
-            .order_by(
-                'first_name',
-                'last_name',
-                'username'
-            )
+    # This filter must be outside the if/else so it also applies
+    # to head coaches.
+    athletes = (
+        athletes
+        .filter(
+            id__in=allowed_recipients
+            .filter(role='athlete')
+            .values('id')
         )
+        .order_by('first_name', 'last_name', 'username')
+    )
 
     options = []
 
     for athlete in athletes:
         parent_ids = (
             ParentAthleteLink.objects
-            .filter(
-                athlete=athlete,
-                approved=True
-            )
-            .values_list(
-                'parent_id',
-                flat=True
-            )
+            .filter(athlete=athlete, approved=True)
+            .values_list('parent_id', flat=True)
         )
 
         parents = (
-            User.objects
-            .filter(
-                id__in=parent_ids,
-                role='parent'
-            )
-            .order_by(
-                'first_name',
-                'last_name',
-                'username'
-            )
+            allowed_recipients
+            .filter(id__in=parent_ids, role='parent')
+            .order_by('first_name', 'last_name', 'username')
         )
 
         options.append({
             'athlete': athlete,
-            'athlete_name': get_user_display_name(
-                athlete
-            ),
+            'athlete_name': get_user_display_name(athlete),
             'parents': parents,
         })
 
@@ -183,14 +162,8 @@ def get_athlete_quick_message_options(athlete):
     )
 
     return (
-        User.objects
-        .filter(
-            id__in=coach_ids,
-            role__in=[
-                'coach',
-                'head_coach',
-            ]
-        )
+        get_allowed_message_recipients(athlete)
+        .filter(id__in=coach_ids, role__in=['coach', 'head_coach'])
         .order_by(
             'first_name',
             'last_name',
@@ -204,13 +177,22 @@ def get_parent_quick_message_options(parent):
     Return each approved linked athlete and their assigned coaches.
     """
 
+    gym_id = single_active_gym_id(parent, ['parent'])
+    if gym_id is None:
+        return []
+
+    allowed_recipients = get_allowed_message_recipients(parent)
     links = (
         ParentAthleteLink.objects
         .filter(
             parent=parent,
-            approved=True
+            approved=True,
+            athlete__gym_memberships__gym_id=gym_id,
+            athlete__gym_memberships__role='athlete',
+            athlete__gym_memberships__is_active=True,
         )
         .select_related('athlete')
+        .distinct()
     )
 
     options = []
@@ -228,14 +210,8 @@ def get_parent_quick_message_options(parent):
         )
 
         coaches = (
-            User.objects
-            .filter(
-                id__in=coach_ids,
-                role__in=[
-                    'coach',
-                    'head_coach',
-                ]
-            )
+            allowed_recipients
+            .filter(id__in=coach_ids, role__in=['coach', 'head_coach'])
             .order_by(
                 'first_name',
                 'last_name',
@@ -275,6 +251,7 @@ def get_dashboard_communication_data(user):
             get_recent_conversations(user)
         ),
         'director_options': [],
+        'gym_directors': User.objects.none(),
         'coach_options': [],
         'athlete_coaches': [],
         'parent_options': [],
@@ -289,6 +266,7 @@ def get_dashboard_communication_data(user):
         'coach',
         'head_coach',
     ]:
+        data['gym_directors'] = get_allowed_message_recipients(user).filter(role='director')
         data['coach_options'] = (
             get_coach_quick_message_options(user)
         )
@@ -299,6 +277,7 @@ def get_dashboard_communication_data(user):
         )
 
     elif user.role == 'parent':
+        data['gym_directors'] = get_allowed_message_recipients(user).filter(role='director')
         data['parent_options'] = (
             get_parent_quick_message_options(user)
         )

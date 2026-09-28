@@ -166,6 +166,77 @@
         line-height: 1.65;
     }
 
+    .ai-section {
+        background: #f3f6ff;
+    }
+
+    .ai-section .section-title {
+        max-width: 800px;
+    }
+
+    .ai-card {
+        height: 100%;
+        padding: 30px;
+        border: 1px solid #e1e8fa;
+        border-radius: 22px;
+        background: #fff;
+        box-shadow: 0 12px 30px rgba(37, 55, 100, 0.05);
+    }
+
+    .ai-card-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 54px;
+        height: 54px;
+        border-radius: 16px;
+        background: #eaf0ff;
+        font-size: 1.5rem;
+    }
+
+    .ai-card h3 {
+        margin-top: 22px;
+        color: #172033;
+        font-size: 1.25rem;
+        font-weight: 800;
+    }
+
+    .ai-card p {
+        margin-bottom: 0;
+        color: #667085;
+        line-height: 1.7;
+    }
+
+    .ai-workflow {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+        margin-top: 32px;
+        color: #475467;
+        font-size: 0.9rem;
+        font-weight: 700;
+    }
+
+    .ai-workflow-step {
+        padding: 10px 17px;
+        border: 1px solid #dce5f9;
+        border-radius: 999px;
+        background: #fff;
+    }
+
+    .ai-workflow-arrow {
+        color: #6078ae;
+    }
+
+    .ai-note {
+        margin-top: 23px;
+        margin-bottom: 0;
+        color: #667085;
+        font-size: 0.88rem;
+        line-height: 1.6;
+    }
+
     .role-section {
         background: white;
     }
@@ -460,6 +531,69 @@
     </div>
 </section>
 
+<section class="home-section ai-section" aria-labelledby="ai-heading">
+    <div class="container">
+        <div class="section-label">AI-assisted video review</div>
+
+        <h2 class="section-title" id="ai-heading">
+            See the moments that matter. Keep coaches in control.
+        </h2>
+
+        <p class="section-description">
+            Video analysis tools help coaches inspect movement and give
+            athletes more focused feedback, alongside their own judgment.
+        </p>
+
+        <div class="row g-4 mt-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="ai-card">
+                    <div class="ai-card-icon" aria-hidden="true">🎞️</div>
+                    <h3>Find key frames</h3>
+                    <p>
+                        Pull still frames from a training video and surface
+                        useful points in the movement for a closer look.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="ai-card">
+                    <div class="ai-card-icon" aria-hidden="true">📐</div>
+                    <h3>Explore body positions</h3>
+                    <p>
+                        Review detected pose landmarks, joint angles, and
+                        visual overlays where the video supports them.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="ai-card">
+                    <div class="ai-card-icon" aria-hidden="true">🗣️</div>
+                    <h3>Review with a coach</h3>
+                    <p>
+                        Coaches can check analysis results, add their own
+                        feedback, and decide what to share with athletes.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="ai-workflow" aria-label="Video review workflow">
+            <span class="ai-workflow-step">Upload a video</span>
+            <span class="ai-workflow-arrow" aria-hidden="true">→</span>
+            <span class="ai-workflow-step">Inspect key moments</span>
+            <span class="ai-workflow-arrow" aria-hidden="true">→</span>
+            <span class="ai-workflow-step">Coach reviews feedback</span>
+        </div>
+
+        <p class="ai-note">
+            Automated written coaching observations are still being refined;
+            coaches should review analysis before using it for instruction.
+        </p>
+    </div>
+</section>
+
 <section class="home-section role-section">
     <div class="container">
         <div class="section-label">
@@ -467,7 +601,7 @@
         </div>
 
         <h2 class="section-title">
-            A dashboard built around what each person needs.
+            Gymnastics software built around everyone's needs.
         </h2>
 
         <div class="row g-4 mt-4">

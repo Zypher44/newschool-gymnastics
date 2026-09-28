@@ -13,6 +13,7 @@ from .models import (
 )
 
 from gyms.models import GymMembership
+from gyms.tenant import single_active_gym_id
 
 
 def create_notification(
@@ -109,9 +110,13 @@ def get_parents_for_athlete(athlete):
     ).distinct()
 
 def get_athletes_for_coach(coach):
+    gym_id = single_active_gym_id(coach, ['coach', 'head_coach'])
+    if gym_id is None:
+        return User.objects.none()
     if coach.role == 'head_coach':
         return User.objects.filter(
-            role='athlete'
+            role='athlete', gym_memberships__gym_id=gym_id,
+            gym_memberships__role='athlete', gym_memberships__is_active=True,
         ).order_by(
             'first_name',
             'username'
@@ -126,7 +131,8 @@ def get_athletes_for_coach(coach):
 
     return User.objects.filter(
         id__in=athlete_ids,
-        role='athlete'
+        role='athlete', gym_memberships__gym_id=gym_id,
+        gym_memberships__role='athlete', gym_memberships__is_active=True,
     ).order_by(
         'first_name',
         'username'
@@ -138,6 +144,10 @@ def get_allowed_message_recipients(user):
 
     Directors may message active members belonging to their gym.
     """
+
+    gym_id = single_active_gym_id(user, [user.role])
+    if gym_id is None:
+        return User.objects.none()
 
     if user.role == 'director':
         director_membership = (
@@ -186,51 +196,22 @@ def get_allowed_message_recipients(user):
             )
         )
 
-    if user.role == 'head_coach':
+    if user.role in ['head_coach', 'coach']:
         return (
             User.objects
             .exclude(id=user.id)
             .filter(
+                gym_memberships__gym_id=gym_id,
+                gym_memberships__role__in=['director', 'coach', 'head_coach', 'athlete', 'parent'],
+                gym_memberships__is_active=True,
                 role__in=[
+                    'director',
                     'coach',
                     'head_coach',
                     'athlete',
                     'parent',
                 ]
             )
-            .order_by(
-                'role',
-                'first_name',
-                'username'
-            )
-        )
-
-    if user.role == 'coach':
-        athletes = get_athletes_for_coach(user)
-
-        athlete_ids = athletes.values_list(
-            'id',
-            flat=True
-        )
-
-        parent_ids = (
-            ParentAthleteLink.objects
-            .filter(
-                athlete_id__in=athlete_ids,
-                approved=True
-            )
-            .values_list(
-                'parent_id',
-                flat=True
-            )
-        )
-
-        return (
-            User.objects
-            .filter(
-                id__in=list(athlete_ids) + list(parent_ids)
-            )
-            .exclude(id=user.id)
             .distinct()
             .order_by(
                 'role',
@@ -242,6 +223,7 @@ def get_allowed_message_recipients(user):
     if user.role == 'athlete':
         return (
             get_coaches_for_athlete(user)
+            .filter(gym_memberships__gym_id=gym_id, gym_memberships__is_active=True)
             .exclude(id=user.id)
         )
 
@@ -269,11 +251,17 @@ def get_allowed_message_recipients(user):
             )
         )
 
+        director_ids = GymMembership.objects.filter(
+            gym_id=gym_id, role='director', is_active=True,
+        ).values_list('user_id', flat=True)
         return (
             User.objects
             .filter(
-                id__in=coach_ids,
+                id__in=list(coach_ids) + list(director_ids),
+                gym_memberships__gym_id=gym_id,
+                gym_memberships__is_active=True,
                 role__in=[
+                    'director',
                     'coach',
                     'head_coach',
                 ]
@@ -305,8 +293,9 @@ def find_existing_direct_conversation(
     related_athlete=None
 ):
     conversations = Conversation.objects.filter(
-        participants=user_one
-    ).filter(
+        participants=user_one,
+        gym_id=single_active_gym_id(user_one, [user_one.role]),
+    ).exclude(gym__isnull=True).filter(
         participants=user_two
     ).distinct()
 
@@ -352,6 +341,13 @@ def create_or_get_conversation(
             'You are not allowed to message this user.'
         )
 
+    if related_athlete is not None:
+        gym_id = single_active_gym_id(creator, [creator.role])
+        if not GymMembership.objects.filter(
+            user=related_athlete, role='athlete', gym_id=gym_id, is_active=True,
+        ).exists():
+            raise PermissionError('You cannot attach an athlete from another gym.')
+
     conversation = find_existing_direct_conversation(
         creator,
         recipient,
@@ -370,6 +366,7 @@ def create_or_get_conversation(
         return conversation
 
     conversation = Conversation.objects.create(
+        gym_id=single_active_gym_id(creator, [creator.role]),
         created_by=creator,
         subject=subject,
         related_athlete=related_athlete
@@ -396,6 +393,8 @@ def send_message(
     sender,
     body
 ):
+    if conversation.gym_id is None or conversation.gym_id != single_active_gym_id(sender, [sender.role]):
+        raise PermissionError('This conversation is outside your current gym.')
     if not conversation.participants.filter(
         id=sender.id
     ).exists():

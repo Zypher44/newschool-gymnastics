@@ -4,6 +4,7 @@ from django.utils import timezone
 from gyms.models import GymMembership
 
 from coaches.models import TeamEvent
+from coaches.audiences import visible_events
 from performance_testing.models import AthleteTestingResult
 from surveys.models import DailySurvey
 
@@ -123,7 +124,7 @@ def athlete_dashboard(request):
 
     if athlete_gym:
         upcoming_events = (
-            TeamEvent.objects
+            visible_events(request.user)
             .filter(
                 gym=athlete_gym,
                 event_date__gte=today

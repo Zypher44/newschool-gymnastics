@@ -10,6 +10,7 @@ from django.shortcuts import (
 from django.utils import timezone
 
 from performance_testing.models import TestingSession
+from gyms.tenant import single_active_gym_id
 import json
 
 from django.http import JsonResponse
@@ -45,6 +46,7 @@ def user_is_coach(user):
     return (
             user.is_authenticated
             and user.role in COACH_ROLES
+            and single_active_gym_id(user, COACH_ROLES) is not None
     )
 
 
@@ -67,7 +69,10 @@ def get_accessible_groups(user):
     listed as a coach.
     """
 
-    groups = TrainingGroup.objects.all()
+    gym_id = single_active_gym_id(user, COACH_ROLES)
+    if gym_id is None:
+        return TrainingGroup.objects.none()
+    groups = TrainingGroup.objects.filter(gym_id=gym_id)
 
     if user.role == 'head_coach':
         return groups
@@ -82,7 +87,12 @@ def get_accessible_practices(user):
     Return practices that the current coach is allowed to manage.
     """
 
-    practices = PracticePlan.objects.select_related(
+    gym_id = single_active_gym_id(user, COACH_ROLES)
+    if gym_id is None:
+        return PracticePlan.objects.none()
+    practices = PracticePlan.objects.filter(
+        training_group__gym_id=gym_id,
+    ).select_related(
         'training_group',
         'lead_coach',
         'created_by',
@@ -107,7 +117,10 @@ def get_accessible_testing_sessions(user):
     Return testing sessions the current coach may use.
     """
 
-    sessions = TestingSession.objects.select_related(
+    sessions = TestingSession.objects.filter(
+        Q(training_group__gym_id=single_active_gym_id(user, COACH_ROLES))
+        | Q(practice_plan__training_group__gym_id=single_active_gym_id(user, COACH_ROLES)),
+    ).select_related(
         'training_group',
         'practice_plan',
         'created_by',
@@ -261,6 +274,7 @@ def practice_template_list(request):
 
     templates = (
         PracticeTemplate.objects
+        .filter(gym_id=single_active_gym_id(request.user, COACH_ROLES))
         .select_related(
             'created_by',
             'source_practice',
@@ -342,6 +356,7 @@ def practice_template_detail(
 
     practice_template = get_object_or_404(
         PracticeTemplate.objects
+        .filter(gym_id=single_active_gym_id(request.user, COACH_ROLES))
         .select_related(
             'created_by',
             'source_practice',
@@ -397,7 +412,10 @@ def training_group_create(request):
 
         if form.is_valid():
             with transaction.atomic():
-                training_group = form.save()
+                training_group = form.save(commit=False)
+                training_group.gym_id = single_active_gym_id(request.user, COACH_ROLES)
+                training_group.save()
+                form.save_m2m()
 
                 if request.user.role == 'coach':
                     training_group.coaches.add(
@@ -2068,6 +2086,7 @@ def save_practice_as_template(
                 practice_template.created_by = (
                     request.user
                 )
+                practice_template.gym_id = practice_plan.training_group.gym_id
 
                 practice_template.source_practice = (
                     practice_plan
@@ -2142,6 +2161,7 @@ def create_practice_from_template(
 
     practice_template = get_object_or_404(
         PracticeTemplate.objects
+        .filter(gym_id=single_active_gym_id(request.user, COACH_ROLES))
         .select_related(
             'created_by',
         )

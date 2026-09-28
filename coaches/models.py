@@ -128,6 +128,12 @@ class CoachNote(models.Model):
 
 
 class TeamEvent(models.Model):
+    AUDIENCES = [
+        ('all', 'Everyone in the gym'),
+        ('coaches', 'Coaches'),
+        ('parents', 'Parents'),
+        ('group', 'Training group'),
+    ]
     gym = models.ForeignKey(
         'gyms.Gym',
         on_delete=models.CASCADE,
@@ -159,6 +165,12 @@ class TeamEvent(models.Model):
 
     description = models.TextField(
         blank=True
+    )
+
+    audience = models.CharField(max_length=12, choices=AUDIENCES, default='all')
+    training_group = models.ForeignKey(
+        'gyms.TrainingGroup', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='team_events',
     )
 
     created_by = models.ForeignKey(

@@ -19,6 +19,7 @@ from .forms_routines import (
 )
 
 from parents_portal.access import get_approved_parent_links
+from gyms.tenant import single_active_gym_id
 
 from .models import (
     AthletePathway,
@@ -66,6 +67,7 @@ def is_head_coach(
         user.is_authenticated
         and
         user.role == 'head_coach'
+        and single_active_gym_id(user, ['head_coach']) is not None
     )
 
 
@@ -79,6 +81,7 @@ def is_coach(
             'coach',
             'head_coach',
         ]
+        and single_active_gym_id(user, ['coach', 'head_coach']) is not None
     )
 
 
@@ -119,6 +122,22 @@ def hp_scoring_only(view):
     return wrapped
 
 
+def coach_athletes(user):
+    gym_id = single_active_gym_id(user, ['coach', 'head_coach'])
+    if gym_id is None:
+        return User.objects.none()
+    athletes = User.objects.filter(
+        role='athlete', is_active=True,
+        gym_memberships__gym_id=gym_id,
+        gym_memberships__role='athlete',
+        gym_memberships__is_active=True,
+    ).distinct()
+    if user.role == 'coach':
+        from coaches.views import get_accessible_athletes
+        return athletes.filter(pk__in=get_accessible_athletes(user).values('pk'))
+    return athletes
+
+
 # ============================================================
 # HEAD COACH PATHWAY MANAGER
 # ============================================================
@@ -128,14 +147,14 @@ def hp_scoring_only(view):
 def pathway_manager(
     request,
 ):
-    if not is_head_coach(
+    if not is_coach(
         request.user
     ):
 
         messages.error(
             request,
             (
-                'Only head coaches can '
+                'Only coaches can '
                 'manage athlete pathways.'
             ),
         )
@@ -146,11 +165,7 @@ def pathway_manager(
 
 
     athletes = (
-        User.objects
-        .filter(
-            role='athlete',
-            is_active=True,
-        )
+        coach_athletes(request.user)
         .order_by(
             'first_name',
             'last_name',
@@ -161,6 +176,7 @@ def pathway_manager(
 
     pathways = (
         AthletePathway.objects
+        .filter(athlete__in=athletes)
         .select_related(
             'athlete',
             'current_level',
@@ -242,14 +258,14 @@ def athlete_pathway_editor(
     request,
     athlete_id,
 ):
-    if not is_head_coach(
+    if not is_coach(
         request.user
     ):
 
         messages.error(
             request,
             (
-                'Only head coaches can '
+                'Only coaches can '
                 'manage athlete pathways.'
             ),
         )
@@ -260,10 +276,7 @@ def athlete_pathway_editor(
 
 
     athlete = get_object_or_404(
-        User.objects.filter(
-            role='athlete',
-            is_active=True,
-        ),
+        coach_athletes(request.user),
         id=athlete_id,
     )
 
@@ -364,14 +377,14 @@ def athlete_pathway_requirements(
     request,
     athlete_id,
 ):
-    if not is_head_coach(
+    if not is_coach(
         request.user
     ):
 
         messages.error(
             request,
             (
-                'Only head coaches can '
+                'Only coaches can '
                 'manage athlete pathways.'
             ),
         )
@@ -382,10 +395,7 @@ def athlete_pathway_requirements(
 
 
     athlete = get_object_or_404(
-        User.objects.filter(
-            role='athlete',
-            is_active=True,
-        ),
+        coach_athletes(request.user),
         id=athlete_id,
     )
 
@@ -700,14 +710,14 @@ def update_athlete_pathway_requirement(
     request,
     requirement_id,
 ):
-    if not is_head_coach(
+    if not is_coach(
         request.user
     ):
 
         messages.error(
             request,
             (
-                'Only head coaches can '
+                'Only coaches can '
                 'update pathway requirements.'
             ),
         )
@@ -719,6 +729,7 @@ def update_athlete_pathway_requirement(
 
     athlete_requirement = get_object_or_404(
         AthletePathwayRequirement.objects
+        .filter(athlete_pathway__athlete__in=coach_athletes(request.user))
         .select_related(
             'athlete_pathway',
             'athlete_pathway__athlete',
@@ -857,14 +868,14 @@ def bulk_update_athlete_pathway_requirements(
     request,
     athlete_id,
 ):
-    if not is_head_coach(
+    if not is_coach(
         request.user
     ):
 
         messages.error(
             request,
             (
-                'Only head coaches can '
+                'Only coaches can '
                 'update pathway requirements.'
             ),
         )
@@ -875,10 +886,7 @@ def bulk_update_athlete_pathway_requirements(
 
 
     athlete = get_object_or_404(
-        User.objects.filter(
-            role='athlete',
-            is_active=True,
-        ),
+        coach_athletes(request.user),
         id=athlete_id,
     )
 
@@ -1072,6 +1080,10 @@ def pathway_overview(request):
         {'code': code, 'name': name,
          'cards': [card for card in level_cards if card['level'].program == code]}
         for code, name in PathwayLevel.PROGRAM_CHOICES
+        # The public USAG catalogue below renders Levels 1–10 together.
+        # Keep seeded optional levels for athlete editing without duplicating
+        # their cards on the general overview.
+        if code != PathwayLevel.PROGRAM_USAG_OPTIONAL
         if any(card['level'].program == code for card in level_cards)
     ]
 
@@ -1580,10 +1592,7 @@ def bars_d_score_calculator(
 
 
     athlete = get_object_or_404(
-        User.objects.filter(
-            role='athlete',
-            is_active=True,
-        ),
+        coach_athletes(request.user),
         id=athlete_id,
     )
 
@@ -1907,10 +1916,7 @@ def beam_d_score_calculator(
 
 
     athlete = get_object_or_404(
-        User.objects.filter(
-            role='athlete',
-            is_active=True,
-        ),
+        coach_athletes(request.user),
         id=athlete_id,
     )
 
@@ -2273,6 +2279,7 @@ def delete_routine_element(
 
     element = get_object_or_404(
         AthleteRoutineElement.objects
+        .filter(routine__athlete__in=coach_athletes(request.user))
         .select_related(
             'routine',
             'routine__athlete',
@@ -2360,10 +2367,7 @@ def floor_d_score_calculator(
 
 
     athlete = get_object_or_404(
-        User.objects.filter(
-            role='athlete',
-            is_active=True,
-        ),
+        coach_athletes(request.user),
         id=athlete_id,
     )
 
@@ -2698,10 +2702,7 @@ def vault_d_score_calculator(
 
 
     athlete = get_object_or_404(
-        User.objects.filter(
-            role='athlete',
-            is_active=True,
-        ),
+        coach_athletes(request.user),
         id=athlete_id,
     )
 
@@ -3041,10 +3042,7 @@ def athlete_d_score_dashboard(
 
 
     athlete = get_object_or_404(
-        User.objects.filter(
-            role='athlete',
-            is_active=True,
-        ),
+        coach_athletes(request.user),
         id=athlete_id,
     )
 

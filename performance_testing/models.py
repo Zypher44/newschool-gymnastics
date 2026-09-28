@@ -6,6 +6,8 @@ from django.db import models
 
 
 class TestingExercise(models.Model):
+    gym = models.ForeignKey('gyms.Gym', on_delete=models.SET_NULL,
+                            related_name='testing_exercises', null=True, blank=True)
     UNIT_CHOICES = [
         ('points', 'Points'),
         ('reps', 'Repetitions'),
@@ -81,6 +83,8 @@ class TestingExercise(models.Model):
 
 
 class TestingSession(models.Model):
+    gym = models.ForeignKey('gyms.Gym', on_delete=models.SET_NULL,
+                            related_name='performance_sessions', null=True, blank=True)
     STATUS_DRAFT = 'draft'
     STATUS_READY = 'ready'
     STATUS_IN_PROGRESS = 'in_progress'

@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 
 from .models import (
+    Gym,
     GymMembership,
     TrainingGroup,
     TrainingGroupCoach,
@@ -9,6 +10,27 @@ from .models import (
 
 
 User = get_user_model()
+
+
+class GymSettingsForm(forms.ModelForm):
+    class Meta:
+        model = Gym
+        fields = [
+            'name', 'address', 'city', 'province_state', 'postal_code',
+            'country', 'phone', 'email', 'website',
+        ]
+        labels = {'province_state': 'Province / State', 'postal_code': 'Postal / ZIP code'}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'
+
+    def clean_name(self):
+        name = self.cleaned_data['name'].strip()
+        if not name:
+            raise forms.ValidationError('Enter a gym name.')
+        return name
 
 
 class TrainingGroupForm(forms.ModelForm):

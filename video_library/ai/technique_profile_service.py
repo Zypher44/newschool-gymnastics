@@ -70,7 +70,10 @@ def normalize_skill_name(
 
 def get_technique_profile(
     skill_name,
+    gym_id=None,
 ):
+    if gym_id is None:
+        return None
     normalized = (
         normalize_skill_name(
             skill_name
@@ -84,6 +87,7 @@ def get_technique_profile(
         TechniqueProfile.objects
         .filter(
             is_active=True,
+            gym_id=gym_id,
         )
     )
 
@@ -102,6 +106,7 @@ def get_technique_profile(
 
 def get_profile_settings(
     skill_name,
+    gym_id=None,
 ):
     """
     Return a simple dictionary describing what
@@ -110,7 +115,8 @@ def get_profile_settings(
 
     profile = (
         get_technique_profile(
-            skill_name
+            skill_name,
+            gym_id=gym_id,
         )
     )
 

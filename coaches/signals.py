@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.dateparse import parse_date
@@ -6,9 +5,7 @@ from django.utils.dateparse import parse_date
 from communications.models import Notification
 
 from .models import TeamEvent
-
-
-User = get_user_model()
+from .audiences import audience_members
 
 
 @receiver(
@@ -51,23 +48,22 @@ def notify_parents_about_new_event(
         )
 
 
-    parents = (
-        User.objects
-        .filter(
-            role='parent',
-            is_active=True,
-        )
+    if not instance.created_by_id or not instance.gym_id:
+        return
+
+    recipients = audience_members(
+        instance.created_by, instance.audience, instance.training_group,
     )
 
 
     notifications = []
 
 
-    for parent in parents:
+    for recipient in recipients:
 
         notifications.append(
             Notification(
-                recipient=parent,
+                recipient=recipient,
 
                 notification_type=(
                     Notification.TYPE_EVENT
@@ -84,7 +80,7 @@ def notify_parents_about_new_event(
                 ),
 
                 link=(
-                    '/parents/events/'
+                    '/calendar/'
                 ),
             )
         )

@@ -116,6 +116,8 @@ class Notification(models.Model):
 
 
 class Conversation(models.Model):
+    gym = models.ForeignKey('gyms.Gym', on_delete=models.SET_NULL,
+                            related_name='conversations', null=True, blank=True)
     subject = models.CharField(
         max_length=180,
         blank=True

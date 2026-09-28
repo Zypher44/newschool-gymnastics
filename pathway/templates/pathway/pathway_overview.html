@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load usag_sections %}
 
 {% block title %}Athlete Pathways{% endblock %}
 
@@ -323,7 +324,7 @@
                             href="{% url 'pathway:pathway_level_detail' card.level.id %}"
                             class="btn btn-primary w-100"
                         >
-                            View Level Requirements →
+                            View Requirements →
                         </a>
                     </article>
                 </div>
@@ -338,6 +339,9 @@
             <p class="text-muted">No active pathway levels are available.</p>
         {% endfor %}
 
+
+        {% usag_sections %}
+        {% xcel_sections %}
 
         {% if request.user.role == 'parent' %}
             <section class="children-section mt-5">

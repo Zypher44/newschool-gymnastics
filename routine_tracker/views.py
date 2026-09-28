@@ -3,9 +3,7 @@ from datetime import (
     timedelta,
 )
 
-from parents_portal.models import (
-    ParentAthleteLink,
-)
+from parents_portal.access import get_approved_parent_links, get_parent_gym_ids
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
@@ -18,6 +16,7 @@ from django.shortcuts import (
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+from gyms.tenant import single_active_gym_id
 
 from .models import (
     DailyRoutineAttempt,
@@ -62,6 +61,7 @@ def coach_allowed(
             'coach',
             'head_coach',
         ]
+        and single_active_gym_id(user, ['coach', 'head_coach']) is not None
     )
 
 
@@ -213,6 +213,7 @@ def daily_routine_tracker(
     session, created = (
         DailyRoutineSession.objects
         .get_or_create(
+            gym_id=single_active_gym_id(request.user, ['coach', 'head_coach']),
             practice_date=(
                 practice_date
             ),
@@ -231,6 +232,8 @@ def daily_routine_tracker(
         .filter(
             role='athlete',
             is_active=True,
+            gym_memberships__gym_id=single_active_gym_id(request.user, ['coach', 'head_coach']),
+            gym_memberships__role='athlete', gym_memberships__is_active=True,
         )
         .order_by(
             'first_name',
@@ -376,7 +379,7 @@ def add_routine_attempt(
 
 
     session = get_object_or_404(
-        DailyRoutineSession,
+        DailyRoutineSession.objects.filter(gym_id=single_active_gym_id(request.user, ['coach', 'head_coach'])),
         id=(
             request.POST.get(
                 'session_id'
@@ -389,6 +392,8 @@ def add_routine_attempt(
         User.objects.filter(
             role='athlete',
             is_active=True,
+            gym_memberships__gym_id=single_active_gym_id(request.user, ['coach', 'head_coach']),
+            gym_memberships__role='athlete', gym_memberships__is_active=True,
         ),
         id=(
             request.POST.get(
@@ -533,6 +538,7 @@ def delete_routine_attempt(
 
     attempt = get_object_or_404(
         DailyRoutineAttempt.objects
+        .filter(session__gym_id=single_active_gym_id(request.user, ['coach', 'head_coach']))
         .select_related(
             'session',
         ),
@@ -601,6 +607,8 @@ def routine_consistency_summary(
         .filter(
             role='athlete',
             is_active=True,
+            gym_memberships__gym_id=single_active_gym_id(request.user, ['coach', 'head_coach']),
+            gym_memberships__role='athlete', gym_memberships__is_active=True,
         )
         .order_by(
             'first_name',
@@ -613,6 +621,7 @@ def routine_consistency_summary(
     attempts = list(
         DailyRoutineAttempt.objects
         .filter(
+            session__gym_id=single_active_gym_id(request.user, ['coach', 'head_coach']),
             session__practice_date__range=[
                 start_date,
                 end_date,
@@ -730,6 +739,7 @@ def routine_consistency_summary(
 def build_athlete_consistency(
     athlete,
     days=7,
+    gym_ids=None,
 ):
     end_date = (
         timezone.localdate()
@@ -744,15 +754,17 @@ def build_athlete_consistency(
     )
 
 
-    attempts = list(
-        DailyRoutineAttempt.objects
-        .filter(
+    attempts_query = DailyRoutineAttempt.objects.filter(
             athlete=athlete,
             session__practice_date__range=[
                 start_date,
                 end_date,
             ],
         )
+    if gym_ids is not None:
+        attempts_query = attempts_query.filter(session__gym_id__in=gym_ids)
+    attempts = list(
+        attempts_query
         .select_related(
             'session',
             'recorded_by',
@@ -901,11 +913,7 @@ def parent_routine_consistency_home(
 
 
     links = (
-        ParentAthleteLink.objects
-        .filter(
-            parent=request.user,
-            approved=True,
-        )
+        get_approved_parent_links(request.user)
         .select_related(
             'athlete',
         )
@@ -971,11 +979,7 @@ def parent_routine_consistency(
 
 
     links = (
-        ParentAthleteLink.objects
-        .filter(
-            parent=request.user,
-            approved=True,
-        )
+        get_approved_parent_links(request.user)
         .select_related(
             'athlete',
         )
@@ -1000,7 +1004,8 @@ def parent_routine_consistency(
 
     summary = (
         build_athlete_consistency(
-            athlete
+            athlete,
+            gym_ids=get_parent_gym_ids(request.user),
         )
     )
 

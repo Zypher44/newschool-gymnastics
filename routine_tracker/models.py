@@ -3,8 +3,9 @@ from django.db import models
 
 
 class DailyRoutineSession(models.Model):
+    gym = models.ForeignKey('gyms.Gym', on_delete=models.SET_NULL,
+                            related_name='routine_sessions', null=True, blank=True)
     practice_date = models.DateField(
-        unique=True,
     )
 
     notes = models.TextField(
@@ -31,6 +32,7 @@ class DailyRoutineSession(models.Model):
         ordering = [
             '-practice_date',
         ]
+        constraints = [models.UniqueConstraint(fields=['gym', 'practice_date'], name='unique_routine_date_per_gym')]
 
     def __str__(self):
         return (

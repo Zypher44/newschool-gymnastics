@@ -18,11 +18,13 @@ def build_coaching_interpretation(
     *,
     skill_name,
     phase_comparisons,
+    gym_id=None,
 ):
 
     profile_settings = (
         get_profile_settings(
-            skill_name
+            skill_name,
+            gym_id=gym_id,
         )
     )
 
@@ -90,6 +92,7 @@ def build_coaching_interpretation(
                             measurement
                         )
                     ),
+                    gym_id=gym_id,
                 )
             )
 

@@ -2,6 +2,7 @@ from pathlib import Path
 
 from django import forms
 from django.contrib.auth import get_user_model
+from gyms.tenant import single_active_gym_id
 
 from practice_planner.models import (
     PracticePlan,
@@ -58,12 +59,14 @@ class TechniqueProfileForm(
     def __init__(
         self,
         *args,
+        user=None,
         **kwargs,
     ):
         super().__init__(
             *args,
             **kwargs,
         )
+        self.gym_id = single_active_gym_id(user, ['head_coach']) if user else None
 
         checkbox_fields = [
             'straight_legs',
@@ -85,6 +88,15 @@ class TechniqueProfileForm(
                     'form-check-input'
                 ),
             })
+
+    def clean_skill_name(self):
+        name = self.cleaned_data['skill_name'].strip()
+        existing = TechniqueProfile.objects.filter(gym_id=self.gym_id, skill_name__iexact=name)
+        if self.instance.pk:
+            existing = existing.exclude(pk=self.instance.pk)
+        if existing.exists():
+            raise forms.ValidationError('This skill already has a technique profile in your gym.')
+        return name
 
 
 class MultipleVideoInput(
@@ -328,11 +340,15 @@ class VideoUploadForm(forms.Form):
         )
 
         self.user = user
+        gym_id = single_active_gym_id(user, ['coach', 'head_coach']) if user else None
 
         athletes = (
             User.objects.filter(
                 role='athlete',
                 is_active=True,
+                gym_memberships__gym_id=gym_id,
+                gym_memberships__role='athlete',
+                gym_memberships__is_active=True,
             )
             .order_by(
                 'first_name',
@@ -351,10 +367,12 @@ class VideoUploadForm(forms.Form):
 
         groups = TrainingGroup.objects.filter(
             is_active=True,
+            gym_id=gym_id,
         )
 
         practices = (
             PracticePlan.objects
+            .filter(training_group__gym_id=gym_id)
             .select_related(
                 'training_group',
             )

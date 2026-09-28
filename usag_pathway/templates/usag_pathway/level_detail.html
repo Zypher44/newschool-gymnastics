@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}USAG Level {{ level }}{% endblock %}
+{% block page_header %}USAG Level {{ level }}{% endblock %}
+{% block content %}
+<div class="container-fluid py-4" style="max-width: 1250px">
+  <a href="{% url 'pathway:pathway_overview' %}" class="btn btn-link ps-0 mb-3">← Athlete Pathways</a>
+  <div class="card border-0 rounded-4 shadow-sm mb-4">
+    <div class="card-body p-4">
+      <span class="badge {% if track == 'optional' %}text-bg-warning{% else %}text-bg-primary{% endif %} mb-2">USAG {{ track|title }}</span>
+      <h1 class="h2">Level {{ level }} requirements</h1>
+      <p class="text-muted mb-2">Coach review summary for Vault, Bars, Beam and Floor. Independent of the HP pathway.</p>
+      <p class="small text-muted mb-0">{{ reviewed_total }} of {{ item_total }} review points assessed · {{ percent }}% of this checklist. This is not an official competition score or readiness decision.</p>
+      {% if track == 'compulsory' %}<p class="small text-muted mt-2">The supplied 2023 replacement pages are not the complete compulsory book. Coaches should check the current full exercise before marking an item.</p>{% endif %}
+    </div>
+  </div>
+
+  {% if athletes %}
+    <form method="get" class="mb-4">
+      <label class="form-label fw-semibold" for="athlete">Athlete progress</label>
+      <div class="d-flex gap-2 flex-wrap">
+        <select id="athlete" name="athlete" class="form-select" style="max-width: 360px">
+          <option value="">Choose an athlete</option>
+          {% for person in athletes %}
+            <option value="{{ person.pk }}" {% if athlete.pk == person.pk %}selected{% endif %}>{{ person.get_full_name|default:person.username }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn btn-outline-primary" type="submit">View progress</button>
+      </div>
+    </form>
+  {% endif %}
+
+  <div class="row g-3">
+    {% for group in groups %}
+      <div class="col-lg-6">
+        <section class="card border-0 shadow-sm rounded-4 h-100">
+          <div class="card-body p-4">
+            <h2 class="h4 mb-3">{{ group.name }}</h2>
+            {% for item in group.items %}
+              <div class="border-top py-3">
+                <div class="fw-semibold mb-2">{{ item.title }}</div>
+                {% if athlete %}
+                  {% if can_assess %}
+                    <form method="post" class="d-flex gap-2 align-items-center flex-wrap">
+                      {% csrf_token %}
+                      <input type="hidden" name="athlete" value="{{ athlete.pk }}">
+                      <input type="hidden" name="requirement_code" value="{{ item.code }}">
+                      <label class="visually-hidden" for="status-{{ item.code }}">Assessment for {{ item.title }}</label>
+                      <select class="form-select form-select-sm" id="status-{{ item.code }}" name="status" style="max-width: 205px">
+                        <option value="not_started" {% if item.status == 'not_started' %}selected{% endif %}>Not started</option>
+                        <option value="developing" {% if item.status == 'developing' %}selected{% endif %}>Developing</option>
+                        <option value="achieved" {% if item.status == 'achieved' %}selected{% endif %}>Achieved</option>
+                        <option value="ready" {% if item.status == 'ready' %}selected{% endif %}>Coach reviewed</option>
+                      </select>
+                      <button class="btn btn-sm btn-primary" type="submit">Save</button>
+                    </form>
+                  {% else %}
+                    <span class="badge text-bg-light">{{ item.status|title }}</span>
+                  {% endif %}
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        </section>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

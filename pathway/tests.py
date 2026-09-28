@@ -19,7 +19,7 @@ class USAGOptionalPathwaySeedTests(TestCase):
         )
         self.assertEqual(
             PathwayLevel.objects.filter(program=PathwayLevel.PROGRAM_HP).count(),
-            0,
+            4,
         )
 
         self.assertEqual(

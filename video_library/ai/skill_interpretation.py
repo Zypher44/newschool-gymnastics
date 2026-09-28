@@ -377,6 +377,7 @@ def interpret_measurement_change(
     measurement,
     first_value,
     second_value,
+    gym_id=None,
 ) -> dict[str, Any]:
 
     first_value = _safe_float(
@@ -425,7 +426,8 @@ def interpret_measurement_change(
 
     profile_settings = (
         get_profile_settings(
-            skill_name
+            skill_name,
+            gym_id=gym_id,
         )
     )
 

@@ -1,0 +1,38 @@
+<style>
+  .xcel-program { background: #f8f6ff; border-color: #d8cafe; }
+  .xcel-program .usag-badge { background: #e9d5ff; color: #6b21a8; }
+  .xcel-program .usag-card { border-color: #d8cafe; }
+  .xcel-program .usag-card-number { width: auto; min-width: 44px; padding: 0 12px; background: #e9d5ff; color: #6b21a8; }
+  .xcel-program .usag-notice { background: #f0ebff; color: #4c1d95; border-color: #d8cafe; }
+</style>
+<section class="usag-program xcel-program" aria-labelledby="xcel-heading">
+  <div class="usag-heading">
+    <div>
+      <p class="small text-uppercase mb-2">Separate development path</p>
+      <h2 id="xcel-heading">USA Gymnastics Xcel</h2>
+      <p class="text-muted">Bronze, Silver, Gold, Platinum and Diamond are separate from USAG levels and HP.</p>
+    </div>
+    <span class="usag-badge">Xcel Program</span>
+  </div>
+  <div class="usag-notice">
+    <strong>Xcel division coach review</strong><br>
+    The supplied 2022–2026 excerpt lists Bronze through Diamond special requirements, but omits the vault chart.
+    The points here are coach summaries, not official scores or permission to compete. Coaches should consult
+    <a href="https://usagym.org/women/xcel/updates/" target="_blank" rel="noopener noreferrer">USA Gymnastics Xcel updates</a>
+    and the complete current Code of Points.
+  </div>
+  <div class="usag-grid">
+    {% for card in divisions %}
+      <article class="usag-card">
+        <span class="usag-card-number">{{ forloop.counter }}</span>
+        <h3 class="h4 mt-3">{{ card.name }}</h3>
+        <p>Coach review across Vault, Bars, Beam and Floor.</p>
+        <div class="d-flex gap-2 mb-3">
+          <span class="badge text-bg-light">{{ card.count }} review points</span>
+          <span class="badge text-bg-light">4 events</span>
+        </div>
+        <a class="btn btn-primary w-100" href="{% url 'pathway:xcel_division_detail' card.code %}">View {{ card.name }} →</a>
+      </article>
+    {% endfor %}
+  </div>
+</section>

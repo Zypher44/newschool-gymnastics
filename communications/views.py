@@ -1,8 +1,11 @@
 from django.contrib import messages
+from django.db import transaction
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.http import Http404
 from django.urls import reverse
+from gyms.tenant import single_active_gym_id
+from coaches.audiences import audience_members, selectable_groups
 from .dashboard import send_dashboard_message
 from accounts.models import User
 from .services import get_allowed_message_recipients
@@ -26,6 +29,47 @@ from .services import (
     create_or_get_conversation,
     send_message,
 )
+
+
+@login_required
+def gym_announcement(request):
+    """Send individual private messages to members of a gym audience."""
+    if request.user.role not in ('director', 'coach', 'head_coach') or not single_active_gym_id(request.user, [request.user.role]):
+        raise Http404
+
+    groups = selectable_groups(request.user)
+    error = None
+    if request.method == 'POST':
+        audience = request.POST.get('audience', '')
+        group_id = request.POST.get('training_group', '')
+        group = groups.filter(pk=group_id).first() if group_id.isdigit() else None
+        body = request.POST.get('message', '').strip()
+        subject = request.POST.get('subject', '').strip()[:180]
+        if audience not in ('all', 'coaches', 'parents', 'group'):
+            error = 'Choose an audience.'
+        elif audience == 'group' and group is None:
+            error = 'Choose a training group assigned to you.'
+        elif not body:
+            error = 'Enter a message.'
+        else:
+            allowed = get_allowed_message_recipients(request.user)
+            recipients = list(audience_members(request.user, audience, group).filter(pk__in=allowed.values('pk')))
+            if not recipients:
+                error = 'No active gym members match that audience.'
+            else:
+                with transaction.atomic():
+                    for recipient in recipients:
+                        conversation = create_or_get_conversation(
+                            creator=request.user, recipient=recipient, subject=subject,
+                        )
+                        send_message(conversation=conversation, sender=request.user, body=body)
+                messages.success(request, f'Message sent to {len(recipients)} gym members.')
+                return redirect('communication_inbox')
+
+    return render(request, 'communications/gym_announcement.html', {
+        'groups': groups, 'error': error,
+    })
+
 @login_required
 @require_POST
 def dashboard_message_send(request):
@@ -133,6 +177,8 @@ def communication_inbox(request):
         ConversationParticipant.objects
         .filter(
             user=request.user,
+            conversation__gym_id=single_active_gym_id(request.user, [request.user.role]),
+            conversation__gym__isnull=False,
             is_archived=False,
             conversation__is_archived=False
         )
@@ -264,7 +310,8 @@ def conversation_detail(
     conversation_id
 ):
     conversation = get_object_or_404(
-        Conversation.objects.prefetch_related(
+        Conversation.objects.filter(gym_id=single_active_gym_id(request.user, [request.user.role]))
+        .exclude(gym__isnull=True).prefetch_related(
             'participants',
             'messages__sender'
         ),
@@ -357,7 +404,9 @@ def conversation_archive(
     conversation_id
 ):
     participation = get_object_or_404(
-        ConversationParticipant,
+        ConversationParticipant.objects.filter(
+            conversation__gym_id=single_active_gym_id(request.user, [request.user.role]),
+            conversation__gym__isnull=False),
         conversation_id=conversation_id,
         user=request.user
     )

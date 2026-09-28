@@ -11,10 +11,12 @@ from django.utils import timezone
 
 from athletes.models import AttendanceRecord
 from coaches.models import TeamEvent
+from coaches.audiences import visible_events
 from communications.dashboard import (
     get_dashboard_communication_data,
 )
 from gyms.models import GymMembership
+from gyms.notifications import notify_gym_directors
 from performance_testing.models import (
     AthleteTestingResult,
 )
@@ -104,6 +106,7 @@ def get_parent_videos(
         Video.objects
         .filter(
             visibility=Video.VISIBILITY_PARENTS,
+            gym_id__in=get_parent_gym_ids(user),
         )
         .filter(
             Q(
@@ -363,6 +366,7 @@ def parent_dashboard(request):
         AthleteTestingResult.objects
         .filter(
             athlete=selected_athlete,
+            session__gym_id__in=get_parent_gym_ids(request.user),
             status='verified',
             session__published_to_parents=True,
         )
@@ -460,7 +464,7 @@ def parent_dashboard(request):
 
     if selected_gym:
         upcoming_events = (
-            TeamEvent.objects
+            visible_events(request.user)
             .filter(
                 gym=selected_gym,
                 event_date__gte=today,
@@ -593,7 +597,7 @@ def parent_events(request):
     )
 
     events = (
-        TeamEvent.objects
+        visible_events(request.user)
         .filter(
             gym_id__in=allowed_gym_ids,
         )
@@ -847,6 +851,12 @@ def connect_athlete(request):
                     relationship=relationship,
                     approved=False,
                 )
+                notify_gym_directors(
+                    athlete_membership.gym, request.user,
+                    'Parent connection request',
+                    f'{request.user.get_full_name() or request.user.username} requested to connect with {athlete.get_full_name() or athlete.username}.',
+                    '/gyms/director/',
+                )
 
                 messages.success(
                     request,
@@ -931,6 +941,7 @@ def parent_conditioning_history(request):
             AthleteTestingResult.objects
             .filter(
                 athlete=selected_athlete,
+                session__gym_id__in=get_parent_gym_ids(request.user),
                 status='verified',
                 session__published_to_parents=True,
             )
@@ -1062,6 +1073,7 @@ def parent_conditioning_result_detail(
         ),
         id=result_id,
         athlete_id__in=linked_athlete_ids,
+        session__gym_id__in=get_parent_gym_ids(request.user),
         status='verified',
         session__published_to_parents=True,
     )
@@ -1084,6 +1096,7 @@ def parent_conditioning_result_detail(
         AthleteTestingResult.objects
         .filter(
             athlete=athlete,
+            session__gym_id__in=get_parent_gym_ids(request.user),
             status='verified',
             session__published_to_parents=True,
             session__testing_date__lt=(

@@ -1,12 +1,19 @@
 from django.urls import path
 
 from . import views
+from usag_pathway import views as usag_views
+from usag_pathway import xcel_views
 
 
 app_name = 'pathway'
 
 
 urlpatterns = [
+
+    path('athlete/<int:athlete_id>/usag/level/<int:level>/', usag_views.level_detail, name='athlete_usag_level_detail'),
+    path('athlete/<int:athlete_id>/xcel/<str:division>/', xcel_views.division_detail, name='athlete_xcel_division_detail'),
+    path('usag/level/<int:level>/', usag_views.level_detail, name='usag_level_detail'),
+    path('xcel/<str:division>/', xcel_views.division_detail, name='xcel_division_detail'),
 
     path(
         '',

@@ -5,6 +5,7 @@ from django.utils import timezone
 
 from .models import DailySurvey
 from coaches.models import TeamEvent
+from gyms.tenant import single_active_gym_id
 
 
 @login_required
@@ -40,6 +41,7 @@ def submit_survey(request):
         return redirect("survey_success")
 
     upcoming_events = TeamEvent.objects.filter(
+        gym_id=single_active_gym_id(request.user, ['athlete']),
         event_date__gte=timezone.now().date()
     ).order_by("event_date", "start_time")[:5]
 

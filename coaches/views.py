@@ -17,6 +17,8 @@ from gyms.models import (
     TrainingGroup,
     TrainingGroupAthlete,
 )
+from gyms.tenant import single_active_gym_id
+from .audiences import selectable_groups, requested_event_audience, visible_events
 
 User = get_user_model()
 
@@ -103,10 +105,15 @@ def get_accessible_groups(user):
     ]:
         return TrainingGroup.objects.none()
 
+    gym_id = single_active_gym_id(user, ['coach', 'head_coach'])
+    if gym_id is None:
+        return TrainingGroup.objects.none()
+
     return (
         TrainingGroup.objects
         .filter(
             coach_assignments__coach=user,
+            gym_id=gym_id,
             is_active=True,
         )
         .distinct()
@@ -129,6 +136,10 @@ def get_accessible_athletes(user):
     ]:
         return User.objects.none()
 
+    gym_id = single_active_gym_id(user, ['coach', 'head_coach'])
+    if gym_id is None:
+        return User.objects.none()
+
     return (
         User.objects
         .filter(
@@ -137,6 +148,10 @@ def get_accessible_athletes(user):
             training_groups__is_active=True,
             training_groups__group__is_active=True,
             training_groups__group__coach_assignments__coach=user,
+            training_groups__group__gym_id=gym_id,
+            gym_memberships__gym_id=gym_id,
+            gym_memberships__role='athlete',
+            gym_memberships__is_active=True,
         )
         .distinct()
         .order_by(
@@ -193,7 +208,7 @@ def get_team_skill_stats(athletes):
     }
 
 
-def get_upcoming_events(today, gym):
+def get_upcoming_events(today, gym, user):
     """
     Return upcoming events belonging to the selected gym.
     """
@@ -202,7 +217,7 @@ def get_upcoming_events(today, gym):
         return TeamEvent.objects.none()
 
     return (
-        TeamEvent.objects
+        visible_events(user)
         .filter(
             gym=gym,
             event_date__gte=today
@@ -691,6 +706,7 @@ def coach_dashboard(request):
     upcoming_events = get_upcoming_events(
         today,
         gym,
+        request.user,
     )
 
     recent_activity = get_recent_activity(
@@ -1098,6 +1114,7 @@ def add_event(request):
         )
 
     gym = gym_membership.gym
+    groups = selectable_groups(request.user)
 
     if request.method == 'POST':
         title = request.POST.get(
@@ -1116,14 +1133,26 @@ def add_event(request):
                 'coaches/add_event.html',
                 {
                     'gym': gym,
+                    'groups': groups,
+                    'audiences': TeamEvent.AUDIENCES,
                     'error': (
                         'An event title and date are required.'
                     ),
                 }
             )
 
+        try:
+            audience, group = requested_event_audience(request)
+        except ValueError as error:
+            return render(request, 'coaches/add_event.html', {
+                'gym': gym, 'groups': groups,
+                'audiences': TeamEvent.AUDIENCES, 'error': str(error),
+            })
+
         TeamEvent.objects.create(
             gym=gym,
+            audience=audience,
+            training_group=group,
             title=title,
             event_date=event_date,
             start_time=(
@@ -1159,6 +1188,8 @@ def add_event(request):
         'coaches/add_event.html',
         {
             'gym': gym,
+            'groups': groups,
+            'audiences': TeamEvent.AUDIENCES,
         }
     )
 
@@ -1457,35 +1488,29 @@ def athlete_search(request):
         "",
     ).strip()
 
-    results = User.objects.none()
-
+    gym_id = single_active_gym_id(request.user, ['coach', 'head_coach'])
+    registered = User.objects.filter(
+        role='athlete', is_active=True,
+        gym_memberships__gym_id=gym_id,
+        gym_memberships__role='athlete', gym_memberships__is_active=True,
+    ).distinct() if gym_id else User.objects.none()
+    assigned = get_accessible_athletes(request.user)
     if query:
-        results = (
-            get_accessible_athletes(
-                request.user
-            )
-            .filter(
-                Q(username__icontains=query)
-                | Q(first_name__icontains=query)
-                | Q(last_name__icontains=query)
-            )
-            .distinct()
-        )
-
-        if results.count() == 1:
-            athlete = results.first()
-
-            return redirect(
-                "athlete_detail",
-                athlete_id=athlete.id,
-            )
+        matches = (Q(username__icontains=query) |
+                   Q(first_name__icontains=query) |
+                   Q(last_name__icontains=query))
+        registered = registered.filter(matches)
+        assigned = assigned.filter(matches)
+    assigned_ids = assigned.values('pk')
+    registered_only = registered.exclude(pk__in=assigned_ids)
 
     return render(
         request,
         "coaches/athlete_search.html",
         {
             "query": query,
-            "results": results,
+            "assigned_athletes": assigned,
+            "registered_athletes": registered_only,
         },
     )
 
@@ -1631,4 +1656,3 @@ def team_skills_dashboard(request):
         'status_totals': status_totals,
         "total_athletes": athletes.count(),
     })
-

@@ -1,0 +1,37 @@
+{% extends "public_base.html" %}
+{% block title %}Join a Gym | NewSchool Gymnastics{% endblock %}
+{% block content %}
+<main class="container py-5" style="max-width: 760px;">
+  <div class="card border-0 shadow-sm rounded-4">
+    <div class="card-body p-4 p-md-5">
+      <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+        <div>
+          <p class="text-primary fw-bold text-uppercase small mb-2">Join your gym</p>
+          <h1 class="h2 fw-bold mb-2">Create your account</h1>
+          <p class="text-muted mb-0">Choose your gym, then wait for its director to approve your access.</p>
+        </div>
+        <a class="btn btn-outline-primary" href="{% url 'director_signup' %}">I run a gym</a>
+      </div>
+      {% if not form.fields.gym.queryset.exists %}
+        <div class="alert alert-info">No gyms are available yet. Ask your director to create your gym first.</div>
+      {% endif %}
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% for error in form.non_field_errors %}<div class="alert alert-danger">{{ error }}</div>{% endfor %}
+        <div class="row g-3">
+          {% for field in form %}
+            <div class="col-12 {% if field.name == 'first_name' or field.name == 'last_name' %}col-md-6{% endif %}">
+              <label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text and field.name == 'gym' %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+              {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+        <button class="btn btn-primary px-4 mt-4" type="submit">Request to join gym</button>
+      </form>
+      <p class="small text-muted mt-4 mb-0">Already have an account? <a href="{% url 'login' %}">Log in</a>.</p>
+    </div>
+  </div>
+</main>
+{% endblock %}
