@@ -554,12 +554,10 @@
 
                     <div class="sidebar-section">Planning</div>
 
-                    {% if user.role == 'head_coach' %}
-                        <a href="{% url 'pathway:pathway_manager' %}" class="sidebar-link">
-                            <span class="sidebar-icon">🌳</span>
-                            <span class="sidebar-label">Pathway Manager</span>
-                        </a>
-                    {% endif %}
+                    <a href="{% url 'pathway:pathway_manager' %}" class="sidebar-link">
+                        <span class="sidebar-icon">🌳</span>
+                        <span class="sidebar-label">Pathway Manager</span>
+                    </a>
 
                     <a href="{% url 'pathway:pathway_overview' %}" class="sidebar-link">
                         <span class="sidebar-icon">🌳</span>

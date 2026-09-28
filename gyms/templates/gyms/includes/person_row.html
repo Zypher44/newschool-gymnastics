@@ -28,6 +28,17 @@
 
     <div class="d-flex gap-2">
 
+        {% if membership.is_active %}
+        {% if membership.role == 'coach' or membership.role == 'head_coach' %}
+            <form method="post" action="{% url 'set_coach_role' membership.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-secondary btn-sm">
+                    {% if membership.role == 'coach' %}Make Head Coach{% else %}Make Coach{% endif %}
+                </button>
+            </form>
+        {% endif %}
+        {% endif %}
+
         <a
             href="{% url 'edit_gym_person' membership.id %}"
             class="btn btn-outline-primary btn-sm"

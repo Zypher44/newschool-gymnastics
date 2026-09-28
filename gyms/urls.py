@@ -64,6 +64,8 @@ path(
         views.toggle_gym_person_status,
         name='toggle_gym_person_status'
     ),
+    path('people/<int:membership_id>/coach-role/', views.set_coach_role,
+         name='set_coach_role'),
 
     path(
         'athletes/<int:athlete_id>/',

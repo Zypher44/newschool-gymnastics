@@ -15,6 +15,7 @@ from communications.dashboard import (
     get_dashboard_communication_data,
 )
 from gyms.models import GymMembership
+from gyms.notifications import notify_gym_directors
 from performance_testing.models import (
     AthleteTestingResult,
 )
@@ -848,6 +849,12 @@ def connect_athlete(request):
                     athlete=athlete,
                     relationship=relationship,
                     approved=False,
+                )
+                notify_gym_directors(
+                    athlete_membership.gym, request.user,
+                    'Parent connection request',
+                    f'{request.user.get_full_name() or request.user.username} requested to connect with {athlete.get_full_name() or athlete.username}.',
+                    '/gyms/director/',
                 )
 
                 messages.success(

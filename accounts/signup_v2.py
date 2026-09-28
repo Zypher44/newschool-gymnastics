@@ -8,6 +8,7 @@ from django.db import transaction
 from django.shortcuts import redirect, render
 
 from gyms.models import Gym, GymMembership
+from gyms.notifications import notify_gym_directors
 
 
 User = get_user_model()
@@ -99,6 +100,12 @@ def member_signup(request):
             GymMembership.objects.create(
                 gym=form.cleaned_data['gym'], user=user,
                 role=user.role, is_active=False,
+            )
+            notify_gym_directors(
+                form.cleaned_data['gym'], user,
+                'New member awaiting approval',
+                f'{user.get_full_name() or user.username} requested to join as a {user.get_role_display()}.',
+                '/gyms/people/',
             )
         login(request, user)
         messages.success(request, 'Your request was sent to the gym director for approval.')

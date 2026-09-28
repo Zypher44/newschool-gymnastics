@@ -126,12 +126,16 @@ def coach_athletes(user):
     gym_id = single_active_gym_id(user, ['coach', 'head_coach'])
     if gym_id is None:
         return User.objects.none()
-    return User.objects.filter(
+    athletes = User.objects.filter(
         role='athlete', is_active=True,
         gym_memberships__gym_id=gym_id,
         gym_memberships__role='athlete',
         gym_memberships__is_active=True,
     ).distinct()
+    if user.role == 'coach':
+        from coaches.views import get_accessible_athletes
+        return athletes.filter(pk__in=get_accessible_athletes(user).values('pk'))
+    return athletes
 
 
 # ============================================================
@@ -143,14 +147,14 @@ def coach_athletes(user):
 def pathway_manager(
     request,
 ):
-    if not is_head_coach(
+    if not is_coach(
         request.user
     ):
 
         messages.error(
             request,
             (
-                'Only head coaches can '
+                'Only coaches can '
                 'manage athlete pathways.'
             ),
         )
@@ -254,14 +258,14 @@ def athlete_pathway_editor(
     request,
     athlete_id,
 ):
-    if not is_head_coach(
+    if not is_coach(
         request.user
     ):
 
         messages.error(
             request,
             (
-                'Only head coaches can '
+                'Only coaches can '
                 'manage athlete pathways.'
             ),
         )
@@ -373,14 +377,14 @@ def athlete_pathway_requirements(
     request,
     athlete_id,
 ):
-    if not is_head_coach(
+    if not is_coach(
         request.user
     ):
 
         messages.error(
             request,
             (
-                'Only head coaches can '
+                'Only coaches can '
                 'manage athlete pathways.'
             ),
         )
@@ -706,14 +710,14 @@ def update_athlete_pathway_requirement(
     request,
     requirement_id,
 ):
-    if not is_head_coach(
+    if not is_coach(
         request.user
     ):
 
         messages.error(
             request,
             (
-                'Only head coaches can '
+                'Only coaches can '
                 'update pathway requirements.'
             ),
         )
@@ -864,14 +868,14 @@ def bulk_update_athlete_pathway_requirements(
     request,
     athlete_id,
 ):
-    if not is_head_coach(
+    if not is_coach(
         request.user
     ):
 
         messages.error(
             request,
             (
-                'Only head coaches can '
+                'Only coaches can '
                 'update pathway requirements.'
             ),
         )

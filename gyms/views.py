@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from communications.dashboard import get_dashboard_communication_data
+from communications.models import Notification
 
 from athletes.models import (
     AthleteProfile,
@@ -37,36 +38,34 @@ from .models import (
     TrainingGroupAthlete,
     TrainingGroupCoach,
 )
+from .tenant import single_active_gym_id
 
 User = get_user_model()
 
 
 def get_director_gym(request_user):
-    """
-    Return the application's gym for a Director.
-
-    The app currently supports one gym, so Directors are
-    automatically assigned to the first available gym.
-    """
-
-    if request_user.role != "director":
-        return None
-
-    gym = Gym.objects.first()
-
-    if not gym:
-        return None
-
-    GymMembership.objects.update_or_create(
-        user=request_user,
-        gym=gym,
-        defaults={
-            "role": "director",
-            "is_active": True,
-        },
+    """A director may administer only their one active gym."""
+    gym_id = (
+        single_active_gym_id(request_user, ['director'])
+        if request_user.role == 'director' else None
     )
+    return Gym.objects.filter(pk=gym_id).first() if gym_id else None
 
-    return gym
+
+def pending_gym_parent_links(gym):
+    """Only requests where both people have active membership in this gym."""
+    athlete_ids = GymMembership.objects.filter(
+        gym=gym, role='athlete', is_active=True,
+    ).values('user_id')
+    parent_ids = GymMembership.objects.filter(
+        gym=gym, role='parent', is_active=True,
+    ).values('user_id')
+    return ParentAthleteLink.objects.filter(
+        athlete_id__in=athlete_ids, parent_id__in=parent_ids, approved=False,
+    ).select_related('parent', 'athlete').order_by('-id')
+
+
+
 @login_required
 def director_dashboard(request):
 
@@ -111,6 +110,11 @@ def director_dashboard(request):
     parents = memberships.filter(
         role='parent'
     )
+
+    pending_memberships = GymMembership.objects.filter(
+        gym=gym, is_active=False,
+    ).exclude(role='director').select_related('user').order_by('-joined_at')
+    pending_parent_links = pending_gym_parent_links(gym)
 
     training_groups = (
         TrainingGroup.objects
@@ -183,6 +187,11 @@ def director_dashboard(request):
         'coach_count': coaches.count(),
         'athlete_count': athletes.count(),
         'parent_count': parents.count(),
+        'pending_memberships': pending_memberships,
+        'pending_member_count': pending_memberships.count(),
+        'pending_parent_links': pending_parent_links,
+        'pending_parent_count': pending_parent_links.count(),
+        'today': today,
         'dashboard_communication': (
             get_dashboard_communication_data(
                 request.user
@@ -1393,6 +1402,14 @@ def toggle_gym_person_status(request, membership_id):
 
         membership.is_active = not membership.is_active
         membership.save(update_fields=['is_active'])
+        if membership.is_active:
+            Notification.objects.create(
+                recipient=membership.user, sender=request.user,
+                notification_type=Notification.TYPE_SYSTEM,
+                title='Gym membership approved',
+                message=f'Your request to join {gym.name} was approved.',
+                link='/accounts/redirect/',
+            )
 
         status = (
             'activated'
@@ -1406,6 +1423,42 @@ def toggle_gym_person_status(request, membership_id):
             f'was {status}.'
         )
 
+    return redirect('people_management')
+
+
+@login_required
+def set_coach_role(request, membership_id):
+    gym = get_director_gym(request.user)
+    if not gym:
+        return render(request, 'coaches/not_allowed.html', {
+            'username': request.user.username, 'role': request.user.role,
+        })
+    membership = get_object_or_404(
+        GymMembership.objects.select_related('user'),
+        pk=membership_id, gym=gym, role__in=['coach', 'head_coach'],
+        is_active=True,
+    )
+    if request.method == 'POST':
+        new_role = 'head_coach' if membership.role == 'coach' else 'coach'
+        if GymMembership.objects.filter(
+            gym=gym, user=membership.user, role=new_role,
+        ).exclude(pk=membership.pk).exists():
+            messages.error(request, 'This coach already has that gym role.')
+            return redirect('people_management')
+        if GymMembership.objects.filter(
+            user=membership.user, is_active=True,
+        ).exclude(gym=gym).exists():
+            messages.error(request, 'This coach has another active gym membership. Resolve it before changing their account role.')
+            return redirect('people_management')
+        with transaction.atomic():
+            membership.role = new_role
+            membership.save(update_fields=['role'])
+            membership.user.role = new_role
+            membership.user.save(update_fields=['role'])
+            TrainingGroupCoach.objects.filter(
+                group__gym=gym, coach=membership.user,
+            ).update(role=new_role)
+        messages.success(request, f'{membership.user.get_full_name() or membership.user.username} is now a {membership.get_role_display()}.')
     return redirect('people_management')
 
 

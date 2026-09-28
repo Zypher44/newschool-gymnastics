@@ -1471,35 +1471,29 @@ def athlete_search(request):
         "",
     ).strip()
 
-    results = User.objects.none()
-
+    gym_id = single_active_gym_id(request.user, ['coach', 'head_coach'])
+    registered = User.objects.filter(
+        role='athlete', is_active=True,
+        gym_memberships__gym_id=gym_id,
+        gym_memberships__role='athlete', gym_memberships__is_active=True,
+    ).distinct() if gym_id else User.objects.none()
+    assigned = get_accessible_athletes(request.user)
     if query:
-        results = (
-            get_accessible_athletes(
-                request.user
-            )
-            .filter(
-                Q(username__icontains=query)
-                | Q(first_name__icontains=query)
-                | Q(last_name__icontains=query)
-            )
-            .distinct()
-        )
-
-        if results.count() == 1:
-            athlete = results.first()
-
-            return redirect(
-                "athlete_detail",
-                athlete_id=athlete.id,
-            )
+        matches = (Q(username__icontains=query) |
+                   Q(first_name__icontains=query) |
+                   Q(last_name__icontains=query))
+        registered = registered.filter(matches)
+        assigned = assigned.filter(matches)
+    assigned_ids = assigned.values('pk')
+    registered_only = registered.exclude(pk__in=assigned_ids)
 
     return render(
         request,
         "coaches/athlete_search.html",
         {
             "query": query,
-            "results": results,
+            "assigned_athletes": assigned,
+            "registered_athletes": registered_only,
         },
     )
 
