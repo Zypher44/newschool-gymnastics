@@ -17,6 +17,7 @@ from gyms.models import (
     TrainingGroup,
     TrainingGroupAthlete,
 )
+from gyms.tenant import single_active_gym_id
 
 User = get_user_model()
 
@@ -103,10 +104,15 @@ def get_accessible_groups(user):
     ]:
         return TrainingGroup.objects.none()
 
+    gym_id = single_active_gym_id(user, ['coach', 'head_coach'])
+    if gym_id is None:
+        return TrainingGroup.objects.none()
+
     return (
         TrainingGroup.objects
         .filter(
             coach_assignments__coach=user,
+            gym_id=gym_id,
             is_active=True,
         )
         .distinct()
@@ -129,6 +135,10 @@ def get_accessible_athletes(user):
     ]:
         return User.objects.none()
 
+    gym_id = single_active_gym_id(user, ['coach', 'head_coach'])
+    if gym_id is None:
+        return User.objects.none()
+
     return (
         User.objects
         .filter(
@@ -137,6 +147,10 @@ def get_accessible_athletes(user):
             training_groups__is_active=True,
             training_groups__group__is_active=True,
             training_groups__group__coach_assignments__coach=user,
+            training_groups__group__gym_id=gym_id,
+            gym_memberships__gym_id=gym_id,
+            gym_memberships__role='athlete',
+            gym_memberships__is_active=True,
         )
         .distinct()
         .order_by(
@@ -1631,4 +1645,3 @@ def team_skills_dashboard(request):
         'status_totals': status_totals,
         "total_athletes": athletes.count(),
     })
-

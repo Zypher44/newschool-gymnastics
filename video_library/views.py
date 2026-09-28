@@ -3,6 +3,7 @@ from pathlib import Path
 import statistics
 from django.urls import reverse
 from parents_portal.access import get_approved_parent_links
+from gyms.models import GymMembership
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -60,12 +61,27 @@ def user_is_coach(user):
     )
 
 
+def coach_gym_id(user):
+    """Fail closed if a coach has no gym or multiple active gyms."""
+    if not user.is_authenticated or user.role not in COACH_ROLES:
+        return None
+    gym_ids = list(GymMembership.objects.filter(
+        user=user, role=user.role, is_active=True, gym__is_active=True,
+    ).values_list('gym_id', flat=True).distinct()[:2])
+    return gym_ids[0] if len(gym_ids) == 1 else None
+
+
 def get_accessible_videos(user):
     """
     Return videos the current coach is allowed to access.
     """
+    gym_id = coach_gym_id(user)
+    if gym_id is None:
+        return Video.objects.none()
+
     videos = (
         Video.objects
+        .filter(gym_id=gym_id)
         .select_related(
             'primary_athlete',
             'uploaded_by',
@@ -118,6 +134,7 @@ def get_comparison_candidates(video):
         )
         .filter(
             video__primary_athlete_id=video.primary_athlete_id,
+            video__gym_id=video.gym_id,
             video__skill_name__iexact=video.skill_name.strip(),
             status=VideoAnalysis.STATUS_COMPLETED,
         )
@@ -349,6 +366,7 @@ def toggle_reference_attempt(request, video_id):
         Video.objects
         .filter(
             primary_athlete_id=video.primary_athlete_id,
+            gym_id=video.gym_id,
             skill_name__iexact=video.skill_name.strip(),
             is_reference_attempt=True,
         )
@@ -533,11 +551,23 @@ def family_video_library(request):
     # ---------------------------------------------------------
 
     if selected_athlete:
+        athlete_memberships = GymMembership.objects.filter(
+            user=selected_athlete, role='athlete', is_active=True,
+            gym__is_active=True,
+        )
+        if user.role == 'parent':
+            athlete_memberships = athlete_memberships.filter(
+                gym_id__in=GymMembership.objects.filter(
+                    user=user, role='parent', is_active=True, gym__is_active=True,
+                ).values_list('gym_id', flat=True)
+            )
+        active_gym_ids = athlete_memberships.values_list('gym_id', flat=True)
         videos = (
             Video.objects
             .filter(
                 Q(primary_athlete=selected_athlete)
                 | Q(tagged_athletes=selected_athlete),
+                gym_id__in=active_gym_ids,
                 status=Video.STATUS_READY,
                 visibility__in=allowed_visibilities
             )
@@ -712,6 +742,9 @@ def video_list(request):
         .filter(
             role='athlete',
             is_active=True,
+            gym_memberships__gym_id=coach_gym_id(request.user),
+            gym_memberships__role='athlete',
+            gym_memberships__is_active=True,
         )
         .order_by(
             'first_name',
@@ -861,6 +894,11 @@ def video_upload(request):
         )
         return redirect('role_redirect')
 
+    gym_id = coach_gym_id(request.user)
+    if gym_id is None:
+        messages.error(request, 'An active gym membership is required to upload videos.')
+        return redirect('role_redirect')
+
     if request.method == 'POST':
         form = VideoUploadForm(
             request.POST,
@@ -928,6 +966,7 @@ def video_upload(request):
                     )
 
                     video = Video.objects.create(
+                        gym_id=gym_id,
                         title=title,
                         video_file=uploaded_file,
                         primary_athlete=(
@@ -2589,6 +2628,7 @@ def video_compare(request):
         build_coaching_interpretation(
             skill_name=comparison_skill_name,
             phase_comparisons=phase_comparisons,
+            gym_id=first_video.gym_id,
         )
     )
 
@@ -2825,7 +2865,7 @@ def athlete_video_timeline(
 
 @login_required
 def technique_profile_list(request):
-    if request.user.role != 'head_coach':
+    if request.user.role != 'head_coach' or coach_gym_id(request.user) is None:
         messages.error(
             request,
             (
@@ -2839,6 +2879,7 @@ def technique_profile_list(request):
 
     profiles = (
         TechniqueProfile.objects
+        .filter(gym_id=coach_gym_id(request.user))
         .order_by('skill_name')
     )
 
@@ -2851,7 +2892,7 @@ def technique_profile_list(request):
 
 @login_required
 def technique_profile_create(request):
-    if request.user.role != 'head_coach':
+    if request.user.role != 'head_coach' or coach_gym_id(request.user) is None:
         messages.error(
             request,
             (
@@ -2865,7 +2906,7 @@ def technique_profile_create(request):
 
     if request.method == 'POST':
         form = TechniqueProfileForm(
-            request.POST
+            request.POST, user=request.user,
         )
 
         if form.is_valid():
@@ -2873,6 +2914,7 @@ def technique_profile_create(request):
                 commit=False
             )
             profile.created_by = request.user
+            profile.gym_id = coach_gym_id(request.user)
             profile.updated_by = request.user
             profile.save()
 
@@ -2886,7 +2928,7 @@ def technique_profile_create(request):
             )
 
     else:
-        form = TechniqueProfileForm()
+        form = TechniqueProfileForm(user=request.user)
 
     return render(
         request,
@@ -2903,7 +2945,7 @@ def technique_profile_edit(
     request,
     profile_id,
 ):
-    if request.user.role != 'head_coach':
+    if request.user.role != 'head_coach' or coach_gym_id(request.user) is None:
         messages.error(
             request,
             (
@@ -2916,7 +2958,7 @@ def technique_profile_edit(
         )
 
     profile = get_object_or_404(
-        TechniqueProfile,
+        TechniqueProfile.objects.filter(gym_id=coach_gym_id(request.user)),
         id=profile_id,
     )
 
@@ -2924,6 +2966,7 @@ def technique_profile_edit(
         form = TechniqueProfileForm(
             request.POST,
             instance=profile,
+            user=request.user,
         )
 
         if form.is_valid():
@@ -2945,6 +2988,7 @@ def technique_profile_edit(
     else:
         form = TechniqueProfileForm(
             instance=profile,
+            user=request.user,
         )
 
     return render(

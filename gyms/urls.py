@@ -109,4 +109,6 @@ path(
         name='decline_parent_link',
     ),
 
+    path('settings/', views.gym_settings, name='gym_settings'),
+
 ]

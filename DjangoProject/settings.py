@@ -125,6 +125,7 @@ INSTALLED_APPS = [
     "practice_planner",
     "video_library",
     "pathway",
+    "usag_pathway",
     "routine_tracker",
     "gyms",
 ]

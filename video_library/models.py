@@ -102,6 +102,10 @@ def analysis_frame_upload_path(
 
 
 class Video(models.Model):
+    gym = models.ForeignKey(
+        'gyms.Gym', on_delete=models.SET_NULL,
+        related_name='library_videos', null=True, blank=True,
+    )
 
     # --------------------------------------------------------
     # EVENT
@@ -1771,6 +1775,8 @@ class VideoAnalysisFeedback(
 class TechniqueProfile(
     models.Model
 ):
+    gym = models.ForeignKey('gyms.Gym', on_delete=models.SET_NULL,
+                            related_name='technique_profiles', null=True, blank=True)
 
     STRICTNESS_DEVELOPMENTAL = (
         'developmental'
@@ -1801,7 +1807,6 @@ class TechniqueProfile(
 
     skill_name = models.CharField(
         max_length=120,
-        unique=True,
     )
 
     strictness = models.CharField(
@@ -1881,6 +1886,7 @@ class TechniqueProfile(
         ordering = [
             'skill_name',
         ]
+        constraints = [models.UniqueConstraint(fields=['gym', 'skill_name'], name='unique_technique_skill_per_gym')]
 
     def __str__(
         self,

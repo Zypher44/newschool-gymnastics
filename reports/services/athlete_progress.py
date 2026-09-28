@@ -14,6 +14,7 @@ from coaches.models import (
 )
 from performance_testing.models import AthleteTestingResult
 from surveys.models import DailySurvey
+from gyms.tenant import single_active_gym_id
 
 
 def get_allowed_athletes(user):
@@ -25,11 +26,15 @@ def get_allowed_athletes(user):
     """
 
     from accounts.models import User
+    gym_id = single_active_gym_id(user, ['coach', 'head_coach'])
+    if gym_id is None:
+        return User.objects.none()
 
     if user.role == 'head_coach':
         return (
             User.objects
-            .filter(role='athlete')
+            .filter(role='athlete', gym_memberships__gym_id=gym_id,
+                    gym_memberships__role='athlete', gym_memberships__is_active=True)
             .order_by(
                 'first_name',
                 'last_name',
@@ -50,7 +55,9 @@ def get_allowed_athletes(user):
         User.objects
         .filter(
             id__in=athlete_ids,
-            role='athlete'
+            role='athlete',
+            gym_memberships__gym_id=gym_id,
+            gym_memberships__role='athlete', gym_memberships__is_active=True,
         )
         .order_by(
             'first_name',

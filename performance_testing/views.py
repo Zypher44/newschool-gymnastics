@@ -4,6 +4,7 @@ from datetime import timedelta
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from gyms.tenant import single_active_gym_id
 from django.shortcuts import (
     get_object_or_404,
     redirect,
@@ -321,6 +322,7 @@ def coach_testing_required(
             'coach',
             'head_coach',
         ]
+        and single_active_gym_id(user, ['coach', 'head_coach']) is not None
     )
 
 
@@ -330,6 +332,7 @@ def get_authorized_session(
 ):
     session = get_object_or_404(
         TestingSession.objects
+        .filter(gym_id=single_active_gym_id(user, ['coach', 'head_coach']))
         .prefetch_related(
             'exercises',
             'athletes',
@@ -544,7 +547,7 @@ def testing_session_list(
 
         sessions = (
             TestingSession.objects
-            .all()
+            .filter(gym_id=single_active_gym_id(request.user, ['coach', 'head_coach']))
         )
 
     else:
@@ -552,6 +555,7 @@ def testing_session_list(
         sessions = (
             TestingSession.objects
             .filter(
+                gym_id=single_active_gym_id(request.user, ['coach', 'head_coach']),
                 created_by=(
                     request.user
                 )
@@ -677,6 +681,7 @@ def create_testing_session(
             session.created_by = (
                 request.user
             )
+            session.gym_id = single_active_gym_id(request.user, ['coach', 'head_coach'])
 
             session.save()
 
@@ -1084,6 +1089,7 @@ def testing_exercise_list(
 
     exercises = (
         TestingExercise.objects
+        .filter(gym_id=single_active_gym_id(request.user, ['coach', 'head_coach']))
         .select_related(
             'created_by'
         )
@@ -1151,6 +1157,7 @@ def create_testing_exercise(
             exercise.created_by = (
                 request.user
             )
+            exercise.gym_id = single_active_gym_id(request.user, ['coach', 'head_coach'])
 
             exercise.save()
 
@@ -1250,7 +1257,7 @@ def edit_testing_exercise(
 
 
     exercise = get_object_or_404(
-        TestingExercise,
+        TestingExercise.objects.filter(gym_id=single_active_gym_id(request.user, ['coach', 'head_coach'])),
         id=exercise_id,
     )
 
@@ -1364,7 +1371,7 @@ def toggle_testing_exercise(
 
 
     exercise = get_object_or_404(
-        TestingExercise,
+        TestingExercise.objects.filter(gym_id=single_active_gym_id(request.user, ['coach', 'head_coach'])),
         id=exercise_id,
     )
 

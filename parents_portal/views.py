@@ -104,6 +104,7 @@ def get_parent_videos(
         Video.objects
         .filter(
             visibility=Video.VISIBILITY_PARENTS,
+            gym_id__in=get_parent_gym_ids(user),
         )
         .filter(
             Q(
@@ -363,6 +364,7 @@ def parent_dashboard(request):
         AthleteTestingResult.objects
         .filter(
             athlete=selected_athlete,
+            session__gym_id__in=get_parent_gym_ids(request.user),
             status='verified',
             session__published_to_parents=True,
         )
@@ -931,6 +933,7 @@ def parent_conditioning_history(request):
             AthleteTestingResult.objects
             .filter(
                 athlete=selected_athlete,
+                session__gym_id__in=get_parent_gym_ids(request.user),
                 status='verified',
                 session__published_to_parents=True,
             )
@@ -1062,6 +1065,7 @@ def parent_conditioning_result_detail(
         ),
         id=result_id,
         athlete_id__in=linked_athlete_ids,
+        session__gym_id__in=get_parent_gym_ids(request.user),
         status='verified',
         session__published_to_parents=True,
     )
@@ -1084,6 +1088,7 @@ def parent_conditioning_result_detail(
         AthleteTestingResult.objects
         .filter(
             athlete=athlete,
+            session__gym_id__in=get_parent_gym_ids(request.user),
             status='verified',
             session__published_to_parents=True,
             session__testing_date__lt=(

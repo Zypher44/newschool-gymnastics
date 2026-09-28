@@ -24,6 +24,7 @@ from surveys.models import DailySurvey
 from .forms import (
     CreateGymPersonForm,
     EditGymPersonForm,
+    GymSettingsForm,
     LinkParentGuardianForm,
     ManageGroupAthletesForm,
     ManageGroupCoachesForm,
@@ -38,6 +39,7 @@ from .models import (
 )
 
 User = get_user_model()
+
 
 def get_director_gym(request_user):
     """
@@ -2012,3 +2014,21 @@ def decline_parent_link(request, link_id):
         'director_athlete_profile',
         athlete_id=athlete_id,
     )
+
+
+@login_required
+def gym_settings(request):
+    gym = get_director_gym(request.user)
+    if not gym:
+        return render(request, 'coaches/not_allowed.html', {
+            'role': request.user.role,
+            'username': request.user.username,
+        }, status=403)
+
+    form = GymSettingsForm(request.POST or None, instance=gym)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        messages.success(request, 'Gym details saved.')
+        return redirect('gym_settings')
+
+    return render(request, 'gyms/gym_settings.html', {'gym': gym, 'form': form})

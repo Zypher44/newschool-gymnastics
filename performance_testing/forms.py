@@ -1,6 +1,7 @@
 from django import forms
 
 from gyms.models import TrainingGroupAthlete
+from gyms.tenant import single_active_gym_id
 
 from .models import TestingExercise, TestingSession
 
@@ -56,10 +57,11 @@ class TestingSessionForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.user = user
+        gym_id = single_active_gym_id(user, ['coach', 'head_coach']) if user else None
 
         self.fields['exercises'].queryset = (
             TestingExercise.objects
-            .filter(active=True)
+            .filter(active=True, gym_id=gym_id)
             .order_by('display_order', 'name')
         )
 
@@ -74,8 +76,12 @@ class TestingSessionForm(forms.ModelForm):
             .filter(
                 group__coach_assignments__coach=user,
                 group__is_active=True,
+                group__gym_id=gym_id,
                 is_active=True,
                 athlete__is_active=True,
+                athlete__gym_memberships__gym_id=gym_id,
+                athlete__gym_memberships__role='athlete',
+                athlete__gym_memberships__is_active=True,
             )
             .values_list('athlete_id', flat=True)
         )

@@ -1,0 +1,62 @@
+<style>
+  .usag-program { padding: 36px; margin-top: 36px; border-radius: 40px; border: 1px solid #fed7aa; background: #fffaf0; }
+  .usag-program.compulsory { background: #f4f8ff; border-color: #bfdbfe; }
+  .usag-heading { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; }
+  .usag-heading h2 { color: #172033; font-size: clamp(1.7rem, 3vw, 2.5rem); }
+  .usag-badge { white-space: nowrap; background: #ffedd5; color: #9a3412; border-radius: 40px; padding: 7px 16px; font-weight: 800; font-size: .85rem; }
+  .compulsory .usag-badge { background: #dbeafe; color: #1e40af; }
+  .usag-notice { margin: 30px 0; padding: 22px 24px; background: #cdf4fd; border: 1px solid #98e7f5; color: #00536b; border-radius: 9px; line-height: 1.65; }
+  .usag-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 18px; }
+  .usag-card { padding: 23px; border: 1px solid #fed7aa; border-radius: 28px; background: #fff; display: flex; flex-direction: column; min-height: 224px; box-shadow: 0 8px 25px rgba(15, 23, 42, .05); }
+  .compulsory .usag-card { border-color: #bfdbfe; }
+  .usag-card-number { display: inline-flex; width: 44px; height: 44px; align-items: center; justify-content: center; font-weight: 800; color: #9a3412; background: #ffedd5; border-radius: 13px; }
+  .compulsory .usag-card-number { background: #dbeafe; color: #1e40af; }
+  .usag-card p { color: #64748b; }
+  .usag-card a { margin-top: auto; }
+  @media (max-width: 767px) { .usag-program { padding: 22px; border-radius: 25px; } .usag-heading { flex-wrap: wrap; } }
+</style>
+
+{% for section in sections %}
+<section class="usag-program {{ section.code }}" aria-labelledby="usag-heading-{{ section.code }}">
+  <div class="usag-heading">
+    <div>
+      <p class="small text-uppercase mb-2">Separate development path</p>
+      <h2 id="usag-heading-{{ section.code }}">{{ section.title }}</h2>
+      <p class="text-muted">
+        {% if section.code == 'optional' %}
+          USAG Optional Levels 6–10 are tracked independently from the HP pathway.
+        {% else %}
+          USAG Compulsory Levels 1–5 are tracked independently from HP and optional levels.
+        {% endif %}
+      </p>
+    </div>
+    <span class="usag-badge">{{ section.label }}</span>
+  </div>
+
+  <div class="usag-notice">
+    <strong>USAG {{ section.label }} · Levels {% if section.code == 'optional' %}6–10{% else %}1–5{% endif %}</strong><br>
+    These are coach review summaries, not official scores or approval to compete. Progress shows completion of this checklist.
+    Coaches must check current competition rules and code updates.
+    {% if section.code == 'optional' %}
+      The supplied optional PDF omits parts of the element and vault appendices; vault selections need coach verification. No start value is calculated here.
+    {% else %}
+      The supplied compulsory PDF contains replacement pages, not the full compulsory book. Review each exercise against the complete current book before assessment.
+    {% endif %}
+  </div>
+
+  <div class="usag-grid">
+    {% for card in section.levels %}
+      <article class="usag-card">
+        <span class="usag-card-number">{{ card.number }}</span>
+        <h3 class="h4 mt-3">Level {{ card.number }}</h3>
+        <p>Coach review across Vault, Bars, Beam and Floor.</p>
+        <div class="d-flex gap-2 mb-3">
+          <span class="badge text-bg-light">{{ card.count }} review points</span>
+          <span class="badge text-bg-light">4 events</span>
+        </div>
+        <a class="btn btn-primary w-100" href="{% url 'pathway:usag_level_detail' card.number %}">View Level Requirements →</a>
+      </article>
+    {% endfor %}
+  </div>
+</section>
+{% endfor %}

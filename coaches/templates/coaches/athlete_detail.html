@@ -175,6 +175,17 @@
     </a>
 </div>
 <div class="card mb-4">
+    <div class="card-header">Athlete Pathways</div>
+    <div class="card-body">
+        <p class="text-muted">Review this athlete's requirements and record their progress.</p>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-primary" href="{% url 'pathway:athlete_usag_level_detail' athlete.id 1 %}">USAG Compulsory</a>
+            <a class="btn btn-outline-primary" href="{% url 'pathway:athlete_usag_level_detail' athlete.id 6 %}">USAG Optional</a>
+            <a class="btn btn-outline-primary" href="{% url 'pathway:athlete_xcel_division_detail' athlete.id 'bronze' %}">USAG Xcel</a>
+        </div>
+    </div>
+</div>
+<div class="card mb-4">
     <div class="card-header">Athlete Profile</div>
     <div class="card-body">
         {% if athlete_profile %}

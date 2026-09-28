@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.http import Http404
 from django.urls import reverse
+from gyms.tenant import single_active_gym_id
 from .dashboard import send_dashboard_message
 from accounts.models import User
 from .services import get_allowed_message_recipients
@@ -133,6 +134,8 @@ def communication_inbox(request):
         ConversationParticipant.objects
         .filter(
             user=request.user,
+            conversation__gym_id=single_active_gym_id(request.user, [request.user.role]),
+            conversation__gym__isnull=False,
             is_archived=False,
             conversation__is_archived=False
         )
@@ -264,7 +267,8 @@ def conversation_detail(
     conversation_id
 ):
     conversation = get_object_or_404(
-        Conversation.objects.prefetch_related(
+        Conversation.objects.filter(gym_id=single_active_gym_id(request.user, [request.user.role]))
+        .exclude(gym__isnull=True).prefetch_related(
             'participants',
             'messages__sender'
         ),
@@ -357,7 +361,9 @@ def conversation_archive(
     conversation_id
 ):
     participation = get_object_or_404(
-        ConversationParticipant,
+        ConversationParticipant.objects.filter(
+            conversation__gym_id=single_active_gym_id(request.user, [request.user.role]),
+            conversation__gym__isnull=False),
         conversation_id=conversation_id,
         user=request.user
     )

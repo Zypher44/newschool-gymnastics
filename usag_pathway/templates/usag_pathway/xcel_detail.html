@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Xcel {{ division_name }}{% endblock %}
+{% block page_header %}Xcel {{ division_name }}{% endblock %}
+{% block content %}
+<div class="container-fluid py-4" style="max-width: 1250px">
+  <a href="{% url 'pathway:pathway_overview' %}" class="btn btn-link ps-0 mb-3">← Athlete Pathways</a>
+  <div class="card border-0 rounded-4 shadow-sm mb-4"><div class="card-body p-4">
+    <span class="badge mb-2" style="background:#e9d5ff;color:#6b21a8">Xcel Program</span>
+    <h1 class="h2">{{ division_name }} division</h1>
+    <p class="text-muted">{{ reviewed_total }} of {{ item_total }} coach review points assessed · {{ percent }}% of this checklist.</p>
+    <p class="small text-muted mb-0">These paraphrased summaries come from the supplied 2022–2026 excerpt. They do not determine a start value, official score or competition eligibility. Coaches must check the current complete rules, particularly the vault chart.</p>
+  </div></div>
+
+    {% if athletes %}
+      <form method="get" class="mb-4">
+        <label class="form-label fw-semibold" for="xcel-athlete">Athlete progress</label>
+        <div class="d-flex gap-2 flex-wrap">
+          <select id="xcel-athlete" name="athlete" class="form-select" style="max-width:360px">
+            <option value="">Choose an athlete</option>
+            {% for person in athletes %}
+              <option value="{{ person.pk }}" {% if athlete.pk == person.pk %}selected{% endif %}>{{ person.get_full_name|default:person.username }}</option>
+            {% endfor %}
+          </select>
+          <button class="btn btn-outline-primary" type="submit">View progress</button>
+        </div>
+      </form>
+    {% endif %}
+    <div class="row g-3">
+      {% for group in groups %}
+        <div class="col-lg-6"><section class="card border-0 shadow-sm rounded-4 h-100"><div class="card-body p-4">
+          <h2 class="h4 mb-3">{{ group.name }}</h2>
+          {% for item in group.items %}
+            <div class="border-top py-3">
+              <div class="fw-semibold mb-2">{{ item.title }}</div>
+              {% if athlete %}
+                {% if can_assess %}
+                  <form method="post" class="d-flex gap-2 align-items-center flex-wrap">
+                    {% csrf_token %}
+                    <input type="hidden" name="athlete" value="{{ athlete.pk }}">
+                    <input type="hidden" name="requirement_code" value="{{ item.code }}">
+                    <label class="visually-hidden" for="xcel-status-{{ item.code }}">Assessment for {{ item.title }}</label>
+                    <select id="xcel-status-{{ item.code }}" name="status" class="form-select form-select-sm" style="max-width:205px">
+                      <option value="not_started" {% if item.status == 'not_started' %}selected{% endif %}>Not started</option>
+                      <option value="developing" {% if item.status == 'developing' %}selected{% endif %}>Developing</option>
+                      <option value="achieved" {% if item.status == 'achieved' %}selected{% endif %}>Achieved</option>
+                      <option value="ready" {% if item.status == 'ready' %}selected{% endif %}>Coach reviewed</option>
+                    </select>
+                    <button class="btn btn-sm btn-primary" type="submit">Save</button>
+                  </form>
+                {% else %}
+                  <span class="badge text-bg-light">{{ item.status|title }}</span>
+                {% endif %}
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div></section></div>
+      {% endfor %}
+    </div>
+</div>
+{% endblock %}

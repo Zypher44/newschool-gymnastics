@@ -5,6 +5,8 @@ from django.utils import timezone
 
 
 class TrainingGroup(models.Model):
+    gym = models.ForeignKey('gyms.Gym', on_delete=models.SET_NULL,
+                            related_name='planner_groups', null=True, blank=True)
     """
     A recurring group of athletes who normally train together.
 
@@ -16,7 +18,6 @@ class TrainingGroup(models.Model):
 
     name = models.CharField(
         max_length=120,
-        unique=True,
     )
 
     description = models.TextField(
@@ -60,6 +61,7 @@ class TrainingGroup(models.Model):
         ordering = [
             'name',
         ]
+        constraints = [models.UniqueConstraint(fields=['gym', 'name'], name='unique_planner_group_name_per_gym')]
 
     def __str__(self):
         return self.name
@@ -794,6 +796,8 @@ class PracticeAthleteAssignment(models.Model):
             })
 
 class PracticeTemplate(models.Model):
+    gym = models.ForeignKey('gyms.Gym', on_delete=models.SET_NULL,
+                            related_name='practice_templates', null=True, blank=True)
     """
     A reusable practice structure that coaches can copy into
     a new PracticePlan.

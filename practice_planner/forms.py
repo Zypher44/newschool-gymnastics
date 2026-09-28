@@ -1,9 +1,9 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from django.db import models
 from django.utils import timezone
 
 from performance_testing.models import TestingSession
+from gyms.tenant import single_active_gym_id
 
 from .models import (
     PracticeAthleteAssignment,
@@ -105,9 +105,12 @@ class TrainingGroupForm(
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
+        self.gym_id = single_active_gym_id(user, ['coach', 'head_coach']) if user else None
 
         self.fields['coaches'].queryset = (
             User.objects.filter(
+                gym_memberships__gym_id=self.gym_id,
+                gym_memberships__is_active=True,
                 role__in=[
                     'coach',
                     'head_coach',
@@ -123,6 +126,9 @@ class TrainingGroupForm(
 
         self.fields['athletes'].queryset = (
             User.objects.filter(
+                gym_memberships__gym_id=self.gym_id,
+                gym_memberships__role='athlete',
+                gym_memberships__is_active=True,
                 role='athlete',
                 is_active=True,
             )
@@ -140,6 +146,7 @@ class TrainingGroupForm(
 
         duplicate_groups = TrainingGroup.objects.filter(
             name__iexact=name,
+            gym_id=self.gym_id,
         )
 
         if self.instance.pk:
@@ -237,9 +244,12 @@ class PracticePlanForm(
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
+        gym_id = single_active_gym_id(user, ['coach', 'head_coach']) if user else None
 
         coach_queryset = (
             User.objects.filter(
+                gym_memberships__gym_id=gym_id,
+                gym_memberships__is_active=True,
                 role__in=[
                     'coach',
                     'head_coach',
@@ -271,6 +281,7 @@ class PracticePlanForm(
         if user and user.role == 'coach':
             self.fields['training_group'].queryset = (
                 TrainingGroup.objects.filter(
+                    gym_id=gym_id,
                     coaches=user,
                     is_active=True,
                 )
@@ -281,6 +292,7 @@ class PracticePlanForm(
         else:
             self.fields['training_group'].queryset = (
                 TrainingGroup.objects.filter(
+                    gym_id=gym_id,
                     is_active=True,
                 )
                 .order_by('name')
@@ -387,9 +399,12 @@ class PracticeRotationForm(
         super().__init__(*args, **kwargs)
 
         self.practice_plan = practice_plan
+        gym_id = practice_plan.training_group.gym_id if practice_plan else None
 
         self.fields['assigned_coach'].queryset = (
             User.objects.filter(
+                gym_memberships__gym_id=gym_id,
+                gym_memberships__is_active=True,
                 role__in=[
                     'coach',
                     'head_coach',
@@ -403,7 +418,7 @@ class PracticeRotationForm(
             )
         )
 
-        testing_sessions = TestingSession.objects.all()
+        testing_sessions = TestingSession.objects.filter(gym_id=gym_id)
 
         if practice_plan:
             testing_sessions = (
@@ -412,24 +427,7 @@ class PracticeRotationForm(
                         practice_plan.practice_date
                     ),
                 )
-                .filter(
-                    models.Q(
-                        training_group=(
-                            practice_plan.training_group
-                        ),
-                    )
-                    | models.Q(
-                        training_group__isnull=True,
-                    )
-                )
-                .filter(
-                    models.Q(
-                        practice_plan=practice_plan,
-                    )
-                    | models.Q(
-                        practice_plan__isnull=True,
-                    )
-                )
+                .filter(practice_plan=practice_plan)
             )
 
         self.fields['testing_session'].queryset = (
@@ -505,8 +503,8 @@ class PracticeRotationForm(
 
             if (
                 testing_session.training_group_id
-                and testing_session.training_group_id
-                != self.practice_plan.training_group_id
+                and testing_session.training_group.gym_id
+                != self.practice_plan.training_group.gym_id
             ):
                 self.add_error(
                     'testing_session',
@@ -779,6 +777,9 @@ class PracticeAthleteAssignmentForm(
         athlete_queryset = User.objects.filter(
             role='athlete',
             is_active=True,
+            gym_memberships__gym_id=(practice_plan.training_group.gym_id if practice_plan else None),
+            gym_memberships__role='athlete',
+            gym_memberships__is_active=True,
         )
 
         if practice_plan:
@@ -1062,9 +1063,12 @@ class CreatePracticeFromTemplateForm(
 
             self.user = user
             self.practice_template = practice_template
+            gym_id = single_active_gym_id(user, ['coach', 'head_coach']) if user else None
 
             coaches = (
                 User.objects.filter(
+                    gym_memberships__gym_id=gym_id,
+                    gym_memberships__is_active=True,
                     role__in=[
                         'coach',
                         'head_coach',
@@ -1091,6 +1095,7 @@ class CreatePracticeFromTemplateForm(
                     'training_group'
                 ].queryset = (
                     TrainingGroup.objects.filter(
+                        gym_id=gym_id,
                         coaches=user,
                         is_active=True,
                     )
@@ -1105,6 +1110,7 @@ class CreatePracticeFromTemplateForm(
                     'training_group'
                 ].queryset = (
                     TrainingGroup.objects.filter(
+                        gym_id=gym_id,
                         is_active=True,
                     )
                     .order_by(
