@@ -1,4 +1,4 @@
-# Free core test environment. No Supabase or video worker required.
+# Free core test; create your own director using /accounts/signup/director/.
 databases:
 - name: newschool-v2-test-db
   databaseName: newschool_v2_test
@@ -35,9 +35,5 @@ services:
     fromDatabase:
       name: newschool-v2-test-db
       property: connectionString
-  - key: BOOTSTRAP_TEST_ADMIN_USERNAME
-    value: v2testdirector
-  - key: BOOTSTRAP_TEST_ADMIN_PASSWORD
-    sync: false
   - key: RENDER_TEST_VIDEOS_ENABLED
     value: 'False'

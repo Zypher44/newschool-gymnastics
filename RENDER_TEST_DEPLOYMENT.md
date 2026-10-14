@@ -15,6 +15,8 @@ Free web services sleep after 15 minutes without traffic and lack a shell. The w
 
 ## Storage and initial login
 
+For free core testing, create your director account at `/accounts/signup/director/`. No bootstrap password or other private setup keys are required. The optional bootstrap instructions below apply only to the full profile.
+
 Core-only testing does not require Supabase. Its RENDER_TEST_VIDEOS_ENABLED setting is False: video pages show a paused notice and file uploads are rejected. The storage instructions below apply only when explicitly enabling video testing.
 
 Create a PRIVATE Supabase bucket named `athlete-videos-test`. The test services use the extra `render-test/` prefix. Enter S3 endpoint, access key ID and secret access key in the Blueprint secret fields. Correct the default `ca-central-1` region if your project uses another region. Never commit credentials or paste them into chat.
