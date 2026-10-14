@@ -490,6 +490,21 @@
             </div>
 
             <div class="sidebar-navigation">
+                {% if user.role == 'athlete' %}
+                    <a href="{% url 'skill_tracker:tracker' %}" class="sidebar-link">
+                        <span class="sidebar-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 3 3 5-6"></path></svg></span>
+                        <span class="sidebar-label">Skill Tracker</span>
+                    </a>
+                {% endif %}
+
+                {% if user.role == 'coach' or user.role == 'head_coach' or user.role == 'athlete' %}
+                    
+                {% endif %}
+
+                {% if user.role == 'coach' or user.role == 'head_coach' %}
+                    
+                {% endif %}
+
                 {% if user.role == 'director' %}
                     <div class="sidebar-section">Gym Management</div>
 
@@ -498,6 +513,9 @@
                         <span class="sidebar-label">Director Dashboard</span>
                     </a>
 
+                    <a href="{% url 'gym_usage' %}?view=week" class="sidebar-link">
+                        <span class="sidebar-icon">📊</span><span class="sidebar-label">Gym Usage</span>
+                    </a>
                     <a href="{% url 'people_management' %}" class="sidebar-link">
                         <span class="sidebar-icon">👥</span>
                         <span class="sidebar-label">Manage People</span>
@@ -526,6 +544,8 @@
                         <span class="sidebar-label">Dashboard</span>
                     </a>
 
+
+
                     <div class="sidebar-section">Athletes</div>
 
                     <a href="{% url 'athlete_search' %}" class="sidebar-link">
@@ -544,6 +564,8 @@
                     </a>
 
                     <div class="sidebar-section">Performance</div>
+                    <!-- V3 practice refinements -->
+                    <a href="{% url 'practice_hub:start' %}" class="sidebar-link"><span class="sidebar-icon" aria-hidden="true">🚀</span><span class="sidebar-label">Start Practice</span></a>
 
                     <a href="{% url 'testing_session_list' %}" class="sidebar-link">
                         <span class="sidebar-icon">📊</span>
@@ -564,6 +586,18 @@
                         <span class="sidebar-icon">📈</span>
                         <span class="sidebar-label">Routine Consistency</span>
                     </a>
+
+                    
+                    <a href="{% url 'skill_tracker:tracker' %}" class="sidebar-link">
+                        <span class="sidebar-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 3 3 5-6"></path></svg></span>
+                        <span class="sidebar-label">Skill Tracker</span>
+                    </a>
+
+                    <a href="{% url 'practice_focus:planner' %}" class="sidebar-link">
+                        <span class="sidebar-icon" aria-hidden="true">🎯</span>
+                        <span class="sidebar-label">Practice Planner</span>
+                    </a>
+
 
                     <div class="sidebar-section">Planning</div>
 
@@ -587,12 +621,28 @@
                         <span class="sidebar-label">Create Event</span>
                     </a>
 
-                    <div class="sidebar-section">Insights</div>
+                    <!-- V3 practice progress upgrades -->
+<div class="sidebar-section">Reports</div>
+<a href="{% url 'practice_focus:coach_passport' %}" class="sidebar-link"><span class="sidebar-icon" aria-hidden="true">🏅</span><span class="sidebar-label">Practice Passports</span></a>
+
 
                     <a href="{% url 'report_center' %}" class="sidebar-link">
                         <span class="sidebar-icon">📈</span>
                         <span class="sidebar-label">Reports</span>
                     </a>
+                    <a href="{% url 'practice_focus:weekly_reports' %}" class="sidebar-link">
+                        <span class="sidebar-icon" aria-hidden="true">📅</span>
+                        <span class="sidebar-label">Weekly Reports</span>
+                    </a>
+                    <a href="{% url 'practice_focus:review_queue' %}" class="sidebar-link">
+                        <span class="sidebar-icon" aria-hidden="true">📋</span>
+                        <span class="sidebar-label">Review Queue</span>
+                    </a>
+                    <a href="{% url 'practice_focus:coach_feedback' %}" class="sidebar-link">
+                        <span class="sidebar-icon" aria-hidden="true">💬</span>
+                        <span class="sidebar-label">Athlete Feedback</span>
+                    </a>
+                    <a href="{% url 'practice_focus:journal_history' %}" class="sidebar-link"><span class="sidebar-icon" aria-hidden="true">📖</span><span class="sidebar-label">Shared Journals</span></a>
 
                     <a href="{% url 'video_library:dashboard' %}" class="sidebar-link">
                         <span class="sidebar-icon">📹</span>
@@ -600,7 +650,11 @@
                     </a>
 
                 {% elif user.role == 'athlete' %}
+<a href="{% url 'practice_focus:journal_history' %}" class="sidebar-link"><span class="sidebar-icon" aria-hidden="true">📖</span><span class="sidebar-label">My Practice Journal</span></a>
+<a href="{% url 'practice_focus:family_progress' %}" class="sidebar-link"><span class="sidebar-label">My Progress & Feedback</span></a>
                     <div class="sidebar-section">Home</div>
+<a href="{% url 'practice_focus:family_passport' %}" class="sidebar-link"><span class="sidebar-icon" aria-hidden="true">🏅</span><span class="sidebar-label">Practice Passport</span></a>
+
 
                     <a href="{% url 'athlete_dashboard' %}" class="sidebar-link">
                         <span class="sidebar-icon">🏠</span>
@@ -632,7 +686,11 @@
                     </a>
 
                 {% elif user.role == 'parent' %}
+<a href="{% url 'practice_focus:journal_history' %}" class="sidebar-link"><span class="sidebar-icon" aria-hidden="true">📖</span><span class="sidebar-label">Shared Journals</span></a>
+<a href="{% url 'practice_focus:family_progress' %}" class="sidebar-link"><span class="sidebar-label">Weekly Reports & Feedback</span></a>
                     <div class="sidebar-section">Home</div>
+<a href="{% url 'practice_focus:family_passport' %}" class="sidebar-link"><span class="sidebar-icon" aria-hidden="true">🏅</span><span class="sidebar-label">Practice Passport</span></a>
+
 
                     <a href="{% url 'parent_dashboard' %}" class="sidebar-link">
                         <span class="sidebar-icon">🏠</span>
@@ -667,7 +725,6 @@
                         <span class="sidebar-label">Athlete Videos</span>
                     </a>
                 {% endif %}
-
                 <div class="sidebar-section">Communication</div>
 
                 {% if user.role == 'parent' or user.role == 'athlete' %}
@@ -848,6 +905,7 @@
 
                                 {% if user.role == 'director' %}
                                     <a href="{% url 'director_dashboard' %}" class="dropdown-item">🏢 Director Dashboard</a>
+                                    <a href="{% url 'gym_usage' %}?view=week" class="dropdown-item">📊 Gym Usage</a>
                                 {% elif user.role == 'parent' %}
                                     <a href="{% url 'parent_dashboard' %}" class="dropdown-item">🏠 Parent Home</a>
                                     <a href="{% url 'parent_events' %}" class="dropdown-item">📅 Upcoming Events</a>
@@ -883,6 +941,9 @@
                 {% endfor %}
             {% endif %}
 
+            {% load practice_hub_tags %}
+            {% practice_hub_welcome %}
+            {% practice_hub_tracker_context %}
             {% block content %}{% endblock %}
         </main>
     </div>
@@ -976,5 +1037,6 @@
 
 {% block extra_js %}{% endblock %}
 
+{% include "mobile/mobile_support.html" %}
 </body>
 </html>

@@ -12,9 +12,22 @@
     </a>
 </div>
 
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-12 col-sm-auto">
+                <label for="attendance-date" class="form-label">Practice date</label>
+                <input id="attendance-date" type="date" name="date" value="{{ attendance_date|date:'Y-m-d' }}" class="form-control" required>
+            </div>
+            <div class="col-12 col-sm-auto"><button type="submit" class="btn btn-outline-primary">Load date</button></div>
+        </form>
+        {% if is_past_date %}<p class="small text-muted mt-2 mb-0">Editing saved attendance for {{ attendance_date|date:'F j, Y' }}.</p>{% endif %}
+    </div>
+</div>
+
 <div class="card">
     <div class="card-header">
-        Attendance for {{ today }}
+        Attendance for {{ attendance_date|date:'l, F j, Y' }}
     </div>
 
     <div class="card-body">
@@ -22,6 +35,7 @@
 
             <form method="POST">
                 {% csrf_token %}
+                <input type="hidden" name="attendance_date" value="{{ attendance_date|date:'Y-m-d' }}">
 
                 <div class="table-responsive">
                     <table class="table table-striped align-middle">
@@ -86,7 +100,7 @@
                                         name="notes_{{ item.athlete.id }}"
                                         class="form-control"
                                         value="{% if item.record %}{{ item.record.notes }}{% endif %}"
-                                        placeholder="Optional note"
+                                        placeholder="Reason or note (e.g., sick, excused, late)"
                                     >
                                 </td>
                             </tr>

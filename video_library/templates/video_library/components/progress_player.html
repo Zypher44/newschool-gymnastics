@@ -1,0 +1,10 @@
+<div class="vp-clip">
+  <div class="vp-label">{{ label }}</div>
+  <h3 class="h6">{{ video.title }}</h3>
+  <p class="vp-meta">{{ video.progress_date_source }} {{ video.progress_date|date:'M j, Y' }} · {{ video.get_camera_view_display }}</p>
+  <video id="{{ player_id }}" class="vp-player" controls playsinline muted preload="none" {% if video.thumbnail %}poster="{{ video.thumbnail.url }}"{% endif %} aria-label="{{ label }}: {{ video.title }}">
+    <source src="{{ video.video_file.url }}">
+    Your browser cannot play this video.
+  </video>
+  <div class="vp-meta mt-2">Playback position: <span id="{{ time_id }}">0.00s</span></div>
+</div>

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load static inline_practice_tags %}
+{% block title %}My Practice Plan{% endblock %}
+{% block page_header %}My Practice Plan{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'practice_focus/personal_planner.css' %}?v=1">
+<link rel="stylesheet" href="{% static 'practice_focus/inline_trackers.css' %}?v=1">
+<link rel="stylesheet" href="{% static 'practice_focus/progress.css' %}?v=1">
+<div class="pp-shell pp-child">
+    <header class="pp-header"><div><p class="pp-eyebrow">{{ day|date:"l, F j" }}</p><h1>My practice</h1><p>{{ request.user.get_full_name|default:request.user.username }}</p></div></header>
+    {% if plan %}<section class="pp-card"><h2>{{ plan.title }}</h2>{% if plan.focus %}<p class="pp-focus">{{ plan.focus }}</p>{% endif %}{% if plan.level %}<p class="pp-small">{{ plan.level }}</p>{% endif %}</section>
+    {% inline_practice_trackers request.user day %}
+    {% include "practice_focus/plan_progress.html" %}
+    {% if plan.notes %}<section class="pp-card"><h2>Coach notes</h2><p>{{ plan.notes|linebreaksbr }}</p></section>{% endif %}
+    {% else %}{% inline_practice_trackers request.user day %}<section class="pp-card"><h2>No plan yet</h2><p>Your coach can add your practice plan for this date.</p></section>{% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'skill_tracker/celebrations.js' %}?v=1" defer></script>
+<script src="{% static 'practice_focus/autosave.js' %}?v=1" defer></script>
+<script src="{% static 'practice_focus/inline_trackers.js' %}?v=1" defer></script>{% endblock %}

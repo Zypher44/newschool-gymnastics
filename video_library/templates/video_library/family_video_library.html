@@ -148,6 +148,8 @@ My Videos
 
     {% if selected_athlete %}
 
+        <a href="{% url 'video_library:athlete_timeline' selected_athlete.id %}" class="btn btn-primary mb-3">📈 My Progress Timeline</a>
+
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
 
             <div>
@@ -208,6 +210,7 @@ My Videos
                                     <h5 class="fw-bold mb-1">
                                         {{ video.title }}
                                     </h5>
+                                    <a class="btn btn-outline-primary btn-sm mt-2" href="{% url 'video_library:moment_feedback' video.id %}">💬 View moment feedback</a>
 
                                     <div class="text-muted small">
 

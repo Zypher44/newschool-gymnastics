@@ -1,0 +1,12 @@
+{% extends 'practice_focus/progress_layout.html' %}
+{% block title %}Delete badge{% endblock %}
+{% block page_header %}Delete badge{% endblock %}
+{% block progress_content %}
+<section class="progress-card mx-auto" style="max-width:620px">
+  <p class="mb-2" style="font-size:40px" aria-hidden="true">{{ definition.icon }}</p>
+  <h1 class="h3">Delete “{{ definition.title }}”?</h1>
+  <p>{{ definition.rule }}</p>
+  <p>This removes the badge from your gym’s badge library and future awards. Athletes keep stamps they have already earned, including their messages and award history.</p>
+  <form method="post" class="d-flex flex-wrap gap-2">{% csrf_token %}<input type="hidden" name="action" value="delete"><input type="hidden" name="version" value="{{ definition.definition_version }}"><button type="submit" class="btn btn-danger" style="min-height:44px">Delete badge</button><a href="{% url 'practice_focus:badge_editor' %}" class="btn btn-outline-secondary" style="min-height:44px">Cancel</a></form>
+</section>
+{% endblock %}

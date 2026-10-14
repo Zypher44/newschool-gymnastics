@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Daily Survey</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
     <h1>Daily Athlete Survey</h1>
@@ -11,5 +12,6 @@
         {{ form.as_p }}
         <button type="submit">Submit Survey</button>
     </form>
+{% include "mobile/mobile_support.html" %}
 </body>
 </html>

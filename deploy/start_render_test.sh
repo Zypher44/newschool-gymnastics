@@ -7,6 +7,7 @@ python manage.py check --deploy --fail-level ERROR
 case "${1:-web}" in
   web)
     python manage.py migrate --noinput
+    python manage.py bootstrap_render_test_admin
     python manage.py collectstatic --noinput
     exec python -m gunicorn DjangoProject.wsgi:application \
       --bind "0.0.0.0:${PORT:-10000}" --workers 1 --threads 2 \

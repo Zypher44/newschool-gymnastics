@@ -1,4 +1,5 @@
 from typing import Any
+from .aligned_timing import aligned_timing, number
 
 
 MEASUREMENT_LABELS = {
@@ -12,14 +13,7 @@ MEASUREMENT_LABELS = {
 def _safe_float(
     value,
 ):
-    try:
-        return float(value)
-
-    except (
-        TypeError,
-        ValueError,
-    ):
-        return None
+    return number(value)
 
 
 def _build_change(
@@ -188,78 +182,8 @@ def build_comparison_summary(
                 )
 
 
-        first_timestamp = (
-            _safe_float(
-                first.get(
-                    'timestamp'
-                )
-            )
-        )
-
-        second_timestamp = (
-            _safe_float(
-                second.get(
-                    'timestamp'
-                )
-            )
-        )
-
-
-        if (
-            first_timestamp is not None
-            and second_timestamp is not None
-        ):
-
-            timing_delta = round(
-                second_timestamp
-                - first_timestamp,
-                2,
-            )
-
-            timing_changes.append({
-                'phase': (
-                    phase.get(
-                        'name'
-                    )
-                ),
-
-                'phase_label': (
-                    phase.get(
-                        'label'
-                    )
-                ),
-
-                'first': round(
-                    first_timestamp,
-                    2,
-                ),
-
-                'second': round(
-                    second_timestamp,
-                    2,
-                ),
-
-                'delta': (
-                    timing_delta
-                ),
-
-                'absolute_delta': round(
-                    abs(
-                        timing_delta
-                    ),
-                    2,
-                ),
-
-                'direction': (
-                    'later'
-                    if timing_delta > 0
-                    else (
-                        'earlier'
-                        if timing_delta < 0
-                        else 'same'
-                    )
-                ),
-            })
+    timing = aligned_timing(phase_comparisons)
+    timing_changes = timing['rows']
 
 
     #
@@ -325,6 +249,8 @@ def build_comparison_summary(
 
 
     return {
+        'timing_basis': 'Elapsed time from the estimated Entry frame in each clip',
+        'timing_reason': timing['reason'],
         'largest_change': (
             largest_change
         ),

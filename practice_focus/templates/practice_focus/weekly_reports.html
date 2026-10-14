@@ -1,0 +1,8 @@
+{% extends 'practice_focus/progress_layout.html' %}
+{% block progress_content %}
+<section class="progress-card"><h1 class="h3">Weekly reports</h1><p>Build a Monday–Sunday summary of approved skill and routine results. Preview it before publishing to the athlete and their linked parents.</p></section>
+<section class="progress-card"><h2 class="h5">Create or refresh a draft</h2>
+{% if athlete %}<form method="post">{% csrf_token %}<label for="weekly-athlete">Athlete</label><select name="athlete" id="weekly-athlete">{% for person in athletes %}<option value="{{ person.pk }}" {% if person == athlete %}selected{% endif %}>{{ person.get_full_name|default:person.username }}</option>{% endfor %}</select>{{ form.as_p }}<p class="progress-muted">Refreshing an existing report withdraws it until you publish the new draft.</p><button class="btn btn-primary">Build draft and preview</button></form>{% else %}<p>No athletes are assigned to your coaching roster.</p>{% endif %}
+</section>
+<section class="progress-card"><h2 class="h5">Your weekly reports</h2>{% for summary in summaries %}<p><a href="{% url 'practice_focus:weekly_report_detail' summary.pk %}">{{ summary.athlete.get_full_name|default:summary.athlete.username }} · Week of {{ summary.week_start|date:'M j, Y' }}</a> <span class="progress-badge">{% if summary.published_at %}Published{% else %}Draft{% endif %}</span></p>{% empty %}<p>No weekly reports yet.</p>{% endfor %}</section>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'practice_focus/journal_layout.html' %}
+{% block journal_content %}
+{% if owner %}<section class="aj-card aj-start"><div><h2>A little reflection goes a long way</h2><p>Pick how practice felt, or answer a question. Small wins count.</p></div><a class="aj-button aj-primary" href="{% url 'practice_focus:journal_new' %}">Write or edit today's entry</a><p class="aj-muted">New entries start as Only me. Sharing is your choice for each entry.</p></section>{% endif %}
+<section class="aj-card"><h2>{% if owner %}Find a past entry{% else %}Find a shared entry{% endif %}</h2>
+  <form method="get" class="aj-filters">
+    {% if not owner %}<label>Athlete<select name="athlete"><option value="">All shared athletes</option>{% for person in athletes %}<option value="{{ person.pk }}" {% if person.pk|stringformat:'s' == selected_athlete %}selected{% endif %}>{{ person.get_full_name|default:person.username }}</option>{% endfor %}</select></label>{% endif %}
+    <label for="id_start">From{{ filter_form.start }}{{ filter_form.start.errors }}</label>
+    <label for="id_end">To{{ filter_form.end }}{{ filter_form.end.errors }}</label>
+    <button type="submit" class="aj-button aj-primary">Find entries</button><a class="aj-button" href="{% url 'practice_focus:journal_history' %}">Clear filters</a>
+    {{ filter_form.non_field_errors }}{{ filter_form.athlete.errors }}
+  </form>
+</section>
+<section aria-label="Journal entries"><div class="aj-history-heading"><h2>{% if owner %}Past entries{% else %}Shared entries{% endif %}</h2><span class="aj-muted">{{ page.paginator.count }} entr{{ page.paginator.count|pluralize:'y,ies' }}</span></div>
+  <div class="aj-entry-grid">{% for entry in page %}<article class="aj-card"><h3><a href="{% url 'practice_focus:journal_detail' entry.pk %}">{{ entry.entry_date|date:'l, F j, Y' }}</a></h3>{% if not owner %}<p class="aj-author">{{ entry.athlete.get_full_name|default:entry.athlete.username }}</p>{% endif %}<p class="aj-tag">{{ entry.audience_label }}</p>{% if entry.mood %}<p>Practice felt: <strong>{{ entry.get_mood_display }}</strong></p>{% endif %}<p class="aj-preview">{{ entry.win|default:entry.challenge|default:entry.next_focus|truncatechars:140 }}</p><div class="aj-actions"><a class="aj-button" href="{% url 'practice_focus:journal_detail' entry.pk %}">Read entry</a>{% if owner %}<a class="aj-button" href="{% url 'practice_focus:journal_edit' entry.pk %}">Edit</a>{% endif %}</div></article>{% empty %}<div class="aj-card"><h3>No entries {% if owner %}saved{% else %}shared{% endif %} for these dates yet</h3><p>{% if owner %}Write about today, or choose an earlier practice date when you start a new entry.{% else %}Entries appear here only when an athlete shares them with your role and you have access to that athlete.{% endif %}</p></div>{% endfor %}</div>
+</section>
+{% if page.has_other_pages %}<nav class="aj-actions aj-pagination" aria-label="Journal pages">{% if page.has_previous %}<a class="aj-button" href="?{% if filter_query %}{{ filter_query }}&amp;{% endif %}page={{ page.previous_page_number }}">Newer entries</a>{% endif %}<span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a class="aj-button" href="?{% if filter_query %}{{ filter_query }}&amp;{% endif %}page={{ page.next_page_number }}">Older entries</a>{% endif %}</nav>{% endif %}
+{% endblock %}

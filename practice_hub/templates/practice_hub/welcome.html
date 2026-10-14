@@ -1,0 +1,2 @@
+{% load static %}
+{% if show %}<link rel="stylesheet" href="{% static 'practice_hub/hub.css' %}?v=1"><aside class="ph-banner" aria-label="Getting started"><p>{% if ready %}{% if started %}Continue your Getting Started guide.{% else %}Welcome. Take a short guide for your role.{% endif %}{% else %}Get connected to your gym to begin.{% endif %}</p><a href="{{ url }}">{% if started %}Continue guide{% else %}Getting Started{% endif %}</a></aside>{% endif %}

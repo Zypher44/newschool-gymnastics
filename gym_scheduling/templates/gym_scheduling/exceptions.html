@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Single-day Changes{% endblock %}
+{% block page_header %}Single-day Changes{% endblock %}
+{% block content %}
+<h1 class="h3">{{ schedule.group.name }} — Single-day changes</h1>
+<p class="text-muted">{{ schedule.weekday_labels }} · {{ schedule.start_time|time:'g:i A' }}–{{ schedule.end_time|time:'g:i A' }} · {{ schedule.start_date|date:'M j, Y' }}–{{ schedule.end_date|date:'M j, Y' }}</p>
+<div class="d-flex flex-wrap gap-2 mb-3"><a class="btn btn-outline-primary" href="{% url 'group_schedules' %}">All schedules</a><a class="btn btn-outline-primary" href="{% url 'gym_usage' %}?view=week">Gym usage</a></div>
+<div class="card p-4 mb-4"><h2 class="h5">Cancel or change one session</h2><p>Choose a date this group normally trains. Saving replaces any previous exception for that date. Other dates keep their regular schedule.</p>
+<form method="post">{% csrf_token %}{{ form.non_field_errors }}<div class="row g-3">{% for field in form %}<div class="col-md-6"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}<div class="text-danger">{{ field.errors }}</div></div>{% endfor %}</div><p class="small text-muted mt-3">Hours are required only for “Change hours”; they are ignored for cancellations. Times must start and finish on the selected date.</p><button class="btn btn-primary">Save single-day change</button></form></div>
+<div class="card p-3"><h2 class="h5">Exceptions</h2><div class="table-responsive"><table class="table"><thead><tr><th>Date</th><th>Change</th><th>Note</th><th>Actions</th></tr></thead><tbody>{% for exception in exceptions %}<tr><td>{{ exception.date|date:'D, M j, Y' }}</td><td>{% if exception.action == 'cancel' %}Cancelled{% else %}{{ exception.start_time|time:'g:i A' }}–{{ exception.end_time|time:'g:i A' }}{% endif %}</td><td>{{ exception.note }}</td><td><a href="?date={{ exception.date|date:'Y-m-d' }}">Edit</a><form method="post" class="d-inline">{% csrf_token %}<input type="hidden" name="operation" value="restore"><input type="hidden" name="exception_id" value="{{ exception.pk }}"><button class="btn btn-sm btn-outline-secondary">Restore regular session</button></form></td></tr>{% empty %}<tr><td colspan="4">No single-day changes.</td></tr>{% endfor %}</tbody></table></div></div>
+{% endblock %}

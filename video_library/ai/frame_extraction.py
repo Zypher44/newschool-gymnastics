@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-import cv2
 
 
 class FrameExtractionError(Exception):
@@ -68,6 +67,7 @@ def extract_frame_at_timestamp(
     """
     Extract one real frame from a video at the requested timestamp.
     """
+    import cv2
 
     video_path = Path(video_path)
     output_path = Path(output_path)
@@ -222,6 +222,7 @@ def extract_sample_frames(
     """
     Extract a set of evenly spaced real frames from a video.
     """
+    import cv2
 
     output_directory = Path(
         output_directory

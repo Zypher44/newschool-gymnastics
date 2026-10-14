@@ -1,0 +1,30 @@
+{% if show %}
+<section class="ip-shell" id="ip-trackers" aria-label="Practice results">
+  <header class="ip-heading"><div><h2>Let’s practice</h2><p>{{ tracking.name }} · {{ tracking.date }}</p></div>{% if not inline_external_events %}<div class="ip-events" role="group" aria-label="Choose tracking event">{% for item in inline_events %}<button type="button" class="ip-event" data-ip-event="{{ item.code }}" aria-pressed="{% if item.code == inline_event %}true{% else %}false{% endif %}">{{ item.label }}</button>{% endfor %}</div>{% endif %}</header>
+  {% if inline_reason %}<p class="ip-notice">{{ inline_reason }}</p>{% endif %}
+  <p class="ip-cue" data-ip-cue hidden></p>
+  <div class="ip-grid">
+    <section class="ip-card" data-ip-kind="skill" aria-labelledby="ip-skill-heading">
+      <h3 id="ip-skill-heading">Skill Tracker <span data-ip-event-label></span></h3>
+      <label class="ip-skill-label" for="ip-skill-select">What skill did you do?</label><select id="ip-skill-select" data-ip-skill {% if not inline_enabled %}disabled{% endif %}><option value="">Choose a skill</option></select>
+      <p class="ip-goal" data-ip-goal="skill" role="status" aria-live="polite">Choose a skill to see its target.</p>
+      <div class="ip-results" aria-label="Skill result"><button type="button" class="ip-wow" data-ip-result="wow" disabled>Wow</button><button type="button" class="ip-hit" data-ip-result="hit" disabled>Hit</button><button type="button" class="ip-attempt" data-ip-result="missed" disabled>Attempt</button></div>
+      <p class="ip-counts" data-ip-counts="skill" aria-live="polite"></p>
+      <details class="ip-recent"><summary>Recent results · Undo</summary><ol data-ip-log="skill"></ol></details>
+      <footer><p data-ip-status="skill" role="status" aria-live="polite">{% if inline_enabled %}Autosave is on{% else %}Viewing this practice date{% endif %}</p><button type="button" class="ip-retry" data-ip-last-undo="skill" disabled>Undo last</button><button type="button" class="ip-retry" data-ip-retry="skill" disabled>Retry save</button></footer>
+    </section>
+    <section class="ip-card" data-ip-kind="routine" aria-labelledby="ip-routine-heading">
+      <h3 id="ip-routine-heading">Routine Tracker <span data-ip-event-label></span></h3>
+      <div class="ip-routine-type" role="group" aria-label="Routine type"><button type="button" data-ip-pressure="false" aria-pressed="true">Routine</button><button type="button" data-ip-pressure="true" aria-pressed="false">Pressure set</button></div>
+      <p class="ip-goal" data-ip-goal="routine" role="status" aria-live="polite"></p>
+      <div class="ip-results" aria-label="Routine result"><button type="button" class="ip-wow" data-ip-result="wow" {% if not inline_enabled %}disabled{% endif %}>Wow</button><button type="button" class="ip-hit" data-ip-result="hit" {% if not inline_enabled %}disabled{% endif %}>Hit</button><button type="button" class="ip-attempt" data-ip-result="missed" {% if not inline_enabled %}disabled{% endif %}>Attempt</button></div>
+      <p class="ip-counts" data-ip-counts="routine" aria-live="polite"></p>
+      <details class="ip-recent"><summary>Recent results · Undo</summary><ol data-ip-log="routine"></ol></details>
+      <footer><p data-ip-status="routine" role="status" aria-live="polite">{% if inline_enabled %}Autosave is on{% else %}Viewing this practice date{% endif %}</p><button type="button" class="ip-retry" data-ip-last-undo="routine" disabled>Undo last</button><button type="button" class="ip-retry" data-ip-retry="routine" disabled>Retry save</button></footer>
+    </section>
+  </div>
+  <p class="ip-note">Wow and Hit count as successful completions. Use Undo for an accidental tap.</p>
+  <form id="ip-token" hidden>{% csrf_token %}</form>
+  {{ tracking|json_script:'ip-config' }}
+</section>
+{% endif %}

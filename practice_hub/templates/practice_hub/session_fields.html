@@ -1,0 +1,4 @@
+{% csrf_token %}
+<input type="hidden" name="group" value="{{ group.pk }}">
+<input type="hidden" name="version" value="{{ session.version|default:0 }}">
+{% if selected_id %}<input type="hidden" name="athlete" value="{{ selected_id }}">{% endif %}

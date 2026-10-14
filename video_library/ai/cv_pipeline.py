@@ -251,7 +251,7 @@ class ComputerVisionPipeline:
             # Apply skill-specific rules.
             #
             analysis.update_progress(
-                percentage=92,
+                percentage=86,
                 step=(
                     'Applying skill-specific '
                     'analysis rules'

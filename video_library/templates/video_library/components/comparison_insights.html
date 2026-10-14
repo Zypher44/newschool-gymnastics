@@ -1,0 +1,38 @@
+{% load static l10n %}
+{% if matching_pair %}
+<section class="card compare-card mb-3 video-coach-brief" {% if second_analysis %}data-coach-review-url="{% url 'video_library:review_analysis' second_analysis.id %}"{% endif %} aria-labelledby="coach-comparison-heading">
+  <div class="card-body p-3 p-md-4">
+    <h2 class="h5 mb-2" id="coach-comparison-heading">One Focus for the Next Turn</h2>
+    <p class="small text-muted">{% if example_comparison %}Compare attempt B with the coach-marked example A.{% else %}Compare these two attempts. Mark a suitable example to get an example-based focus.{% endif %} Review the pictures before using the draft.</p>
+    {% if insights.available %}
+      <div class="row g-3">
+        <div class="col-12 col-md-6"><div class="border rounded-3 p-3 h-100"><h3 class="h6">Similar shape to the example</h3>
+          {% if insights.strength %}{% with item=insights.strength %}
+            <p class="small mb-2">{{ item.label }} at estimated {{ item.phase_label|lower }}: A {{ item.first.angle|floatformat:1 }}°, B {{ item.second.angle|floatformat:1 }}° (difference {{ item.gap|floatformat:1 }}°).</p>
+            <button class="btn btn-outline-secondary btn-sm phase-sync-button" type="button" data-phase="{{ item.phase }}" data-first-time="{{ item.first_time|unlocalize }}" data-second-time="{{ item.second_time|unlocalize }}">Inspect Both Frames</button>
+          {% endwith %}{% else %}<p class="small mb-0">No supported match to a marked example was found. Add a strength after watching the video.</p>{% endif %}
+        </div></div>
+        <div class="col-12 col-md-6"><div class="border border-warning rounded-3 p-3 h-100"><h3 class="h6">One difference to review</h3>
+          {% if insights.focus %}{% with item=insights.focus %}
+            <p class="small mb-2">{{ item.label }} at estimated {{ item.phase_label|lower }}: A {{ item.first.angle|floatformat:1 }}°, B {{ item.second.angle|floatformat:1 }}° (difference {{ item.gap|floatformat:1 }}°).</p>
+            <p class="small text-muted mb-2">{{ item.evidence_label }} · the orange marks identify the measured joint. Different camera views can change these angles.</p>
+            <button class="btn btn-outline-primary btn-sm phase-sync-button" type="button" data-phase="{{ item.phase }}" data-first-time="{{ item.first_time|unlocalize }}" data-second-time="{{ item.second_time|unlocalize }}">Inspect Both Frames</button>
+          {% endwith %}{% else %}<p class="small mb-0">No supported difference was selected. This does not establish that the skill was correct.</p>{% endif %}
+        </div></div>
+      </div>
+      <p class="small mt-3 mb-2"><strong>Possible athlete cue:</strong> {{ insights.cue }}</p>
+    {% else %}<p class="small">Not enough comparable joint evidence is available. Use current side-view analyses of the same skill with visible joints; older reports may need a fresh analysis.</p>{% endif %}
+    <p class="small text-muted">{{ insights.measured_count }} of {{ insights.paired_count }} paired phases have supported joint measurements. These are image measurements, not a skill score.</p>
+    {% if second_analysis and second_analysis.status == 'completed' %}
+      <button type="button" class="btn btn-primary btn-sm" data-coach-use-draft>Add Draft to Attempt B's Coach Notes</button>
+      <textarea hidden data-coach-draft>{{ insights.draft }}</textarea>
+      <p class="small text-muted mt-2" data-coach-message role="status" aria-live="polite">Edit the draft and choose a review decision below to save it.</p>
+      <details class="mt-3"><summary class="small fw-semibold">Edit and Save Attempt B's Coach Review</summary>
+        <div class="mt-3">{% include 'video_library/components/video_review.html' with latest_analysis=second_analysis %}</div>
+      </details>
+    {% endif %}
+  </div>
+</section>
+{% include 'video_library/components/skill_timing.html' %}
+<script src="{% static 'video_library/coaching-review.js' %}" defer></script>
+{% endif %}

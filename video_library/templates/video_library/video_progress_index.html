@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Athlete Video Progress{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'video_library/video-progress.css' %}">
+<div class="vp-page">
+  <header class="vp-hero">
+    <div><h1>📈 Athlete Progress</h1><p>See the journey, one attempt at a time.</p></div>
+    <a class="btn btn-outline-light" href="{{ library_url }}">← Video Library</a>
+  </header>
+  <section class="vp-panel">
+    <h2>Choose an athlete</h2>
+    <form method="get" class="vp-filter" role="search">
+      <div><label for="vp-athlete-search">Find a name</label><input id="vp-athlete-search" class="form-control" name="q" value="{{ query }}" maxlength="150" type="search"></div>
+      <button class="btn btn-primary" type="submit">Search</button>
+      {% if query %}<a class="btn btn-outline-secondary" href="{% url 'video_library:video_progress' %}">Clear</a>{% endif %}
+    </form>
+    <div class="vp-grid">
+      {% for athlete in page_obj %}
+        <a class="vp-name" href="{% url 'video_library:athlete_timeline' athlete.id %}"><strong>{{ athlete.get_full_name|default:athlete.username }}</strong><span class="vp-meta">Open progress timeline →</span></a>
+      {% empty %}
+        <p class="text-muted">{% if query %}No matching athletes.{% else %}No athletes available yet. {% if is_coach %}Assign an athlete or upload an athlete video to begin.{% else %}Your shared athlete videos will appear here.{% endif %}{% endif %}</p>
+      {% endfor %}
+    </div>
+  </section>
+  {% if page_obj.has_other_pages %}
+    <nav class="vp-pagination" aria-label="Athlete pages">
+      {% if page_obj.has_previous %}<a class="btn btn-outline-primary" href="?{{ query_string }}&amp;page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
+      <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}<a class="btn btn-outline-primary" href="?{{ query_string }}&amp;page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+    </nav>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,149 @@
+<style id="v3-mobile-support">
+/* Loaded after page styles so every V3 page gets the same mobile foundation. */
+.main-content .row > *, .main-content .card, .main-content .card-body,
+.main-content .d-flex > *, main .row > * { min-width: 0; }
+.main-content .table-responsive, .main-content .testing-grid-wrapper,
+.mobile-table-scroll { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.mobile-scroll-hint { display: none; }
+.mobile-scroll-hint[hidden] { display: none !important; }
+/* An expanded sidebar leaves less content space on portrait tablets. */
+@media screen and (min-width: 768px) and (max-width: 991.98px) {
+  .main-content .row > .col-md-6,
+  .main-content .row > .col-md-8 { width: 100%; }
+  .main-content .row > .col-md-3,
+  .main-content .row > .col-md-4 { width: 50%; }
+  .main-content .tracker-hero-layout { grid-template-columns: minmax(0, 1fr); }
+  .main-content .tracker-heading { grid-column: auto; }
+  .main-content .tracker-summary-link { justify-self: start; }
+}
+@media screen and (max-width: 991.98px) {
+  .main-content .card-header.d-flex,
+  .main-content .card-header > .d-flex.justify-content-between,
+  .main-content .d-flex.justify-content-between:not(.flex-column),
+  main .d-flex.justify-content-between:not(.flex-column) { flex-wrap: wrap; gap: .65rem; }
+  .main-content .btn, main .btn { max-width: 100%; white-space: normal; overflow-wrap: break-word; }
+  .main-content input:not([type="checkbox"]):not([type="radio"]),
+  .main-content select, .main-content textarea { max-width: 100%; }
+}
+@media screen and (max-width: 767.98px) {
+  .main-content { padding: 14px 12px calc(28px + env(safe-area-inset-bottom)) !important; }
+  .main-content > .container-fluid { padding-left: 0; padding-right: 0; }
+  .main-content .card-header, .main-content .card-body { padding: 16px; }
+  .main-content .btn, main .btn { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+  .main-content .btn-link.p-0 { min-height: 32px; min-width: 32px; }
+  .main-content input:not([type="checkbox"]):not([type="radio"]),
+  .main-content select, .main-content textarea,
+  main input:not([type="checkbox"]):not([type="radio"]), main select, main textarea { font-size: 16px !important; }
+  .main-content .form-control, .main-content .form-select { min-height: 44px; }
+  .main-content .card-header > .btn { width: 100%; }
+  .main-content .card-header .badge { white-space: normal; line-height: 1.4; }
+  .main-content .coach-hero, .main-content .athlete-hero,
+  .main-content .report-hero, .main-content .library-hero,
+  .main-content .tracker-hero, .main-content .summary-hero { padding: 22px 16px; border-radius: 18px; }
+  .main-content h1 { font-size: clamp(1.5rem, 6vw, 2rem); overflow-wrap: anywhere; }
+  .main-content .quick-action, .main-content .priority-item { gap: 12px; }
+  .main-content .coach-dashboard-content { overflow-x: visible; }
+  .main-content .quick-action-icon, .main-content .activity-icon { flex-shrink: 0; }
+  .main-content .priority-item { flex-direction: column; align-items: stretch; }
+  .main-content .priority-item .btn, .main-content .report-actions .btn { width: 100%; }
+  .main-content .report-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .main-content img, .main-content video, main img, main video { max-width: 100%; }
+  .main-content canvas { max-width: 100%; }
+  .main-content .tracker-shell .athlete-row { padding: 16px 12px; }
+  .main-content .event-box { min-width: 0; }
+  .main-content .action-grid, .main-content .level-progress-grid { grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr)); }
+  .main-content .skill-progress-grid { grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); }
+  .main-content .attempt-select-box { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .main-content .event-progress { max-width: 100%; flex-shrink: 1; }
+  .main-content .badge { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+  .main-content .routine-save-bar { position: static; bottom: auto; flex-direction: column; align-items: stretch; padding: 12px; }
+  .main-content .routine-save-bar .btn { width: 100%; }
+  .main-content .attempt-chip { max-width: 100%; white-space: normal; }
+  .main-content .attempt-list { gap: 8px; }
+  /* Present each date as a complete card instead of a 1100px calendar. */
+  .main-content .usage-week { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+  .main-content .usage-day { min-height: 0; border-right: 0; border-bottom: 1px solid #e5e7eb; }
+  .main-content .usage-day:last-child { border-bottom: 0; }
+  .main-content .mobile-table-scroll { width: 100%; }
+  .mobile-scroll-hint { display: block; margin: 8px 0; color: #667085; font-size: .8rem; }
+  /* Attendance preserves the original fields and POST names. */
+  .main-content .mobile-attendance-table { display: block; width: 100%; min-width: 0 !important; }
+  .main-content .mobile-attendance-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .main-content .mobile-attendance-table tbody { display: block; }
+  .main-content .mobile-attendance-table tbody tr { display: block; margin-bottom: 16px; padding: 12px; border: 1px solid #d0d5dd; border-radius: 12px; }
+  .main-content .mobile-attendance-table tbody td { display: block; width: 100%; border: 0; padding: 8px 0; box-shadow: none; background: transparent; }
+  .main-content .mobile-attendance-table tbody td[data-mobile-label]::before { content: attr(data-mobile-label); display: block; font-weight: 700; color: #344054; margin-bottom: 5px; }
+  .main-content .mobile-attendance-table input, .main-content .mobile-attendance-table select { width: 100%; }
+  .public-navbar .container > .d-flex { flex-wrap: wrap; }
+  .public-brand { max-width: 100%; }
+  main { min-width: 0; overflow-wrap: anywhere; }
+  main .login-header, main .login-body, main .signup-card { padding: 24px 18px; }
+  .login-card .login-header, .login-card .login-body { padding: 24px 18px; }
+  body > h1 { font-size: 1.5rem; overflow-wrap: anywhere; }
+  body > form { max-width: 100%; }
+  body > form input, body > form select, body > form textarea { max-width: 100%; font-size: 16px; }
+  body > form button { min-height: 44px; }
+  main .home-hero { padding: 56px 0; }
+  main .home-section { padding: 44px 0; }
+  .public-footer { padding: 36px 0 24px; margin-top: 40px; }
+}
+/* Intrinsic widths and wrapping prevent truncation at any event-card width. */
+.main-content .tracker-shell .event-box .quick-buttons { display: flex; flex-wrap: wrap; gap: 7px; width: 100%; min-width: 0; }
+.main-content .tracker-shell .event-box .quick-buttons > .btn.stage-result {
+  flex: 1 0 auto; display: inline-flex; align-items: center; justify-content: center;
+  width: auto !important; min-width: max-content; max-width: 100%; min-height: 44px;
+  padding: 10px 12px !important; font-size: .75rem !important; line-height: 1.25 !important;
+  white-space: nowrap; overflow: visible; box-sizing: border-box;
+}
+@media print { .mobile-scroll-hint { display: none !important; } }
+@media screen and (max-width: 991.98px) and (max-height: 480px) {
+  .main-content .routine-save-bar, .main-content .selection-summary { position: static; }
+}
+</style>
+<script>
+(() => {
+  function enhanceTables() {
+    document.querySelectorAll('.main-content table').forEach((table, tableIndex) => {
+      if (table.closest('.mobile-table-scroll') || table.dataset.mobileEnhanced) return;
+      table.dataset.mobileEnhanced = 'true';
+      let wrapper = table.closest('.table-responsive, .testing-grid-wrapper');
+      if (!wrapper) {
+        wrapper = document.createElement('div');
+        wrapper.className = 'mobile-table-scroll';
+        table.before(wrapper);
+        wrapper.appendChild(table);
+      }
+      const attendance = table.querySelector('select[name^="status_"]') && table.querySelector('input[name^="notes_"]');
+      if (attendance) {
+        table.classList.add('mobile-attendance-table');
+        const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
+        table.querySelectorAll('tbody tr').forEach((row, rowIndex) => {
+          const athlete = row.cells[0] ? row.cells[0].textContent.trim() : 'Athlete';
+          Array.from(row.cells).forEach((cell, col) => {
+            if (col > 0) cell.dataset.mobileLabel = headers[col] || 'Details';
+            cell.querySelectorAll('input:not([type="hidden"]), select, textarea').forEach(control => {
+              if (!control.id) control.id = `mobile-attendance-${tableIndex}-${rowIndex}-${col}`;
+              if (!control.labels || !control.labels.length) control.setAttribute('aria-label', `${headers[col] || 'Details'} for ${athlete}`);
+            });
+          });
+        });
+        return;
+      }
+      wrapper.classList.add('mobile-table-scroll');
+      wrapper.tabIndex = 0;
+      wrapper.setAttribute('role', 'region');
+      if (!wrapper.hasAttribute('aria-label')) wrapper.setAttribute('aria-label', 'Scrollable data table');
+      const hint = document.createElement('p');
+      hint.className = 'mobile-scroll-hint';
+      hint.textContent = 'Swipe left or right to see all columns.';
+      wrapper.before(hint);
+      const updateHint = () => { hint.hidden = wrapper.scrollWidth <= wrapper.clientWidth + 1; };
+      updateHint();
+      if (window.ResizeObserver) new ResizeObserver(updateHint).observe(wrapper);
+      window.addEventListener('resize', updateHint);
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', enhanceTables);
+  else enhanceTables();
+})();
+</script>

@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Getting Started{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'practice_hub/hub.css' %}?v=1">{% endblock %}
+{% block content %}<div class="ph-shell"><section class="ph-panel"><h1>Let’s connect you to your gym</h1><p>The guide needs one active gym membership matching your account role.</p><p>Ask your gym director to approve your membership or confirm which gym you should use.</p><p class="ph-muted">No athlete or gym information is shown until access is ready.</p><a class="ph-button" href="{{ home_url }}">Return to my dashboard</a></section></div>{% endblock %}

@@ -174,6 +174,7 @@ class Video(models.Model):
     TYPE_TESTING = 'testing'
     TYPE_DRILL = 'drill'
     TYPE_ROUTINE = 'routine'
+    TYPE_MOCK_MEET = 'mock_meet'
     TYPE_PROGRESS = 'progress'
     TYPE_OTHER = 'other'
 
@@ -197,6 +198,10 @@ class Video(models.Model):
         (
             TYPE_ROUTINE,
             'Routine',
+        ),
+        (
+            TYPE_MOCK_MEET,
+            'Mock Meet',
         ),
         (
             TYPE_PROGRESS,
@@ -441,6 +446,18 @@ class Video(models.Model):
         )
     )
 
+    is_skill_library_video = models.BooleanField(default=False, db_index=True)
+    skill_library_approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        related_name='approved_skill_examples', null=True, blank=True,
+    )
+    skill_library_approved_at = models.DateTimeField(null=True, blank=True)
+
+    @property
+    def is_approved_skill_example(self):
+        return bool(self.is_skill_library_video and self.is_coaching_example
+                    and self.skill_library_approved_by_id and self.skill_library_approved_at)
+
     reference_marked_by = (
         models.ForeignKey(
             settings.AUTH_USER_MODEL,
@@ -505,6 +522,14 @@ class Video(models.Model):
     # --------------------------------------------------------
     # AI RESULTS
     # --------------------------------------------------------
+
+    CAMERA_VIEW_CHOICES = [('unknown', 'Not confirmed'), ('side', 'Side'), ('front', 'Front'), ('rear', 'Rear'), ('oblique', 'Angled')]
+    camera_view = models.CharField(max_length=15, choices=CAMERA_VIEW_CHOICES, default='unknown')
+
+    video_fps = models.DecimalField(max_digits=8, decimal_places=3, null=True, blank=True)
+    frame_count = models.PositiveIntegerField(null=True, blank=True)
+    video_width = models.PositiveIntegerField(null=True, blank=True)
+    video_height = models.PositiveIntegerField(null=True, blank=True)
 
     ai_status = models.CharField(
         max_length=30,
@@ -768,6 +793,29 @@ class Video(models.Model):
 # ============================================================
 
 
+class VideoMomentNote(models.Model):
+    """Human feedback and normalized vector drawings on one original video moment."""
+    video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name='moment_notes')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+                               null=True, related_name='video_moment_notes')
+    timestamp_seconds = models.DecimalField(max_digits=9, decimal_places=3)
+    comment = models.TextField(blank=True, max_length=2500)
+    drawing = models.JSONField(default=list, blank=True)
+    visibility = models.CharField(max_length=20, choices=[('private', 'Only author'),
+                                  ('coaches', 'Coaches with video access'),
+                                  ('athlete', 'Coaches and athlete'),
+                                  ('parents', 'Coaches, athlete and parents')],
+                                  default=Video.VISIBILITY_PRIVATE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['timestamp_seconds', 'created_at', 'pk']
+        indexes = [models.Index(fields=['video', 'timestamp_seconds'], name='video_note_moment_idx')]
+        constraints = [models.CheckConstraint(condition=models.Q(timestamp_seconds__gte=0),
+                                               name='video_note_nonnegative_time')]
+
+
 class VideoReview(models.Model):
 
     STATUS_PENDING = 'pending'
@@ -1009,15 +1057,20 @@ class VideoAnalysis(models.Model):
         blank=True,
     )
 
+    processing_attempts = models.PositiveSmallIntegerField(default=0)
+    worker_token = models.UUIDField(null=True, blank=True)
+    lease_expires_at = models.DateTimeField(null=True, blank=True)
+    retry_after = models.DateTimeField(null=True, blank=True)
+
     analysis_source = models.CharField(
         max_length=30,
         choices=SOURCE_CHOICES,
-        default=SOURCE_MOCK,
+        default=SOURCE_POSE,
     )
 
     analysis_version = models.CharField(
         max_length=50,
-        default='0.1.0',
+        default='pose-evidence-1.0.0',
     )
 
     requested_skill = models.CharField(
@@ -1128,6 +1181,10 @@ class VideoAnalysis(models.Model):
     )
 
     class Meta:
+        constraints = [models.UniqueConstraint(
+            fields=['video'], condition=models.Q(status__in=['queued', 'preparing', 'processing', 'generating_results']),
+            name='video_one_active_analysis',
+        )]
 
         ordering = [
             '-created_at',
@@ -1547,6 +1604,8 @@ class VideoAnalysisMoment(models.Model):
         null=True,
         blank=True,
     )
+
+    annotated_frame_image = models.ImageField(upload_to=analysis_frame_upload_path, null=True, blank=True)
 
     display_order = (
         models.PositiveIntegerField(

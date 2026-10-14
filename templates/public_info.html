@@ -1,0 +1,8 @@
+{% extends "public_base.html" %}
+{% block title %}{{ title }} · NewSchool Gymnastics{% endblock %}
+{% block content %}
+<main class="container py-5" style="min-height:50vh;max-width:900px"><div class="bg-white rounded-4 shadow-sm p-4 p-md-5">
+<p class="text-primary fw-bold">{{ title }}</p><h1 class="h2">{{ heading }}</h1><p class="lead text-muted mt-3">{{ body }}</p>
+<div class="d-flex flex-wrap gap-2 mt-4"><a href="{% url 'home' %}" class="btn btn-outline-primary">Home</a><a href="{% url 'login' %}" class="btn btn-primary">Sign in</a><a href="{% url 'public_help' %}" class="btn btn-outline-secondary">Help Center</a></div>
+</div></main>
+{% endblock %}

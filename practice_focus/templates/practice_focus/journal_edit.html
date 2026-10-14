@@ -1,0 +1,18 @@
+{% extends 'practice_focus/journal_layout.html' %}
+{% load static %}
+{% block journal_content %}
+<section class="aj-card"><h2>{% if entry %}Edit your entry · {{ entry.entry_date|date:'F j, Y' }}{% else %}Write a practice entry{% endif %}</h2><p class="aj-muted">Choose how practice felt, or answer one question. The rest is optional. One entry is saved for each date.</p>
+  <form method="post" id="athlete-journal-form" data-unsaved="{{ form.is_bound|yesno:'true,false' }}">
+    {% csrf_token %}{{ form.version }}
+    {% if form.errors %}<div class="aj-errors" role="alert"><strong>Your entry has not been saved.</strong>{{ form.non_field_errors }}{% if entry %}<p><a href="{% url 'practice_focus:journal_detail' entry.pk %}" target="_blank" rel="noopener">Open the latest saved entry in a new tab</a></p>{% else %}<p><a href="{% url 'practice_focus:journal_history' %}" target="_blank" rel="noopener">Open your saved entries in a new tab</a></p>{% endif %}</div>{% endif %}
+    <div class="aj-date-field"><label for="{{ form.entry_date.id_for_label }}">{{ form.entry_date.label }}</label>{{ form.entry_date }}{{ form.entry_date.errors }}{% if entry %}<p class="aj-muted">This entry stays with its original practice date.</p>{% else %}<p class="aj-muted">Today or an earlier practice date.</p>{% endif %}</div>
+    <fieldset class="aj-fieldset"><legend>{{ form.mood.label }}</legend><div class="aj-moods">{% for choice in form.mood %}<label class="aj-mood">{{ choice.tag }}<span>{{ choice.choice_label }}</span></label>{% endfor %}</div>{{ form.mood.errors }}</fieldset>
+    <div class="aj-writing"><label for="{{ form.win.id_for_label }}">{{ form.win.label }}</label>{{ form.win }}{{ form.win.errors }}</div>
+    <div class="aj-writing"><label for="{{ form.challenge.id_for_label }}">{{ form.challenge.label }}</label>{{ form.challenge }}{{ form.challenge.errors }}</div>
+    <div class="aj-writing"><label for="{{ form.next_focus.id_for_label }}">{{ form.next_focus.label }}</label>{{ form.next_focus }}{{ form.next_focus.errors }}</div>
+    <fieldset class="aj-sharing aj-fieldset"><legend>Who can read this entry?</legend><p>Leave both boxes unticked for <strong>Only me</strong>. Sharing shows the whole entry, including how practice felt.</p><label>{{ form.share_with_coaches }} {{ form.share_with_coaches.label }}</label><label>{{ form.share_with_parents }} {{ form.share_with_parents.label }}</label><p class="aj-muted">Coaches must have access to your athlete profile. Parents must have an approved connection in your gym. You can change this choice later; people may already have read an entry you shared.</p></fieldset>
+    <div class="aj-actions"><button class="aj-button aj-primary" type="submit">Save my entry</button><a class="aj-button" href="{% if entry %}{% url 'practice_focus:journal_detail' entry.pk %}{% else %}{% url 'practice_focus:journal_history' %}{% endif %}">Cancel</a></div><p class="aj-muted aj-save-note">Use Save my entry to keep your answers. Journals are saved separately from wellness check-ins and practice scores.</p>
+  </form>
+</section>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'practice_focus/journal.js' %}?v=1" defer></script>{% endblock %}

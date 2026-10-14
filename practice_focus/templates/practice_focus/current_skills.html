@@ -1,0 +1,17 @@
+{% if plans or can_edit %}
+<section class="current-training-skills border rounded p-2 mb-3" aria-label="Current training skills">
+  <div class="fw-semibold small mb-1">Current training skills</div>
+  {% for plan in plans %}
+    {% if multiple_gyms %}<div class="small text-muted">{{ plan.gym.name }}</div>{% endif %}
+    {% if plan.skill_names %}
+      <ul class="small mb-2 ps-3">
+        {% for name in plan.skill_names %}<li style="overflow-wrap:anywhere">{{ name }}</li>{% endfor %}
+      </ul>
+    {% endif %}
+    {% if plan.training_cues %}<div class="small text-muted mb-2" style="overflow-wrap:anywhere">{{ plan.training_cues|linebreaksbr }}</div>{% endif %}
+  {% empty %}
+    <p class="small text-muted mb-1">No current skills set for this event.</p>
+  {% endfor %}
+  {% if can_edit %}<a class="small d-inline-block py-2" href="{% url 'practice_focus:planner' %}?athlete={{ athlete_id }}">Edit training skills →</a>{% endif %}
+</section>
+{% endif %}

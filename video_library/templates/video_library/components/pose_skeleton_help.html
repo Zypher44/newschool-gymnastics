@@ -1,0 +1,10 @@
+{% load video_pose_frames %}
+{% missing_pose_skeletons analysis as needs_skeletons %}
+{% if needs_skeletons %}
+<div class="border rounded-3 p-3 mt-3">
+  <p class="small mb-2">Some frames have no saved skeleton. A fresh pose analysis generates overlays where it detects the athlete; obscured or undetected poses remain original pictures.</p>
+  <form method="post" action="{% url 'video_library:generate_pose_overlays' analysis.video_id %}">
+    {% csrf_token %}<button type="submit" class="btn btn-outline-primary btn-sm">Generate Skeletons — Run Fresh Analysis</button>
+  </form>
+</div>
+{% endif %}

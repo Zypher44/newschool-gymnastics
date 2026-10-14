@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import cv2
 
 
 POSE_CONNECTIONS = [
@@ -86,6 +85,7 @@ def draw_pose_overlay(
     landmarks,
     pose_angles=None,
 ):
+    import cv2
     image_path = Path(
         image_path
     )

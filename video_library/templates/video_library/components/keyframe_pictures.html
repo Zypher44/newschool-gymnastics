@@ -1,0 +1,23 @@
+{% load static l10n %}
+{% if matching_pair %}
+<section class="card compare-card mb-3" aria-labelledby="keyframe-picture-heading">
+  <div class="card-body p-3 p-md-4">
+    <h2 class="h5 mb-2" id="keyframe-picture-heading">Key Frame Pictures</h2>
+    <p class="small text-muted mb-3">Compare the saved frames used for each phase's measurements. Pose lines show the detected body position; camera angle can change how they look. Click either picture to pause both videos at their own frame timestamp.</p>
+    {% for phase in insights.phases|default:keyframe_comparisons %}
+      <details class="border rounded-3 p-3 mb-2 keyframe-picture-card" {% if forloop.first %}open{% endif %}>
+        <summary class="fw-semibold">{{ phase.label }} <span class="small text-muted fw-normal">· A {{ phase.first.timestamp|unlocalize }}s · B {{ phase.second.timestamp|unlocalize }}s</span></summary>
+        <div class="row g-3 mt-1">
+          {% include 'video_library/components/keyframe_picture.html' with point=phase.first side='A' video=first_video is_example=example_comparison highlight=phase.highlight.first comparison_highlight=phase.highlight %}
+          {% include 'video_library/components/keyframe_picture.html' with point=phase.second side='B' video=second_video is_example=False highlight=phase.highlight.second comparison_highlight=phase.highlight %}
+        </div>
+        <button type="button" class="btn btn-outline-primary btn-sm phase-sync-button mt-2" data-phase="{{ phase.name }}" data-first-time="{{ phase.first.timestamp|unlocalize }}" data-second-time="{{ phase.second.timestamp|unlocalize }}">View Both Frames in Video</button>
+      </details>
+    {% empty %}
+      <p class="small mb-3">No paired key frame pictures are available yet. Both videos need current side-view pose analyses with a saved frame for the same phase. If these recordings were taken from the side, check their camera-view setting and run a fresh analysis on each video.</p>
+    {% endfor %}
+    <p class="small text-muted mt-3 mb-0">Orange marks highlight the largest supported joint difference in each paired phase. Angles beside the pictures come from that same visible joint. Open Optional Pose Comparison Details for other saved measurements. If an overlay is unavailable, the original frame is labeled clearly.</p>
+  </div>
+</section>
+<script src="{% static 'video_library/keyframe-pictures.js' %}" defer></script>
+{% endif %}

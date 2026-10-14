@@ -1,0 +1,12 @@
+{% extends 'practice_focus/progress_layout.html' %}
+{% block title %}Email {{ report.title }}{% endblock %}
+{% block progress_content %}
+<section class="progress-card progress-actions"><div class="progress-heading"><div><h2 class="h5">Email report</h2><p>Review this saved copy and choose who receives it. Each recipient gets a separate email.</p></div><button type="button" class="btn btn-outline-secondary" onclick="window.print()">🖨️ Print Report</button></div>
+{% if problem %}<p role="alert">{{ problem }}</p>{% endif %}{% if configuration_problem %}<p role="alert">{{ configuration_problem }}</p>{% endif %}
+<form method="post">{% csrf_token %}<input type="hidden" name="version" value="{{ draft.created_at.isoformat }}"><label for="email-recipients">Send to</label><select name="recipients" id="email-recipients">{% if draft.athlete_id %}<option value="parents">Approved linked parents</option>{% endif %}<option value="self">My coach email</option></select>
+{% if draft.athlete_id %}<p>Linked parents: {% for person in parent_recipients %}{{ person.get_full_name|default:person.username }} ({{ person.email }}){% if not forloop.last %}, {% endif %}{% empty %}No approved linked parent has a valid email address.{% endfor %}</p>{% endif %}<p>Coach copy: {% for person in self_recipients %}{{ person.email }}{% empty %}Add an email address to your coach account.{% endfor %}</p>
+<button class="btn btn-primary" name="action" value="send" {% if problem or configuration_problem %}disabled{% endif %}>📧 Send unsent report emails</button></form>
+<p class="progress-muted">Private coach notes are excluded. “Submitted” means the email provider accepted the message; inbox delivery may take a little longer. Refreshing or retrying skips submitted messages.</p></section>
+{% include 'practice_focus/email_content.html' %}
+<section class="progress-card progress-actions"><h2 class="h5">Email history</h2>{% for delivery in deliveries %}<p>{{ delivery.email }} · {{ delivery.get_status_display }}{% if delivery.submitted_at %} · {{ delivery.submitted_at|date:'M j, g:i a' }}{% endif %}{% if delivery.last_error %}<br>{{ delivery.last_error }}{% endif %}</p>{% empty %}<p>No emails have been sent from this preview.</p>{% endfor %}</section>
+{% endblock %}

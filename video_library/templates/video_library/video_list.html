@@ -150,22 +150,26 @@ Video Library
                     </a>
 
                     <h1 class="display-6 fw-bold mt-3 mb-2">
-                        Video Library
+                        {% if is_mock_meet_view %}Mock Meet Videos{% else %}Video Library{% endif %}
                     </h1>
 
                     <p class="lead mb-0 opacity-75">
-                        Search every athlete, skill, event, routine, and coaching clip.
+                        {% if is_mock_meet_view %}Review athlete routines performed under simulated competition pressure.{% else %}Search every athlete, skill, event, routine, and coaching clip.{% endif %}
                     </p>
 
                 </div>
 
 
-                <a
-                    href="{% url 'video_library:upload' %}"
-                    class="btn btn-light text-primary fw-semibold"
-                >
-                    ＋ Upload Videos
-                </a>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{% url 'video_library:skill_library' %}" class="btn btn-outline-light">📚 Approved Skill Library</a>
+                    <a href="{% url 'video_library:video_progress' %}" class="btn btn-outline-light">📈 Athlete Progress</a>
+                    {% if is_mock_meet_view %}
+                        <a href="{% url 'video_library:upload' %}?video_type=mock_meet" class="btn btn-light text-primary fw-semibold">＋ Add Mock Meet Video</a>
+                    {% else %}
+                        <a href="{% url 'video_library:mock_meets' %}" class="btn btn-outline-light fw-semibold">Mock Meet Videos</a>
+                        <a href="{% url 'video_library:upload' %}" class="btn btn-light text-primary fw-semibold">＋ Upload Videos</a>
+                    {% endif %}
+                </div>
 
             </div>
 

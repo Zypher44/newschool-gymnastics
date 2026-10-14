@@ -61,7 +61,8 @@ class DailyRoutineAttempt(models.Model):
     RESULT_CHOICES = [
         (RESULT_WOW, 'Wow'),
         (RESULT_HIT, 'Hit'),
-        (RESULT_MISSED, 'Miss'),
+        # Keep the stored value for existing records; update the coach-facing label.
+        (RESULT_MISSED, 'Attempt'),
     ]
 
     session = models.ForeignKey(
@@ -82,6 +83,11 @@ class DailyRoutineAttempt(models.Model):
     event = models.CharField(
         max_length=20,
         choices=EVENT_CHOICES,
+    )
+
+    is_pressure = models.BooleanField(
+        default=False,
+        help_text='Whether this attempt was recorded in a pressure set.',
     )
 
     attempt_number = models.PositiveIntegerField(
@@ -124,9 +130,10 @@ class DailyRoutineAttempt(models.Model):
                     'session',
                     'athlete',
                     'event',
+                    'is_pressure',
                     'attempt_number',
                 ],
-                name='unique_daily_routine_attempt',
+                name='unique_routine_attempt_context',
             ),
         ]
 

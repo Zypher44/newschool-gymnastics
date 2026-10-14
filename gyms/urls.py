@@ -1,9 +1,15 @@
 from django.urls import path
 
 from . import views
+from .usage_views import gym_usage
+from gym_scheduling.views import schedules, session_exceptions
 
 
 urlpatterns = [
+    path('schedules/<int:schedule_id>/exceptions/', session_exceptions, name='group_schedule_exceptions'),
+    path('schedules/', schedules, name='group_schedules'),
+    path('schedules/<int:schedule_id>/edit/', schedules, name='group_schedule_edit'),
+    path('usage/', gym_usage, name='gym_usage'),
 
     path(
         'director/',

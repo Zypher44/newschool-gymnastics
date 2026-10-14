@@ -65,6 +65,10 @@
 {% endblock %}
 
 {% block content %}
+<!-- V3 coach report preferences -->
+{% load report_preferences_tags %}
+{% coach_report_preferences %}
+
 <div class="container-fluid py-3 py-md-4">
     <div class="settings-shell">
         <section class="settings-hero mb-4">
@@ -77,6 +81,9 @@
             </p>
         </section>
 
+        {% if user.role == 'director' or user.role == 'head_coach' or user.role == 'coach' or user.role == 'athlete' or user.role == 'parent' %}
+        <section class="card settings-card mb-4"><div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3"><div><h2 class="h5 fw-bold mb-1">Getting Started</h2><p class="text-muted mb-0">{% if user.role == 'coach' or user.role == 'head_coach' %}Explore practice planning, timers, reports, Practice Passport badges, and video coaching tools.{% else %}Take or revisit the guided walkthrough for your role.{% endif %}</p></div><a class="btn btn-outline-primary" href="{% url 'practice_hub:onboarding' %}">Open walkthrough</a></div></section>
+        {% endif %}
         <div class="row g-4">
             <div class="col-12 col-lg-7">
                 <section class="card settings-card mb-4">

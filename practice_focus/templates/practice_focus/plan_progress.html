@@ -1,0 +1,7 @@
+<div class="pp-grid pp-progress-grid">
+{% for event in progress %}<section class="pp-card pp-event"><h2>{{ event.label }}{% if event.minutes %}<span class="pp-time">{{ event.minutes }} minutes</span>{% endif %}</h2>{% if event.cue %}<p class="pp-focus">{{ event.cue|linebreaksbr }}</p>{% endif %}
+    <ul class="pp-work">{% for skill in event.skills %}<li><span>{{ skill.name }}</span><strong data-ip-progress-skill="{{ skill.name }}" data-event="{{ event.code }}" data-target="{{ skill.target|default:'' }}"{% if skill.met %} class="pp-met"{% endif %}><span data-ip-value>{{ skill.completed }}{% if skill.target %} / {{ skill.target }}{% endif %}</span><small> attempts saved</small></strong></li>{% empty %}<li class="pp-small">No skills planned for this event.</li>{% endfor %}</ul>
+    {% if event.routines %}<p class="pp-routine">Routines <strong data-ip-progress-pressure="false" data-event="{{ event.code }}" data-target="{{ event.routines }}">{{ event.routine_completed }} / {{ event.routines }}</strong></p>{% endif %}
+    {% if event.pressure %}<p class="pp-routine">Pressure sets <strong data-ip-progress-pressure="true" data-event="{{ event.code }}" data-target="{{ event.pressure }}">{{ event.pressure_completed }} / {{ event.pressure }}</strong></p>{% endif %}
+</section>{% endfor %}
+</div>

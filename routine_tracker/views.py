@@ -2,12 +2,15 @@ from datetime import (
     datetime,
     timedelta,
 )
+import json
 
 from parents_portal.access import get_approved_parent_links, get_parent_gym_ids
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.db.models import Max
+from django.http import JsonResponse
 from django.shortcuts import (
     get_object_or_404,
     redirect,
@@ -17,6 +20,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from gyms.tenant import single_active_gym_id
+from gyms.models import TrainingGroupAthlete
 
 from .models import (
     DailyRoutineAttempt,
@@ -115,36 +119,12 @@ def build_stats(
         )
 
         hit_rate = round(
-            (
-                success_count
-                /
-                attempt_count
-            )
-            * 100
-        )
-
-        quality = round(
-            (
-                (
-                    wow_count
-                    +
-                    (
-                        hit_count
-                        * 0.5
-                    )
-                )
-                /
-                attempt_count
-            )
-            * 100
+            (success_count / attempt_count) * 100
         )
 
     else:
-
         success_count = 0
         hit_rate = 0
-        quality = 0
-
 
     return {
         'attempts': attempt_count,
@@ -153,7 +133,6 @@ def build_stats(
         'missed': missed_count,
         'success_count': success_count,
         'hit_rate': hit_rate,
-        'quality': quality,
     }
 
 
@@ -286,6 +265,9 @@ def daily_routine_tracker(
                 )
             ]
 
+            regular_attempts = [a for a in event_attempts if not a.is_pressure]
+            pressure_attempts = [a for a in event_attempts if a.is_pressure]
+
 
             event_rows.append({
                 'event': event,
@@ -294,11 +276,24 @@ def daily_routine_tracker(
                     event_attempts
                 ),
 
-                'stats': (
-                    build_stats(
-                        event_attempts
-                    )
-                ),
+                'regular_attempts': regular_attempts,
+                'pressure_attempts': pressure_attempts,
+                'tracks': [
+                    {
+                        'label': 'Routine',
+                        'is_pressure': False,
+                        'attempts': regular_attempts,
+                    },
+                    {
+                        'label': 'Pressure set',
+                        'is_pressure': True,
+                        'attempts': pressure_attempts,
+                    },
+                ],
+
+                'stats': build_stats(event_attempts),
+                'routine_stats': build_stats(regular_attempts),
+                'pressure_stats': build_stats(pressure_attempts),
             })
 
 
@@ -353,6 +348,10 @@ def daily_routine_tracker(
         'events': EVENTS,
     }
 
+
+    # Routine template diagnostic
+    from django.template.loader import get_template
+    print('ACTIVE ROUTINE TEMPLATE:', get_template('routine_tracker/daily_routine_tracker.html').origin.name, flush=True)
 
     return render(
         request,
@@ -420,6 +419,8 @@ def add_routine_attempt(
         .strip()
     )
 
+    is_pressure = request.POST.get('is_pressure') == 'true'
+
 
     valid_events = {
         choice[0]
@@ -473,6 +474,7 @@ def add_routine_attempt(
             session=session,
             athlete=athlete,
             event=event,
+            is_pressure=is_pressure,
         )
         .aggregate(
             max_attempt=Max(
@@ -499,6 +501,8 @@ def add_routine_attempt(
 
         result=result,
 
+        is_pressure=is_pressure,
+
         recorded_by=(
             request.user
         ),
@@ -519,6 +523,90 @@ def add_routine_attempt(
             f'?date={session.practice_date}'
         )
     )
+
+
+@login_required
+@require_POST
+def save_routine_practice(request):
+    """Save a coach's staged tracker changes in one request."""
+    if not coach_allowed(request.user):
+        return JsonResponse({'ok': False, 'error': 'Coach access required.'}, status=403)
+
+    try:
+        payload = json.loads(request.body.decode('utf-8'))
+        session_id = payload.get('session_id')
+        operations = payload.get('operations', [])
+        if not isinstance(operations, list) or len(operations) > 1000:
+            raise ValueError
+    except (UnicodeDecodeError, json.JSONDecodeError, AttributeError, ValueError):
+        return JsonResponse({'ok': False, 'error': 'Invalid save data.'}, status=400)
+
+    gym_id = single_active_gym_id(request.user, ['coach', 'head_coach'])
+    session = get_object_or_404(DailyRoutineSession.objects.filter(gym_id=gym_id), pk=session_id)
+    athletes = User.objects.filter(
+        role='athlete', is_active=True,
+        gym_memberships__gym_id=gym_id,
+        gym_memberships__role='athlete', gym_memberships__is_active=True,
+    ).distinct()
+    valid_events = {choice[0] for choice in DailyRoutineAttempt.EVENT_CHOICES}
+    valid_results = {choice[0] for choice in DailyRoutineAttempt.RESULT_CHOICES}
+
+    # Validate the complete request before writing any part of it.
+    for operation in operations:
+        if not isinstance(operation, dict):
+            return JsonResponse({'ok': False, 'error': 'Invalid change in save data.'}, status=400)
+        if 'delete_id' in operation:
+            if not str(operation['delete_id']).isdigit():
+                return JsonResponse({'ok': False, 'error': 'Invalid removal request.'}, status=400)
+            if not DailyRoutineAttempt.objects.filter(
+                pk=operation['delete_id'], session=session
+            ).exists():
+                return JsonResponse({'ok': False, 'error': 'An attempt could not be found.'}, status=400)
+            continue
+        if (
+            str(operation.get('athlete_id', '')).isdigit() is False
+            or not athletes.filter(pk=operation.get('athlete_id')).exists()
+            or operation.get('event') not in valid_events
+            or operation.get('result') not in valid_results
+            or not isinstance(operation.get('is_pressure', False), bool)
+        ):
+            return JsonResponse({'ok': False, 'error': 'One or more changes are invalid.'}, status=400)
+
+    with transaction.atomic():
+        session = DailyRoutineSession.objects.select_for_update().get(pk=session.pk)
+        deleted = [op['delete_id'] for op in operations if 'delete_id' in op]
+        if deleted:
+            DailyRoutineAttempt.objects.filter(pk__in=deleted, session=session).delete()
+
+        next_numbers = {}
+        saved = 0
+        for operation in operations:
+            if 'delete_id' in operation:
+                continue
+            athlete_id = int(operation['athlete_id'])
+            event = operation['event']
+            is_pressure = operation.get('is_pressure', False)
+            key = (athlete_id, event, is_pressure)
+            if key not in next_numbers:
+                next_numbers[key] = (
+                    DailyRoutineAttempt.objects.filter(
+                        session=session, athlete_id=athlete_id, event=event,
+                        is_pressure=is_pressure,
+                    ).aggregate(max_number=Max('attempt_number'))['max_number'] or 0
+                )
+            next_numbers[key] += 1
+            DailyRoutineAttempt.objects.create(
+                session=session,
+                athlete_id=athlete_id,
+                event=event,
+                is_pressure=is_pressure,
+                attempt_number=next_numbers[key],
+                result=operation['result'],
+                recorded_by=request.user,
+            )
+            saved += 1
+
+    return JsonResponse({'ok': True, 'saved': saved, 'deleted': len(deleted)})
 
 
 @login_required
@@ -568,6 +656,61 @@ def delete_routine_attempt(
             f'?date={practice_date}'
         )
     )
+
+
+def build_group_quick_comparison(user, athlete, attempts, gym_id):
+    """Compare a gymnast's 7-day counts with active peers in coach-assigned groups."""
+    group_ids = list(TrainingGroupAthlete.objects.filter(
+        athlete=athlete,
+        is_active=True,
+        group__gym_id=gym_id,
+        group__is_active=True,
+        group__coach_assignments__coach=user,
+    ).values_list('group_id', flat=True).distinct())
+    if not group_ids:
+        return []
+
+    peer_ids = set(TrainingGroupAthlete.objects.filter(
+        group_id__in=group_ids,
+        group__gym_id=gym_id,
+        is_active=True,
+        group__is_active=True,
+        athlete__is_active=True,
+        athlete__gym_memberships__gym_id=gym_id,
+        athlete__gym_memberships__role='athlete',
+        athlete__gym_memberships__is_active=True,
+    ).values_list('athlete_id', flat=True))
+    if athlete.pk not in peer_ids:
+        peer_ids.add(athlete.pk)
+
+    results = (
+        DailyRoutineAttempt.RESULT_WOW,
+        DailyRoutineAttempt.RESULT_HIT,
+        DailyRoutineAttempt.RESULT_MISSED,
+    )
+    peer_attempts = [attempt for attempt in attempts if attempt.athlete_id in peer_ids]
+    comparison = []
+    for event in EVENTS:
+        for is_pressure, context_label in ((False, 'Routine'), (True, 'Pressure set')):
+            counts_by_athlete = {peer_id: {result: 0 for result in results} for peer_id in peer_ids}
+            for attempt in peer_attempts:
+                if attempt.event == event['code'] and attempt.is_pressure == is_pressure:
+                    counts_by_athlete[attempt.athlete_id][attempt.result] += 1
+            active_peers = [counts for counts in counts_by_athlete.values() if sum(counts.values())]
+            child_counts = counts_by_athlete.get(athlete.pk, {result: 0 for result in results})
+            if not active_peers:
+                continue
+            comparison.append({
+                'event': event['name'],
+                'context': context_label,
+                'athlete_counts': child_counts,
+                'group_average': {
+                    result: round(sum(counts[result] for counts in active_peers) / len(active_peers), 1)
+                    for result in results
+                },
+                'group_athletes': len(active_peers),
+            })
+    return comparison
 
 
 @login_required
@@ -641,6 +784,7 @@ def routine_consistency_summary(
     )
 
 
+    gym_id = single_active_gym_id(request.user, ['coach', 'head_coach'])
     athlete_rows = []
 
 
@@ -674,14 +818,13 @@ def routine_consistency_summary(
             ]
 
 
+            routine_attempts = [a for a in event_attempts if not a.is_pressure]
+            pressure_attempts = [a for a in event_attempts if a.is_pressure]
             event_rows.append({
                 'event': event,
-
-                'stats': (
-                    build_stats(
-                        event_attempts
-                    )
-                ),
+                'stats': build_stats(event_attempts),
+                'routine_stats': build_stats(routine_attempts),
+                'pressure_stats': build_stats(pressure_attempts),
             })
 
 
@@ -696,6 +839,9 @@ def routine_consistency_summary(
                 build_stats(
                     athlete_attempts
                 )
+            ),
+            'group_comparison': build_group_quick_comparison(
+                request.user, athlete, attempts, gym_id
             ),
         })
 
@@ -793,14 +939,13 @@ def build_athlete_consistency(
         ]
 
 
+        routine_attempts = [a for a in event_attempts if not a.is_pressure]
+        pressure_attempts = [a for a in event_attempts if a.is_pressure]
         event_rows.append({
             'event': event,
-
-            'stats': (
-                build_stats(
-                    event_attempts
-                )
-            ),
+            'stats': build_stats(event_attempts),
+            'routine_stats': build_stats(routine_attempts),
+            'pressure_stats': build_stats(pressure_attempts),
         })
 
 

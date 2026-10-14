@@ -1,0 +1,37 @@
+{% load l10n video_pose_frames %}
+{% with frame=point.frame_moment %}
+{% pose_frame_picture frame as picture %}
+<div class="col-12 col-sm-6">
+  <figure class="mb-0" data-keyframe-picture>
+    <figcaption class="small mb-2"><strong>{{ side }} · {% if is_example %}Coach-marked Example{% else %}{{ video.title }}{% endif %}</strong><br>
+      {{ phase.label }} · {{ point.timestamp|unlocalize }}s ·
+      {% if picture.overlay %}Pose overlay{% else %}Original frame — pose overlay unavailable{% endif %}
+    </figcaption>
+    <button type="button" class="btn border rounded-3 p-0 w-100 phase-sync-button keyframe-picture-button" data-keyframe-jump data-phase="{{ phase.name }}" data-first-time="{{ phase.first.timestamp|unlocalize }}" data-second-time="{{ phase.second.timestamp|unlocalize }}" aria-label="View {{ phase.label }} in both videos; {{ side }} at {{ point.timestamp|unlocalize }} seconds">
+      <span class="keyframe-highlight-wrap">
+      {% if picture.overlay %}
+        <img src="{{ picture.image.url }}" class="keyframe-comparison-image" data-keyframe-image loading="lazy" alt="Detected pose on {{ side }} {{ phase.label }} frame at {{ point.timestamp|unlocalize }} seconds">
+      {% else %}
+        <img src="{{ picture.image.url }}" class="keyframe-comparison-image" data-keyframe-image loading="lazy" alt="Original {{ side }} {{ phase.label }} frame at {{ point.timestamp|unlocalize }} seconds; pose overlay unavailable">
+      {% endif %}
+      {% if highlight %}
+      <svg class="keyframe-highlight-overlay" viewBox="0 0 {{ highlight.width|unlocalize }} {{ highlight.height|unlocalize }}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="{{ comparison_highlight.label }} highlighted on {{ side }}">
+        <title>{{ comparison_highlight.label }} · {{ highlight.angle|floatformat:1 }} degrees</title>
+        <polyline class="keyframe-highlight-line" points="{{ highlight.line }}"></polyline>
+        <circle class="keyframe-highlight-joint" cx="{{ highlight.vertex.x|unlocalize }}" cy="{{ highlight.vertex.y|unlocalize }}" r="{{ highlight.radius|unlocalize }}"></circle>
+      </svg>
+      {% endif %}
+      </span>
+    </button>
+    {% if highlight %}<p class="small mt-2 mb-1"><strong>{{ comparison_highlight.label }}: {{ highlight.angle|floatformat:1 }}°</strong> · difference {{ comparison_highlight.gap|floatformat:1 }}° · {{ comparison_highlight.evidence_label }}</p>
+    {% else %}<p class="small text-muted mt-2 mb-1">Joint highlight unavailable: comparable visible landmarks and a reliable phase estimate are needed.</p>{% endif %}
+    {% if picture.reason %}<p class="small text-muted mt-2 mb-0">{{ picture.reason }}</p>{% endif %}
+    <p class="small text-muted mt-2 mb-0" data-keyframe-unavailable hidden>This frame picture is unavailable. You can still inspect the video; run a new analysis if the source video is available.</p>
+    {% if picture.overlay %}
+      <a href="{{ picture.image.url }}" class="small mt-2" data-keyframe-open target="_blank" rel="noopener noreferrer">Open Full-size Pose Picture</a>
+    {% else %}
+      <a href="{{ picture.image.url }}" class="small mt-2" data-keyframe-open target="_blank" rel="noopener noreferrer">Open Full-size Original Frame</a>
+    {% endif %}
+  </figure>
+</div>
+{% endwith %}

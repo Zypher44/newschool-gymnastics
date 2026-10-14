@@ -1,10 +1,15 @@
 {% extends "base.html" %}
+{% load static l10n video_references video_insights %}
 
 {% block title %}
 Compare Videos
 {% endblock %}
 
 {% block content %}
+{% coaching_reference_pair first_video second_video request.user as example_comparison %}
+{% matching_skill_pair first_video second_video as matching_pair %}
+{% video_comparison_insights as insights %}
+<link rel="stylesheet" href="{% static 'video_library/comparison-insights.css' %}">
 
 <style>
     .compare-shell {
@@ -44,6 +49,13 @@ Compare Videos
         object-fit: contain;
         background: #000;
     }
+
+    .compare-controls .btn, [data-comparison-speed] { min-height: 44px; }
+
+    .keyframe-comparison-image { display: block; width: 100%; height: 280px; object-fit: contain; background: #101827; border-radius: 10px; }
+    .keyframe-picture-card summary { cursor: pointer; min-height: 36px; }
+    .keyframe-picture-button:focus-visible { outline: 3px solid #0d6efd; outline-offset: 3px; }
+    @media (max-width: 575px) { .keyframe-comparison-image { height: 220px; } }
 
     .compare-controls {
         display: flex;
@@ -170,101 +182,58 @@ Compare Videos
             </h1>
 
             <p class="mb-0 opacity-75">
-                Compare two attempts side by side and synchronize
-                them by time or by detected gymnastics phase.
+                Compare the same movement at each video's own timestamp.
+                Use a pose review point or align the clips yourself.
             </p>
 
         </section>
 
 
-        <!-- =====================================================
-             SYNCHRONIZED CONTROLS
-             ===================================================== -->
-
-        <section class="card compare-card mb-4">
-
-            <div class="card-body p-4">
-
-                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
-
-                    <div>
-                        <h2 class="h5 mb-1">
-                            Synchronized Controls
-                        </h2>
-
-                        <p class="small text-muted mb-0">
-                            Play, pause, restart, or move both attempts together.
-                        </p>
-                    </div>
-
-                    <div class="compare-controls">
-
-                        <button
-                            type="button"
-                            id="play-both"
-                            class="btn btn-primary"
-                        >
-                            ▶ Play Both
-                        </button>
-
-                        <button
-                            type="button"
-                            id="pause-both"
-                            class="btn btn-outline-secondary"
-                        >
-                            ⏸ Pause Both
-                        </button>
-
-                        <button
-                            type="button"
-                            id="restart-both"
-                            class="btn btn-outline-secondary"
-                        >
-                            ↺ Restart Both
-                        </button>
-
-                        <button
-                            type="button"
-                            id="back-both"
-                            class="btn btn-outline-secondary"
-                        >
-                            −0.25s
-                        </button>
-
-                        <button
-                            type="button"
-                            id="forward-both"
-                            class="btn btn-outline-secondary"
-                        >
-                            +0.25s
-                        </button>
-
-                    </div>
-
+        <section class="card compare-card mb-3">
+            <div class="card-body p-3 p-md-4">
+                <h2 class="h5 mb-2">Playback and Alignment</h2>
+                <div class="compare-controls mb-3">
+                    <button type="button" id="play-both" class="btn btn-primary">Play Both</button>
+                    <button type="button" id="pause-both" class="btn btn-outline-secondary">Pause Both</button>
+                    <button type="button" id="restart-both" class="btn btn-outline-secondary">Restart Both</button>
+                    <button type="button" id="back-both" class="btn btn-outline-secondary" aria-label="Move both videos back one quarter second">−0.25s</button>
+                    <button type="button" id="forward-both" class="btn btn-outline-secondary" aria-label="Move both videos forward one quarter second">+0.25s</button>
                 </div>
-
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                    <span class="small fw-semibold">Speed:</span>
+                    <button type="button" class="btn btn-outline-secondary active" data-comparison-speed="1" aria-pressed="true">Normal</button>
+                    <button type="button" class="btn btn-outline-secondary" data-comparison-speed="0.5" aria-pressed="false">½ speed</button>
+                    <button type="button" class="btn btn-outline-secondary" data-comparison-speed="0.25" aria-pressed="false">¼ speed</button>
+                </div>
+                <details>
+                    <summary class="small fw-semibold">Align a movement manually — works for any skill</summary>
+                    <p class="small text-muted mt-2 mb-2">Pause each video at the same movement, such as takeoff or the finish. Use each player's own controls to find it, then set your review point. Play Both and the step buttons preserve the difference between the timestamps.</p>
+                    <div class="compare-controls">
+                        <button type="button" id="align-current" class="btn btn-outline-primary">Use Current Positions as Review Point</button>
+                        <button type="button" id="clear-alignment" class="btn btn-outline-secondary">Reset to Video Starts</button>
+                    </div>
+                </details>
+                <p id="comparison-status" class="small text-muted mt-3 mb-0" role="status" aria-live="polite">Find the same movement in each clip, then use Play Both. No paid AI service is used.</p>
             </div>
-
         </section>
-
 
         <!-- =====================================================
              AI PHASE SYNC
              ===================================================== -->
 
-        {% if phase_comparisons %}
+        {% if phase_comparisons and matching_pair %}
 
             <section class="card compare-card mb-4">
 
                 <div class="card-body p-4">
 
                     <h2 class="h5 mb-1">
-                        AI Phase Sync
+                        Pose Review Points
                     </h2>
 
                     <p class="small text-muted mb-3">
-                        Jump each video to its own detected timestamp
-                        for the same gymnastics phase.
+                        Jump each video to its own estimated timestamp for the same phase.
+                        Confirm the movement yourself; use manual alignment if the estimate is off.
                     </p>
 
                     <div class="d-flex flex-wrap gap-2">
@@ -277,8 +246,8 @@ Compare Videos
                                     type="button"
                                     class="btn btn-outline-primary phase-sync-button"
                                     data-phase="{{ phase.name }}"
-                                    data-first-time="{{ phase.first.timestamp }}"
-                                    data-second-time="{{ phase.second.timestamp }}"
+                                    data-first-time="{{ phase.first.timestamp|unlocalize }}"
+                                    data-second-time="{{ phase.second.timestamp|unlocalize }}"
                                 >
                                     {{ phase.label }}
                                 </button>
@@ -321,7 +290,7 @@ Compare Videos
                     <div class="card-header bg-white border-0 p-4 pb-2">
 
                         <div class="small text-muted mb-1">
-                            Attempt A
+                            {% if example_comparison %}A · Coach-marked Example{% else %}Attempt A{% endif %}
                         </div>
 
                         <h2 class="h5 mb-1">
@@ -422,7 +391,7 @@ Compare Videos
                     <div class="card-header bg-white border-0 p-4 pb-2">
 
                         <div class="small text-muted mb-1">
-                            Attempt B
+                            {% if example_comparison %}B · Athlete Attempt{% else %}Attempt B{% endif %}
                         </div>
 
                         <h2 class="h5 mb-1">
@@ -516,6 +485,13 @@ Compare Videos
         </div>
 
 
+        {% include 'video_library/components/comparison_insights.html' %}
+        {% include 'video_library/components/keyframe_pictures.html' %}
+
+        <details class="border rounded-3 p-3 mb-3">
+            <summary class="fw-semibold">Optional Pose Comparison Details</summary>
+            <p class="small text-muted mt-3">These details need current side-view pose analyses of the same event and skill. Fast or hidden movements may not have usable measurements. A coach-marked example is a reference, not proof of a perfect skill.</p>
+        {% if matching_pair %}
         <!-- =====================================================
              WHAT CHANGED
              ===================================================== -->
@@ -531,8 +507,8 @@ Compare Videos
                     </h2>
 
                     <p class="small text-muted mb-0">
-                        Objective differences between Attempt A
-                        and Attempt B at matching phases.
+                        Differences in saved image-plane angles at estimated matching phases.
+                        Camera position can change these values; they are not skill scores.
                     </p>
 
                 </div>
@@ -603,8 +579,8 @@ Compare Videos
 
                                         {% for phase in phase_comparisons %}
                                             {% if phase.name == change.phase and phase.first and phase.second %}
-                                                data-first-time="{{ phase.first.timestamp }}"
-                                                data-second-time="{{ phase.second.timestamp }}"
+                                                data-first-time="{{ phase.first.timestamp|unlocalize }}"
+                                                data-second-time="{{ phase.second.timestamp|unlocalize }}"
                                             {% endif %}
                                         {% endfor %}
                                     >
@@ -646,49 +622,7 @@ Compare Videos
                     {% endif %}
 
 
-                    {% if comparison_summary.largest_timing_change %}
 
-                        {% with timing=comparison_summary.largest_timing_change %}
-
-                            <hr class="my-4">
-
-                            <div class="small text-uppercase fw-semibold text-muted mb-2">
-                                Largest Timing Difference
-                            </div>
-
-                            <div class="d-flex flex-wrap align-items-center gap-2">
-
-                                <strong>
-                                    {{ timing.phase_label }}
-                                </strong>
-
-                                {% if timing.delta > 0 %}
-
-                                    <span class="badge text-bg-light border">
-                                        Attempt B reached this phase
-                                        {{ timing.absolute_delta }}s later
-                                    </span>
-
-                                {% elif timing.delta < 0 %}
-
-                                    <span class="badge text-bg-light border">
-                                        Attempt B reached this phase
-                                        {{ timing.absolute_delta }}s earlier
-                                    </span>
-
-                                {% else %}
-
-                                    <span class="badge text-bg-light border">
-                                        Same detected timestamp
-                                    </span>
-
-                                {% endif %}
-
-                            </div>
-
-                        {% endwith %}
-
-                    {% endif %}
 
                 </div>
 
@@ -814,8 +748,8 @@ Compare Videos
 
                                             {% for phase in phase_comparisons %}
                                                 {% if phase.name == item.phase and phase.first and phase.second %}
-                                                    data-first-time="{{ phase.first.timestamp }}"
-                                                    data-second-time="{{ phase.second.timestamp }}"
+                                                    data-first-time="{{ phase.first.timestamp|unlocalize }}"
+                                                    data-second-time="{{ phase.second.timestamp|unlocalize }}"
                                                 {% endif %}
                                             {% endfor %}
                                         >
@@ -872,8 +806,8 @@ Compare Videos
 
                                             {% for phase in phase_comparisons %}
                                                 {% if phase.name == item.phase and phase.first and phase.second %}
-                                                    data-first-time="{{ phase.first.timestamp }}"
-                                                    data-second-time="{{ phase.second.timestamp }}"
+                                                    data-first-time="{{ phase.first.timestamp|unlocalize }}"
+                                                    data-second-time="{{ phase.second.timestamp|unlocalize }}"
                                                 {% endif %}
                                             {% endfor %}
                                         >
@@ -983,7 +917,7 @@ Compare Videos
              PHASE MEASUREMENTS
              ===================================================== -->
 
-        {% if phase_comparisons %}
+        {% if phase_comparisons and matching_pair %}
 
             <section class="card compare-card mb-4">
 
@@ -1021,10 +955,10 @@ Compare Videos
 
                                             <div class="small text-muted">
                                                 A:
-                                                {{ phase.first.timestamp }}s
+                                                {{ phase.first.timestamp|unlocalize }}s
                                                 ·
                                                 B:
-                                                {{ phase.second.timestamp }}s
+                                                {{ phase.second.timestamp|unlocalize }}s
                                             </div>
 
                                         </div>
@@ -1033,8 +967,8 @@ Compare Videos
                                             type="button"
                                             class="btn btn-sm btn-outline-primary phase-sync-button"
                                             data-phase="{{ phase.name }}"
-                                            data-first-time="{{ phase.first.timestamp }}"
-                                            data-second-time="{{ phase.second.timestamp }}"
+                                            data-first-time="{{ phase.first.timestamp|unlocalize }}"
+                                            data-second-time="{{ phase.second.timestamp|unlocalize }}"
                                         >
                                             Jump to Phase
                                         </button>
@@ -1192,6 +1126,11 @@ Compare Videos
         {% endif %}
 
 
+        {% else %}
+            <p class="small">These clips have different or missing event/skill labels. Compare them manually; pose differences are hidden.</p>
+        {% endif %}
+        </details>
+
         <!-- =====================================================
              NAVIGATION
              ===================================================== -->
@@ -1202,14 +1141,14 @@ Compare Videos
                 href="{% url 'video_library:video_detail' first_video.id %}"
                 class="btn btn-outline-primary"
             >
-                Open Attempt A
+                {% if example_comparison %}Open Example{% else %}Open Attempt A{% endif %}
             </a>
 
             <a
                 href="{% url 'video_library:video_detail' second_video.id %}"
                 class="btn btn-outline-primary"
             >
-                Open Attempt B
+                {% if example_comparison %}Open Athlete Attempt{% else %}Open Attempt B{% endif %}
             </a>
 
             <a
@@ -1226,451 +1165,6 @@ Compare Videos
 </div>
 
 
-<script>
-    document.addEventListener(
-        'DOMContentLoaded',
-        function () {
-
-            const videoA = document.getElementById(
-                'compare-video-a'
-            );
-
-            const videoB = document.getElementById(
-                'compare-video-b'
-            );
-
-            const playButton = document.getElementById(
-                'play-both'
-            );
-
-            const pauseButton = document.getElementById(
-                'pause-both'
-            );
-
-            const restartButton = document.getElementById(
-                'restart-both'
-            );
-
-            const backButton = document.getElementById(
-                'back-both'
-            );
-
-            const forwardButton = document.getElementById(
-                'forward-both'
-            );
-
-            const timeA = document.getElementById(
-                'time-a'
-            );
-
-            const timeB = document.getElementById(
-                'time-b'
-            );
-
-
-            if (
-                !videoA
-                || !videoB
-            ) {
-                return;
-            }
-
-
-            let phaseSyncInProgress = false;
-            let phaseSeekedA = false;
-            let phaseSeekedB = false;
-            let normalSyncInProgress = false;
-
-
-            function updateTimes() {
-
-                if (timeA) {
-                    timeA.textContent = (
-                        `${videoA.currentTime.toFixed(2)}s`
-                    );
-                }
-
-                if (timeB) {
-                    timeB.textContent = (
-                        `${videoB.currentTime.toFixed(2)}s`
-                    );
-                }
-            }
-
-
-            function clearActivePhase() {
-
-                document.querySelectorAll(
-                    '.phase-sync-button'
-                ).forEach(
-                    function (button) {
-
-                        button.classList.remove(
-                            'active-phase'
-                        );
-                    }
-                );
-            }
-
-
-            function markActivePhase(
-                phaseName
-            ) {
-
-                clearActivePhase();
-
-                document.querySelectorAll(
-                    '.phase-sync-button'
-                ).forEach(
-                    function (button) {
-
-                        if (
-                            button.dataset.phase
-                            === phaseName
-                        ) {
-                            button.classList.add(
-                                'active-phase'
-                            );
-                        }
-                    }
-                );
-            }
-
-
-            function finishPhaseSyncIfReady() {
-
-                if (
-                    phaseSeekedA
-                    && phaseSeekedB
-                ) {
-                    phaseSyncInProgress = false;
-                    phaseSeekedA = false;
-                    phaseSeekedB = false;
-
-                    updateTimes();
-                }
-            }
-
-
-            async function playBoth() {
-
-                phaseSyncInProgress = false;
-
-                const sharedTime = Math.min(
-                    videoA.currentTime,
-                    videoB.currentTime
-                );
-
-                normalSyncInProgress = true;
-
-                videoA.currentTime = sharedTime;
-                videoB.currentTime = sharedTime;
-
-                window.setTimeout(
-                    function () {
-                        normalSyncInProgress = false;
-                    },
-                    150
-                );
-
-                try {
-
-                    await Promise.all([
-                        videoA.play(),
-                        videoB.play(),
-                    ]);
-
-                } catch (error) {
-
-                    console.error(
-                        'Unable to start synchronized playback:',
-                        error
-                    );
-                }
-
-                clearActivePhase();
-            }
-
-
-            function pauseBoth() {
-                videoA.pause();
-                videoB.pause();
-            }
-
-
-            function restartBoth() {
-
-                pauseBoth();
-
-                phaseSyncInProgress = false;
-                normalSyncInProgress = true;
-
-                videoA.currentTime = 0;
-                videoB.currentTime = 0;
-
-                window.setTimeout(
-                    function () {
-                        normalSyncInProgress = false;
-                    },
-                    150
-                );
-
-                clearActivePhase();
-                updateTimes();
-            }
-
-
-            function seekBoth(
-                amount
-            ) {
-
-                pauseBoth();
-
-                phaseSyncInProgress = false;
-
-                const durationA = (
-                    Number.isFinite(
-                        videoA.duration
-                    )
-                    ? videoA.duration
-                    : Infinity
-                );
-
-                const durationB = (
-                    Number.isFinite(
-                        videoB.duration
-                    )
-                    ? videoB.duration
-                    : Infinity
-                );
-
-                const targetTime = Math.max(
-                    0,
-                    Math.min(
-                        videoA.currentTime + amount,
-                        durationA,
-                        durationB
-                    )
-                );
-
-                normalSyncInProgress = true;
-
-                videoA.currentTime = targetTime;
-                videoB.currentTime = targetTime;
-
-                window.setTimeout(
-                    function () {
-                        normalSyncInProgress = false;
-                    },
-                    150
-                );
-
-                clearActivePhase();
-                updateTimes();
-            }
-
-
-            document.querySelectorAll(
-                '.phase-sync-button'
-            ).forEach(
-                function (button) {
-
-                    button.addEventListener(
-                        'click',
-                        function () {
-
-                            const firstTime = Number(
-                                button.dataset.firstTime
-                            );
-
-                            const secondTime = Number(
-                                button.dataset.secondTime
-                            );
-
-                            if (
-                                Number.isNaN(firstTime)
-                                ||
-                                Number.isNaN(secondTime)
-                            ) {
-                                return;
-                            }
-
-                            pauseBoth();
-
-                            phaseSyncInProgress = true;
-                            normalSyncInProgress = false;
-
-                            phaseSeekedA = false;
-                            phaseSeekedB = false;
-
-                            videoA.currentTime = firstTime;
-                            videoB.currentTime = secondTime;
-
-                            markActivePhase(
-                                button.dataset.phase
-                            );
-
-                            window.setTimeout(
-                                function () {
-
-                                    if (
-                                        phaseSyncInProgress
-                                    ) {
-                                        phaseSyncInProgress = false;
-                                        phaseSeekedA = false;
-                                        phaseSeekedB = false;
-
-                                        updateTimes();
-                                    }
-                                },
-                                500
-                            );
-                        }
-                    );
-                }
-            );
-
-
-            if (playButton) {
-                playButton.addEventListener(
-                    'click',
-                    playBoth
-                );
-            }
-
-            if (pauseButton) {
-                pauseButton.addEventListener(
-                    'click',
-                    pauseBoth
-                );
-            }
-
-            if (restartButton) {
-                restartButton.addEventListener(
-                    'click',
-                    restartBoth
-                );
-            }
-
-            if (backButton) {
-                backButton.addEventListener(
-                    'click',
-                    function () {
-                        seekBoth(-0.25);
-                    }
-                );
-            }
-
-            if (forwardButton) {
-                forwardButton.addEventListener(
-                    'click',
-                    function () {
-                        seekBoth(0.25);
-                    }
-                );
-            }
-
-
-            videoA.addEventListener(
-                'timeupdate',
-                updateTimes
-            );
-
-            videoB.addEventListener(
-                'timeupdate',
-                updateTimes
-            );
-
-
-            videoA.addEventListener(
-                'seeked',
-                function () {
-
-                    if (phaseSyncInProgress) {
-                        phaseSeekedA = true;
-
-                        finishPhaseSyncIfReady();
-
-                        return;
-                    }
-
-                    if (normalSyncInProgress) {
-                        updateTimes();
-                        return;
-                    }
-
-                    if (
-                        Math.abs(
-                            videoB.currentTime
-                            - videoA.currentTime
-                        ) > 0.08
-                    ) {
-                        normalSyncInProgress = true;
-
-                        videoB.currentTime = (
-                            videoA.currentTime
-                        );
-
-                        window.setTimeout(
-                            function () {
-                                normalSyncInProgress = false;
-                            },
-                            150
-                        );
-                    }
-
-                    clearActivePhase();
-                    updateTimes();
-                }
-            );
-
-
-            videoB.addEventListener(
-                'seeked',
-                function () {
-
-                    if (phaseSyncInProgress) {
-                        phaseSeekedB = true;
-
-                        finishPhaseSyncIfReady();
-
-                        return;
-                    }
-
-                    if (normalSyncInProgress) {
-                        updateTimes();
-                        return;
-                    }
-
-                    if (
-                        Math.abs(
-                            videoA.currentTime
-                            - videoB.currentTime
-                        ) > 0.08
-                    ) {
-                        normalSyncInProgress = true;
-
-                        videoA.currentTime = (
-                            videoB.currentTime
-                        );
-
-                        window.setTimeout(
-                            function () {
-                                normalSyncInProgress = false;
-                            },
-                            150
-                        );
-                    }
-
-                    clearActivePhase();
-                    updateTimes();
-                }
-            );
-
-
-            updateTimes();
-        }
-    );
-</script>
+<script src="{% static 'video_library/free-comparison.js' %}" defer></script>
 
 {% endblock %}

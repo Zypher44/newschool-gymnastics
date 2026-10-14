@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.utils import timezone
 
 from video_library.models import (
     Video,
@@ -6,7 +7,7 @@ from video_library.models import (
     VideoAnalysisMoment,
 )
 
-from .mock_engine import MockAnalysisEngine
+from .evidence_engine import EvidenceAnalysisEngine
 from .cv_pipeline import (
     ComputerVisionPipeline,
 )
@@ -26,8 +27,11 @@ class VideoAnalysisProcessor:
     ):
         self.engine = (
                 engine
-                or MockAnalysisEngine()
+                or EvidenceAnalysisEngine()
         )
+
+        if self.engine.source == 'mock':
+            raise ValueError('Demonstration engines cannot process production analyses.')
 
         self.cv_pipeline = (
                 cv_pipeline
@@ -41,31 +45,6 @@ class VideoAnalysisProcessor:
         try:
             analysis.mark_started(
                 step='Preparing video',
-            )
-
-            analysis.update_progress(
-                percentage=25,
-                step='Extracting video frames',
-                status=(
-                    VideoAnalysis.STATUS_PROCESSING
-                ),
-            )
-
-            analysis.update_progress(
-                percentage=55,
-                step='Detecting athlete positions',
-                status=(
-                    VideoAnalysis.STATUS_PROCESSING
-                ),
-            )
-
-            analysis.update_progress(
-                percentage=80,
-                step='Generating coaching observations',
-                status=(
-                    VideoAnalysis
-                    .STATUS_GENERATING_RESULTS
-                ),
             )
 
             cv_results = (
@@ -91,7 +70,7 @@ class VideoAnalysisProcessor:
 
         except Exception as error:
             analysis.mark_failed(
-                message=error,
+                message='Analysis could not finish. Check the video and try again.',
             )
 
             analysis.video.ai_status = (
@@ -113,6 +92,10 @@ class VideoAnalysisProcessor:
         analysis,
         result,
     ):
+        if analysis.worker_token and not VideoAnalysis.objects.select_for_update().filter(
+                pk=analysis.pk, worker_token=analysis.worker_token, lease_expires_at__gt=timezone.now()).exists():
+            raise RuntimeError('Analysis worker lease expired before results were saved.')
+
         analysis.analysis_source = (
             self.engine.source
         )
@@ -189,16 +172,16 @@ class VideoAnalysisProcessor:
             'detected_skill': (
                 result.detected_skill
             ),
-            'confidence': float(
-                result.skill_confidence
-            ),
+            'confidence': (float(result.skill_confidence) if result.skill_confidence is not None else None),
             'analysis_source': (
                 self.engine.source
             ),
             'analysis_version': (
                 self.engine.version
             ),
-            'mock_analysis': True,
+            'mock_analysis': self.engine.source == 'mock',
+            'selected_skill': analysis.requested_skill,
+            'coach_review_required': True,
         }
 
         video.save(

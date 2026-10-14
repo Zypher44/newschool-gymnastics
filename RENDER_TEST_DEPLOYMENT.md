@@ -1,62 +1,41 @@
-# Proposed Render test deployment
+# Isolated V2 Render test deployment
 
-This branch is separate from `main`. The deployment configuration is prepared, but the recent V2 application files must be pushed from the current PyCharm project before deployment. The Docker build deliberately stops if the required new source is missing. No Render resources have been created by preparing these files.
+Current PyCharm source is imported on branch `staging/v2-render-test`. The dated athlete journal is merged while preserving existing badge routes and navigation. The Pathway fixture is normalized to UTF-8. Docker includes FFmpeg, EGL and GLES libraries.
 
-## Proposed full-feature setup
+## Choose one configuration
 
-| Resource | Name | Proposed plan |
-|---|---|---|
-| Website | newschool-v2-test | Starter |
-| PostgreSQL | newschool-v2-test-db | Basic 256 MB; 1 GB storage |
-| Video processing | newschool-v2-test-video-worker | Standard; 2 GB RAM |
-| Private media | athlete-videos-test | Separate Supabase bucket |
+| Blueprint path | Website | Database | Video worker |
+|---|---|---|---|
+| `render-test.yaml` | Free | Free, expires after 30 days | None |
+| `render-test-full.yaml` | 0.5c-512mb, $7/month | 0.1c-256mb, $6/month | 1c-2g, $25/month |
 
-The worker runs video conversion and AI analysis separately from the website. Standard is a starting allocation for testing, not a measured capacity guarantee. Monitor peak memory, job duration, and upload size before changing plans. The region is provisionally Ohio; use the same Render region for web, worker, and database after checking the actual account setup.
+The default is free core testing. The optional full profile costs roughly $38/month in compute before storage, usage, taxes and workspace/external-storage charges. Obtain approval before applying paid resources and check the actual confirmation screen. These profiles share resource names: apply only ONE Blueprint.
 
-These are proposed paid resources. Confirm current account pricing and the total before applying the Blueprint. Do not apply a paid configuration as an assumed free test. A free web service can test some workflows, but it sleeps while idle, has no shell, and cannot host a free background worker. A free Render database is limited to one per workspace and expires after 30 days. See current Render documentation below.
+Free web services sleep after 15 minutes without traffic and lack a shell. The workspace shares 750 free instance hours/month. Each workspace can have one free database, which expires after 30 days and has no backups. Core testing covers trackers, practice, badges, journals and reports. Video conversion and AI jobs remain queued without a worker. Full testing includes the separate video worker; 2 GB is a starting allocation to verify using actual videos and memory metrics.
 
-## Latest code first
+## Storage and initial login
 
-The remote `v2-integration` branch was last updated on 28 September 2026 when this setup was prepared. It lacks the recent practice_focus, skill_tracker, practice_hub, and journal features. Do not deploy that old snapshot as the new version.
+Create a PRIVATE Supabase bucket named `athlete-videos-test`. The test services use the extra `render-test/` prefix. Enter S3 endpoint, access key ID and secret access key in the Blueprint secret fields. Correct the default `ca-central-1` region if your project uses another region. Never commit credentials or paste them into chat.
 
-Start by checking the current PyCharm project:
+Set `BOOTSTRAP_TEST_ADMIN_PASSWORD` to a new strong password of at least 12 characters. The first start creates username `v2testdirector`, a director/admin account with an active membership in a new test gym. Subsequent deploys do not reset its password or elevate another account. Once initial setup succeeds, remove both BOOTSTRAP_TEST_ADMIN_USERNAME and BOOTSTRAP_TEST_ADMIN_PASSWORD from the web service environment. Neither is needed after setup.
 
-```powershell
-git status --short --branch
-```
+Local and production accounts/data are not copied automatically. Create sample coach, head coach, athlete and parent accounts and assignments through the test director/admin pages. Initial Pathway definitions can be loaded using `python manage.py loaddata pathway_data.json` from a paid service shell. Importing personal data is a separate action.
 
-If this project is already a Git checkout of Zypher44/newschool-gymnastics, integrate the prepared branch while preserving current local edits and push the complete tested application to `staging/v2-render-test`. Inspect the exact file list before committing. Do not commit `.env` files, passwords, local databases, uploaded athlete media, virtual environments, IDE files, or patch backup folders.
+## Deployment
 
-If the current project is a downloaded ZIP without Git history, use a clean checkout of the staging branch and copy only the tested application source and required public/model assets into it. Keep deployment files from this branch. The old repository has tracked media/IDE files: do not add or update those personal/runtime files during the source transfer. Do not use force push to bypass a conflict.
+Open https://dashboard.render.com/blueprint/new?repo=https://github.com/Zypher44/newschool-gymnastics and select branch `staging/v2-render-test` and your chosen Blueprint path.
 
-The MediaPipe model belongs at `video_library/ai/models/pose_landmarker_full.task`. The full application should include all new migrations, templates, static files, and practice apps. `manage.py` remains the existing Django launcher; the local PostgreSQL launcher is not used on Render.
+Review the new test resources: `newschool-v2-test`, `newschool-v2-test-db`, and (full profile only) `newschool-v2-test-video-worker`. The logical database must be `newschool_v2_test`; settings reject the existing live database. They also require test storage, disable report email delivery, use distinct test cookies and add no-index headers. Auto-deploy is off.
 
-## Storage and configuration
+The web service migrates, optionally initializes the test director, collects static files and starts Gunicorn on `$PORT`. The worker waits for migrations, verifies native dependencies and starts both conversion and analysis queues.
 
-Create a private Supabase bucket named `athlete-videos-test`. Configure its S3 endpoint, access key ID, secret access key, and actual region only inside the test Render environment. Existing production bucket settings must not be copied unchanged. This setup checks the bucket name and uses an additional `render-test/` object prefix.
+Verify the web deploy is live and `/_render-test/health/` returns 200. For full testing, verify the worker separately and submit a real test video. Check all five roles, mobile layouts, timers, autosave/Undo, badge editing/deletion, report privacy, journal history/sharing, and private media across redeploys.
 
-Use the separate database named `newschool_v2_test`. The test settings reject a different database name, local SQLite, missing cloud storage, or DEBUG=True. Never populate the test database by pointing it at the live database. Begin with fresh test accounts and records. Importing local or production records is a separate action that has not been requested here.
+Preparing this branch does not change `main` or redeploy the live service. Production promotion is a separate deployment.
 
-The Blueprint generates a new Django secret and uses distinct test session/CSRF cookie names. It leaves report email delivery unconfigured so test reports cannot be sent through the production provider. The test response headers discourage search indexing; the site is still an internet-accessible login-protected app, not a private network service.
+## Primary references
 
-## Apply only after source and account access are ready
-
-Use Render Blueprint path `render-test.yaml` from `staging/v2-render-test`. Review the three new resources and costs before applying. Auto-deployment is off. The web service migrates the test database and collects static files before starting Gunicorn. The worker waits for those migrations, checks its native video dependencies, and starts both queues.
-
-The health endpoint is `/_render-test/health/`. It returns only environment/readiness status and verifies a database connection. Confirm the web service and worker deploys independently; a healthy website does not establish that video processing works.
-
-## Initial test accounts and checks
-
-Use the new service's Render shell to create test accounts; existing local logins do not transfer automatically. A director must have an active membership in the test gym. Create head coach, coach, athlete, and parent test accounts and their assignments/approved links through the director/admin pages. Do not reuse production passwords.
-
-Check all five roles, mobile layouts, independent timers, trackers/Undo, badges, report privacy, journal history/sharing, and video upload/conversion/analysis. Confirm private files survive a redeploy and unauthorised users cannot view another athlete or gym. Check the worker logs without exporting credentials or full private records.
-
-Record the deployed commit and URLs. Promote a tested commit to production only as a separate requested deployment. Keep `main` and the live service unchanged during this test setup.
-
-## Official references
-
-- https://render.com/docs/deploy-django
-- https://render.com/docs/blueprint-spec
 - https://render.com/docs/free
-- https://render.com/docs/background-workers
 - https://render.com/pricing
+- https://render.com/docs/blueprint-spec
+- https://render.com/docs/background-workers

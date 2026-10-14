@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Coach-Approved Skill Library{% endblock %}
+{% block content %}
+<style>.skill-library-shell{max-width:1300px;margin:auto}.skill-library-shell .btn{min-height:44px}.skill-example-preview{width:100%;height:180px;object-fit:contain;background:#101827}.skill-example-title{overflow-wrap:anywhere}</style>
+<div class="container-fluid py-4 skill-library-shell">
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+    <div><h1 class="h3 mb-2">Coach-Approved Skill Library</h1><p class="text-muted mb-0">Reusable skill examples for your gym. Upload, review and approve an example, then compare it with athlete attempts.</p></div>
+    <a class="btn btn-primary text-nowrap" href="{% url 'video_library:skill_example_upload' %}">Upload Skill Example</a>
+  </div>
+  {% if attempt %}<div class="alert alert-info">Showing matching examples for <strong>{{ attempt.title }}</strong> · {{ attempt.get_event_display }} · {{ attempt.skill_name }}. <a href="{% url 'video_library:video_detail' attempt.pk %}">Return to Athlete Video</a></div>{% endif %}
+  <form method="get" class="card border-0 shadow-sm mb-3"><div class="card-body">
+    {% if attempt %}<input type="hidden" name="attempt" value="{{ attempt.pk }}">{% endif %}
+    <div class="row g-2 align-items-end">
+      <div class="col-12 col-md-5"><label for="library-search" class="form-label small fw-semibold">Skill or title</label><input id="library-search" class="form-control" type="search" name="q" value="{{ q }}" placeholder="Find a skill example"></div>
+      <div class="col-6 col-md-3"><label for="library-event" class="form-label small fw-semibold">Event</label><select id="library-event" name="event" class="form-select"><option value="">All events</option>{% for value,label in events %}<option value="{{ value }}" {% if event == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+      <div class="col-6 col-md-3"><label for="library-state" class="form-label small fw-semibold">Show</label><select id="library-state" name="state" class="form-select"><option value="approved" {% if state == 'approved' %}selected{% endif %}>Approved ({{ counts.approved }})</option><option value="pending" {% if state == 'pending' %}selected{% endif %}>Awaiting Approval / Processing ({{ counts.pending }})</option><option value="all" {% if state == 'all' %}selected{% endif %}>All Examples ({{ counts.all }})</option></select></div>
+      <div class="col-12 col-md-1"><button class="btn btn-outline-primary w-100" type="submit">Find</button></div>
+    </div>
+  </div></form>
+  <div class="row g-3">
+    {% for video in page_obj %}
+    <div class="col-12 col-sm-6 col-xl-4"><article class="card h-100 border-0 shadow-sm overflow-hidden">
+      {% if video.thumbnail %}<img class="skill-example-preview" src="{{ video.thumbnail.url }}" alt="Preview of {{ video.title }}" loading="lazy">{% else %}<div class="skill-example-preview d-flex align-items-center justify-content-center text-white"><span>{{ video.get_event_display }} · {{ video.skill_name }}</span></div>{% endif %}
+      <div class="card-body d-flex flex-column">
+        <div class="small text-muted mb-1">{{ video.get_event_display }} · {{ video.skill_name }}</div><h2 class="h5 skill-example-title">{{ video.title }}</h2>
+        {% if video.is_coaching_example and video.skill_library_approved_by and video.skill_library_approved_at and video.status == 'ready' %}
+          <span class="badge text-bg-success align-self-start mb-2">Coach Approved</span><p class="small text-muted">{{ video.skill_library_approved_by.get_full_name|default:video.skill_library_approved_by.username }} · {{ video.skill_library_approved_at|date:'M j, Y' }}</p>
+        {% elif video.status == 'ready' %}<span class="badge text-bg-warning align-self-start mb-2">Awaiting Coach Approval</span>
+        {% elif video.status == 'failed' %}<span class="badge text-bg-danger align-self-start mb-2">Processing Failed</span>
+        {% else %}<span class="badge text-bg-secondary align-self-start mb-2">{{ video.get_status_display }}</span>{% endif %}
+        <p class="small text-muted mb-3">{{ video.get_camera_view_display }} · {{ video.get_ai_status_display }}</p>
+        <div class="d-flex flex-wrap gap-2 mt-auto"><a class="btn btn-outline-primary btn-sm" href="{% url 'video_library:skill_example_detail' video.pk %}">View &amp; Review</a>
+          {% if attempt and attempt.status == 'ready' and video.is_coaching_example and video.skill_library_approved_by and video.skill_library_approved_at and video.status == 'ready' %}<a class="btn btn-primary btn-sm" href="{% url 'video_library:video_compare' %}?video_1={{ video.pk }}&amp;video_2={{ attempt.pk }}">Compare with Attempt</a>{% endif %}
+        </div>
+      </div>
+    </article></div>
+    {% empty %}<div class="col-12"><div class="card border-0 shadow-sm"><div class="card-body p-4"><h2 class="h5">No examples match this view yet.</h2><p class="mb-3">Upload a skill example, or open an existing video and approve it as a skill example. Newly uploaded examples appear under Awaiting Approval / Processing.</p><a class="btn btn-primary" href="{% url 'video_library:skill_example_upload' %}">Upload Skill Example</a><a class="btn btn-outline-secondary" href="{% url 'video_library:video_list' %}">Find an Existing Video</a></div></div></div>{% endfor %}
+  </div>
+  {% if page_obj.has_other_pages %}<nav class="d-flex align-items-center justify-content-center gap-3 mt-4" aria-label="Skill library pages">{% if page_obj.has_previous %}<a class="btn btn-outline-secondary" href="?{{ filter_query }}&amp;page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}<span class="small">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a class="btn btn-outline-secondary" href="?{{ filter_query }}&amp;page={{ page_obj.next_page_number }}">Next</a>{% endif %}</nav>{% endif %}
+</div>
+{% endblock %}

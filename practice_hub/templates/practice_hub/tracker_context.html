@@ -1,0 +1,2 @@
+{% load static %}
+{% if payload %}<link rel="stylesheet" href="{% static 'practice_hub/hub.css' %}?v=1"><div class="ph-bridge"><a id="ph-back-practice" href="{{ payload.back_url }}">Back to {{ group_name }} practice</a><span>{{ event_label }} selected</span><button type="button" id="ph-toggle-events" class="ph-button" aria-pressed="false">Show all events</button></div>{{ payload|json_script:'ph-tracker-context' }}<script src="{% static 'practice_hub/tracker_context.js' %}?v=1" defer></script>{% endif %}

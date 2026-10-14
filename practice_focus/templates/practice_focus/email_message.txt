@@ -1,0 +1,16 @@
+{{ gym_name }}
+{{ report.title }}
+{{ report.athlete_name }} | {{ report.period }}
+
+{% autoescape off %}{% for section in report.sections %}{{ section.title }}
+{% for heading in section.headers %}{{ heading }}{% if not forloop.last %} | {% endif %}{% endfor %}
+{% for row in section.rows %}{% for cell in row %}{{ cell }}{% if not forloop.last %} | {% endif %}{% endfor %}
+{% empty %}No report data in this period.
+{% endfor %}
+{% endfor %}{% if report.feedback %}Shared coach feedback
+{% for text in report.feedback %}{{ text }}
+{% endfor %}{% endif %}
+Open the app: {{ report_url }}
+Shared by {{ coach_name }}.
+Sign in to view information for your account.
+{% endautoescape %}

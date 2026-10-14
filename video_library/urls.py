@@ -1,12 +1,23 @@
 from django.urls import path
 
-from . import views
+from . import views, skill_library_views, progress_views, moment_feedback_views
 
 
 app_name = 'video_library'
 
 
 urlpatterns = [
+    path('<int:video_id>/feedback/', moment_feedback_views.feedback_page, name='moment_feedback'),
+    path('<int:video_id>/moments/', moment_feedback_views.moments, name='video_moments'),
+    path('<int:video_id>/moments/<int:note_id>/', moment_feedback_views.change_moment, name='change_video_moment'),
+    path('progress/', progress_views.index, name='video_progress'),
+    path('skill-library/', skill_library_views.library, name='skill_library'),
+    path('skill-library/upload/', skill_library_views.upload, name='skill_example_upload'),
+    path('skill-library/<int:video_id>/', skill_library_views.detail, name='skill_example_detail'),
+    path('skill-library/<int:video_id>/edit/', skill_library_views.edit, name='skill_example_edit'),
+    path('skill-library/<int:video_id>/add/', skill_library_views.add_existing, name='add_skill_example'),
+    path('skill-library/<int:video_id>/approve/', skill_library_views.approval, name='approve_skill_example'),
+    path('skill-library/<int:video_id>/remove/', skill_library_views.remove, name='remove_skill_example'),
     path(
         '',
         views.video_dashboard,
@@ -26,6 +37,12 @@ urlpatterns = [
     ),
 
     path(
+        'mock-meets/',
+        views.mock_meet_library,
+        name='mock_meets',
+    ),
+
+    path(
         'upload/',
         views.video_upload,
         name='upload',
@@ -33,7 +50,7 @@ urlpatterns = [
 
     path(
         'athletes/<int:athlete_id>/',
-        views.athlete_video_timeline,
+        progress_views.timeline,
         name='athlete_timeline',
     ),
 
@@ -181,7 +198,7 @@ urlpatterns = [
 
     path(
         'athlete/<int:athlete_id>/timeline/',
-        views.athlete_video_timeline,
+        progress_views.timeline,
         name='athlete_video_timeline',
     ),
     path(
@@ -220,3 +237,5 @@ urlpatterns = [
      name='update_video_sharing',
  ),
 ]
+
+urlpatterns += [path('<int:video_id>/camera-view/', views.update_video_camera_view, name='update_camera_view')]

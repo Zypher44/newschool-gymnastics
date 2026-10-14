@@ -275,7 +275,17 @@
 </div>
 
 <div class="row g-3 mb-4">
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-6 col-xl-3">
+        <a href="{% url 'practice_focus:journal_history' %}" class="text-decoration-none text-dark">
+            <div class="card quick-action-card h-100">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="quick-action-icon" aria-hidden="true">📖</div>
+                    <div><div class="fw-bold">My Practice Journal</div><small class="text-muted">Write about practice and read past entries</small></div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-12 col-md-6 col-xl-3">
         <a
             href="{% url 'submit_survey' %}"
             class="text-decoration-none text-dark"
@@ -300,7 +310,7 @@
         </a>
     </div>
 
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-6 col-xl-3">
         <a
             href="{% url 'athlete_testing_history' %}"
             class="text-decoration-none text-dark"
@@ -325,7 +335,7 @@
         </a>
     </div>
 
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-6 col-xl-3">
         <div class="card quick-action-card h-100">
             <div class="card-body d-flex align-items-center gap-3">
                 <div class="quick-action-icon">

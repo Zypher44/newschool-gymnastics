@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+
+{% block title %}
+Practice Planner · Current Skills
+{% endblock %}
+
+{% block page_header %}
+Practice Planner
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .skill-planner {
+        max-width: 1200px;
+        margin: 0 auto;
+        min-width: 0;
+    }
+
+    .skill-planner .card {
+        border-radius: 16px;
+    }
+
+    .skill-planner textarea {
+        max-width: 100%;
+        font-size: 16px;
+        min-width: 0;
+    }
+
+    .skill-planner .skill-save-bar {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-top: 16px;
+        padding: 16px;
+        border: 1px solid #d0d5dd;
+        border-radius: 12px;
+        background: #fff;
+    }
+
+    .skill-planner .btn {
+        min-height: 44px;
+        white-space: normal;
+    }
+
+    .skill-planner .errorlist {
+        color: #b42318;
+        margin: 0 0 8px;
+        padding-left: 20px;
+    }
+
+    @media (max-width: 575.98px) {
+        .skill-planner .skill-save-bar {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .skill-planner .skill-save-bar .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="skill-planner">
+
+    <header class="d-flex flex-wrap justify-content-between gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-2">
+                Practice Planner · Current Skills
+            </h1>
+
+            <p class="text-muted mb-0">
+                Set each athlete’s training skills and cues for
+                Vault, Bars, Beam, and Floor.
+            </p>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+            <a
+                class="btn btn-outline-primary"
+                href="{% url 'routine_tracker:daily_routine_tracker' %}"
+            >
+                Routine tracker
+            </a>
+
+            <a
+                class="btn btn-outline-primary"
+                href="{% url 'skill_tracker:tracker' %}{% if selected_athlete %}?athlete={{ selected_athlete.pk }}{% endif %}"
+            >
+                Skill tracker
+            </a>
+
+            <a
+                class="btn btn-outline-secondary"
+                href="{% url 'routine_tracker:routine_consistency_summary' %}"
+            >
+                Routine consistency
+            </a>
+        </div>
+    </header>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form
+                method="get"
+                class="row g-3 align-items-end"
+                id="skill-athlete-selector"
+            >
+                <div class="col-12 col-md-5">
+                    <label for="focus-group" class="form-label">
+                        Training group
+                    </label>
+
+                    <select
+                        name="group"
+                        id="focus-group"
+                        class="form-select"
+                    >
+                        <option value="">
+                            All athletes in your gym
+                        </option>
+
+                        {% for group in groups %}
+                            <option
+                                value="{{ group.pk }}"
+                                {% if selected_group.pk == group.pk %}selected{% endif %}
+                            >
+                                {{ group.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-5">
+                    <label for="focus-athlete" class="form-label">
+                        Athlete
+                    </label>
+
+                    <select
+                        name="athlete"
+                        id="focus-athlete"
+                        class="form-select"
+                    >
+                        {% for athlete in athletes %}
+                            <option
+                                value="{{ athlete.pk }}"
+                                {% if selected_athlete.pk == athlete.pk %}selected{% endif %}
+                            >
+                                {{ athlete.get_full_name|default:athlete.username }}
+                            </option>
+                        {% empty %}
+                            <option value="">
+                                No active athletes
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-2">
+                    <button
+                        id="load-focus"
+                        class="btn btn-outline-primary w-100"
+                        type="submit"
+                    >
+                        Load athlete
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if selected_athlete %}
+
+        <h2 class="h5 mb-3">
+            {{ selected_athlete.get_full_name|default:selected_athlete.username }}
+        </h2>
+
+        <p class="small text-muted">
+            Enter one skill per line. These are the athlete’s current
+            training targets, shown beside routine and pressure-set results.
+            Editing them does not change previous scores.
+        </p>
+
+        <form method="post" id="current-skills-form">
+            {% csrf_token %}
+
+            <input
+                type="hidden"
+                name="athlete"
+                value="{{ selected_athlete.pk }}"
+            >
+
+            <input
+                type="hidden"
+                name="group"
+                value="{{ selected_group.pk|default:'' }}"
+            >
+
+            <div class="row g-3">
+                {% for item in event_forms %}
+                    <div class="col-12 col-lg-6">
+                        <section class="card h-100">
+                            <div class="card-header fw-semibold">
+                                {{ item.label }}
+                            </div>
+
+                            <div class="card-body">
+                                {{ item.form.non_field_errors }}
+                                {{ item.form.version }}
+
+                                <label
+                                    for="{{ item.form.skills_text.id_for_label }}"
+                                    class="form-label"
+                                >
+                                    {{ item.form.skills_text.label }}
+                                </label>
+
+                                {{ item.form.skills_text.errors }}
+                                {{ item.form.skills_text }}
+
+                                <div class="mt-3">
+                                    <label
+                                        for="{{ item.form.training_cues.id_for_label }}"
+                                        class="form-label"
+                                    >
+                                        {{ item.form.training_cues.label }}
+                                    </label>
+
+                                    {{ item.form.training_cues.errors }}
+                                    {{ item.form.training_cues }}
+
+                                    <div class="form-text">
+                                        {{ item.form.training_cues.help_text }}
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="skill-save-bar">
+                <span
+                    id="skill-save-status"
+                    class="small text-muted"
+                    role="status"
+                >
+                    Save all four events together.
+                </span>
+
+                <button class="btn btn-primary" type="submit">
+                    Save current skills
+                </button>
+            </div>
+        </form>
+
+    {% else %}
+
+        <div class="alert alert-info">
+            No active athletes in this selection.
+            Add athletes to your gym or choose another group.
+        </div>
+
+    {% endif %}
+
+</div>
+
+<script>
+(() => {
+    const group = document.getElementById('focus-group');
+
+    group.addEventListener('change', () => {
+        const athlete = document.getElementById('focus-athlete');
+
+        athlete.value = '';
+        athlete.disabled = true;
+
+        document.getElementById('load-focus').textContent = 'Load group';
+    });
+
+    const form = document.getElementById('current-skills-form');
+
+    if (!form) {
+        return;
+    }
+
+    let dirty = false;
+
+    form.addEventListener('input', () => {
+        dirty = true;
+
+        document.getElementById('skill-save-status').textContent =
+            'You have unsaved changes.';
+    });
+
+    form.addEventListener('submit', () => {
+        dirty = false;
+    });
+
+    window.addEventListener('beforeunload', event => {
+        if (dirty) {
+            event.preventDefault();
+            event.returnValue = '';
+        }
+    });
+})();
+</script>
+
+{% endblock %}

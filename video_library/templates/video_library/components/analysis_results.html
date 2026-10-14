@@ -1,0 +1,13 @@
+{% if analysis.status == 'completed' and analysis.analysis_source != 'mock' %}
+{% include 'video_library/components/coaching_brief.html' %}
+<details class="border rounded-3 p-3 mb-3">
+  <summary class="small fw-semibold">Full measurement summary</summary>
+  <p class="small mt-3">{{ analysis.summary }}</p>
+  {% if analysis.measurements.average_joint_angles_degrees %}
+    <div class="table-responsive mt-2"><table class="table table-sm small">
+      <thead><tr><th scope="col">Joint</th><th scope="col">Average image angle</th></tr></thead>
+      <tbody>{% for joint, angle in analysis.measurements.average_joint_angles_degrees.items %}<tr><td>{{ joint }}</td><td>{{ angle }}°</td></tr>{% endfor %}</tbody>
+    </table></div>
+  {% endif %}
+</details>
+{% endif %}

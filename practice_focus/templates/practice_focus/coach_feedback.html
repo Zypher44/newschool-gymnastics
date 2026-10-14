@@ -1,0 +1,18 @@
+{% extends 'practice_focus/progress_layout.html' %}
+{% block progress_content %}
+<section class="progress-card">
+<h1 class="h3">Athlete feedback</h1>
+<form method="get"><label for="progress-athlete">Athlete</label><select id="progress-athlete" name="athlete" onchange="this.form.submit()">{% for person in athletes %}<option value="{{ person.pk }}" {% if person == athlete %}selected{% endif %}>{{ person.get_full_name|default:person.username }}</option>{% endfor %}</select><noscript><button>Choose athlete</button></noscript></form>
+</section>
+{% if athlete %}
+<div class="progress-grid">
+<section class="progress-card"><h2 class="h5">Private notes and shared feedback</h2>
+<form method="post">{% csrf_token %}<input type="hidden" name="athlete" value="{{ athlete.pk }}"><input type="hidden" name="action" value="feedback">{{ feedback_form.as_p }}<button class="btn btn-primary">Save feedback</button></form>
+</section>
+<section class="progress-card"><h2 class="h5">Approve a personal milestone</h2><p class="progress-muted">Use this for a skill achievement you have checked. Practice targets are awarded automatically after results are approved.</p>
+<form method="post">{% csrf_token %}<input type="hidden" name="athlete" value="{{ athlete.pk }}"><input type="hidden" name="action" value="milestone">{{ milestone_form.as_p }}<button class="btn btn-primary">Approve milestone</button></form></section>
+</div>
+{% for note in notes %}<section class="progress-card"><p class="progress-muted">{{ note.coach.get_full_name|default:note.coach.username }} · {{ note.created_at|date:'M j, Y' }}</p>{% if note.private_notes %}<h3 class="h6">Coaches only</h3>{{ note.private_notes|linebreaks }}{% endif %}{% if note.shared_feedback %}<h3 class="h6">Shared with athlete and parents</h3>{{ note.shared_feedback|linebreaks }}{% endif %}</section>{% empty %}<p>No feedback has been added yet.</p>{% endfor %}
+<section class="progress-card"><h2 class="h5">Milestones</h2>{% for milestone in milestones %}<p>{{ milestone.title }} <span class="progress-muted">· {{ milestone.practice_date|date:'M j' }}</span></p>{% empty %}<p>No milestones yet.</p>{% endfor %}</section>
+{% else %}<section class="progress-card">No athletes are assigned to your coaching roster.</section>{% endif %}
+{% endblock %}

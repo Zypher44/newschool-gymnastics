@@ -1,84 +1,51 @@
-# Proposed isolated full-feature test environment.
-# Review paid plans before applying. Do not apply until current PyCharm files are pushed.
-# Deploy this Blueprint from branch staging/v2-render-test, using path render-test.yaml.
+# Free core test environment; video worker not included.
 databases:
-  - name: newschool-v2-test-db
-    databaseName: newschool_v2_test
-    user: newschool_v2_test
-    plan: 0.1c-256mb
-    diskSizeGB: 1
-    region: ohio
-    ipAllowList: []
-
+- name: newschool-v2-test-db
+  databaseName: newschool_v2_test
+  user: newschool_v2_test
+  plan: free
+  region: ohio
+  ipAllowList: []
 envVarGroups:
-  - name: newschool-v2-test-env
-    envVars:
-      - key: DJANGO_SETTINGS_MODULE
-        value: DjangoProject.render_test_settings
-      - key: DJANGO_DEBUG
-        value: "False"
-      - key: DJANGO_TIME_ZONE
-        value: America/Toronto
-      - key: DJANGO_SECRET_KEY
-        generateValue: true
-      - key: SUPABASE_STORAGE_BUCKET
-        value: athlete-videos-test
-      - key: SUPABASE_S3_REGION
-        value: ca-central-1
-
+- name: newschool-v2-test-env
+  envVars:
+  - key: DJANGO_SETTINGS_MODULE
+    value: DjangoProject.render_test_settings
+  - key: DJANGO_DEBUG
+    value: 'False'
+  - key: DJANGO_TIME_ZONE
+    value: America/Toronto
+  - key: DJANGO_SECRET_KEY
+    generateValue: true
+  - key: SUPABASE_STORAGE_BUCKET
+    value: athlete-videos-test
+  - key: SUPABASE_S3_REGION
+    value: ca-central-1
 services:
-  - type: web
-    name: newschool-v2-test
-    runtime: docker
-    repo: https://github.com/Zypher44/newschool-gymnastics
-    branch: staging/v2-render-test
-    dockerfilePath: ./Dockerfile.render-test
-    dockerCommand: bash deploy/start_render_test.sh web
-    plan: 0.5c-512mb
-    region: ohio
-    autoDeployTrigger: "off"
-    healthCheckPath: /_render-test/health/
-    envVars:
-      - fromGroup: newschool-v2-test-env
-      - key: DATABASE_URL
-        fromDatabase:
-          name: newschool-v2-test-db
-          property: connectionString
-      - key: SUPABASE_S3_ENDPOINT
-        sync: false
-      - key: SUPABASE_S3_ACCESS_KEY_ID
-        sync: false
-      - key: SUPABASE_S3_SECRET_ACCESS_KEY
-        sync: false
-
-  - type: worker
-    name: newschool-v2-test-video-worker
-    runtime: docker
-    repo: https://github.com/Zypher44/newschool-gymnastics
-    branch: staging/v2-render-test
-    dockerfilePath: ./Dockerfile.render-test
-    dockerCommand: bash deploy/start_render_test.sh worker
-    plan: 1c-2g
-    region: ohio
-    autoDeployTrigger: "off"
-    envVars:
-      - fromGroup: newschool-v2-test-env
-      - key: DATABASE_URL
-        fromDatabase:
-          name: newschool-v2-test-db
-          property: connectionString
-      - key: SUPABASE_S3_ENDPOINT
-        fromService:
-          type: web
-          name: newschool-v2-test
-          envVarKey: SUPABASE_S3_ENDPOINT
-      - key: SUPABASE_S3_ACCESS_KEY_ID
-        fromService:
-          type: web
-          name: newschool-v2-test
-          envVarKey: SUPABASE_S3_ACCESS_KEY_ID
-      - key: SUPABASE_S3_SECRET_ACCESS_KEY
-        fromService:
-          type: web
-          name: newschool-v2-test
-          envVarKey: SUPABASE_S3_SECRET_ACCESS_KEY
+- type: web
+  name: newschool-v2-test
+  runtime: docker
+  repo: https://github.com/Zypher44/newschool-gymnastics
+  branch: staging/v2-render-test
+  dockerfilePath: ./Dockerfile.render-test
+  dockerCommand: bash deploy/start_render_test.sh web
+  plan: free
+  region: ohio
+  autoDeployTrigger: 'off'
+  healthCheckPath: /_render-test/health/
+  envVars:
+  - fromGroup: newschool-v2-test-env
+  - key: DATABASE_URL
+    fromDatabase:
+      name: newschool-v2-test-db
+      property: connectionString
+  - key: SUPABASE_S3_ENDPOINT
+    sync: false
+  - key: SUPABASE_S3_ACCESS_KEY_ID
+    sync: false
+  - key: SUPABASE_S3_SECRET_ACCESS_KEY
+    sync: false
+  - key: BOOTSTRAP_TEST_ADMIN_USERNAME
+    value: v2testdirector
+  - key: BOOTSTRAP_TEST_ADMIN_PASSWORD
+    sync: false

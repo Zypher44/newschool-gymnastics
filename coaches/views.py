@@ -4,7 +4,7 @@ from django.db.models import Q
 
 from django.utils import timezone
 from django.urls import reverse
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from django.shortcuts import (
     get_object_or_404,
@@ -1196,82 +1196,55 @@ def add_event(request):
 
 @login_required
 def take_attendance(request):
-
-    if request.user.role not in [
-        "coach",
-        "head_coach",
-    ]:
+    if request.user.role not in ["coach", "head_coach"]:
         return render(
             request,
             "coaches/not_allowed.html",
-            {
-                "role": request.user.role,
-                "username": request.user.username,
-            },
+            {"role": request.user.role, "username": request.user.username},
         )
 
     today = timezone.localdate()
+    date_text = request.POST.get("attendance_date") if request.method == "POST" else request.GET.get("date")
+    try:
+        attendance_date = datetime.strptime(date_text, "%Y-%m-%d").date() if date_text else today
+    except (TypeError, ValueError):
+        attendance_date = today
 
-    athletes = get_accessible_athletes(
-        request.user
-    )
-
-    existing_records = (
-        AttendanceRecord.objects
-        .filter(
-            athlete__in=athletes,
-            attendance_date=today,
-        )
-    )
-
+    athletes = get_accessible_athletes(request.user)
     attendance_map = {
         record.athlete_id: record
-        for record in existing_records
+        for record in AttendanceRecord.objects.filter(
+            athlete__in=athletes,
+            attendance_date=attendance_date,
+        )
     }
 
     if request.method == "POST":
-
+        valid_statuses = {choice[0] for choice in AttendanceRecord.STATUS_CHOICES}
         for athlete in athletes:
-            status = request.POST.get(
-                f"status_{athlete.id}"
+            status = request.POST.get(f"status_{athlete.id}", "")
+            notes = request.POST.get(f"notes_{athlete.id}", "").strip()[:255]
+            if status not in valid_statuses:
+                continue
+            AttendanceRecord.objects.update_or_create(
+                athlete=athlete,
+                attendance_date=attendance_date,
+                defaults={"coach": request.user, "status": status, "notes": notes},
             )
-
-            notes = request.POST.get(
-                f"notes_{athlete.id}",
-                "",
-            )
-
-            if status:
-                AttendanceRecord.objects.update_or_create(
-                    athlete=athlete,
-                    attendance_date=today,
-                    defaults={
-                        "coach": request.user,
-                        "status": status,
-                        "notes": notes,
-                    },
-                )
-
-        return redirect(
-            "coach_dashboard"
-        )
+        return redirect(f"{reverse('take_attendance')}?date={attendance_date.isoformat()}")
 
     athlete_attendance = [
-        {
-            "athlete": athlete,
-            "record": attendance_map.get(
-                athlete.id
-            ),
-        }
+        {"athlete": athlete, "record": attendance_map.get(athlete.id)}
         for athlete in athletes
     ]
-
     return render(
         request,
         "coaches/take_attendance.html",
         {
             "today": today,
+            "attendance_date": attendance_date,
             "athlete_attendance": athlete_attendance,
+            "is_past_date": attendance_date < today,
         },
     )
 
