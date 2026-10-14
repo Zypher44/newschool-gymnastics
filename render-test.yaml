@@ -1,4 +1,4 @@
-# Free core test environment; video worker not included.
+# Free core test environment. No Supabase or video worker required.
 databases:
 - name: newschool-v2-test-db
   databaseName: newschool_v2_test
@@ -17,10 +17,6 @@ envVarGroups:
     value: America/Toronto
   - key: DJANGO_SECRET_KEY
     generateValue: true
-  - key: SUPABASE_STORAGE_BUCKET
-    value: athlete-videos-test
-  - key: SUPABASE_S3_REGION
-    value: ca-central-1
 services:
 - type: web
   name: newschool-v2-test
@@ -39,13 +35,9 @@ services:
     fromDatabase:
       name: newschool-v2-test-db
       property: connectionString
-  - key: SUPABASE_S3_ENDPOINT
-    sync: false
-  - key: SUPABASE_S3_ACCESS_KEY_ID
-    sync: false
-  - key: SUPABASE_S3_SECRET_ACCESS_KEY
-    sync: false
   - key: BOOTSTRAP_TEST_ADMIN_USERNAME
     value: v2testdirector
   - key: BOOTSTRAP_TEST_ADMIN_PASSWORD
     sync: false
+  - key: RENDER_TEST_VIDEOS_ENABLED
+    value: 'False'

@@ -1,4 +1,4 @@
-# OPTIONAL PAID full test environment; requires cost approval.
+# OPTIONAL paid video test; requires storage and cost approval.
 databases:
 - name: newschool-v2-test-db
   databaseName: newschool_v2_test
@@ -22,6 +22,8 @@ envVarGroups:
     value: athlete-videos-test
   - key: SUPABASE_S3_REGION
     value: ca-central-1
+  - key: RENDER_TEST_VIDEOS_ENABLED
+    value: 'True'
 services:
 - type: web
   name: newschool-v2-test

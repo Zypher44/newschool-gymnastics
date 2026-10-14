@@ -15,6 +15,8 @@ Free web services sleep after 15 minutes without traffic and lack a shell. The w
 
 ## Storage and initial login
 
+Core-only testing does not require Supabase. Its RENDER_TEST_VIDEOS_ENABLED setting is False: video pages show a paused notice and file uploads are rejected. The storage instructions below apply only when explicitly enabling video testing.
+
 Create a PRIVATE Supabase bucket named `athlete-videos-test`. The test services use the extra `render-test/` prefix. Enter S3 endpoint, access key ID and secret access key in the Blueprint secret fields. Correct the default `ca-central-1` region if your project uses another region. Never commit credentials or paste them into chat.
 
 Set `BOOTSTRAP_TEST_ADMIN_PASSWORD` to a new strong password of at least 12 characters. The first start creates username `v2testdirector`, a director/admin account with an active membership in a new test gym. Subsequent deploys do not reset its password or elevate another account. Once initial setup succeeds, remove both BOOTSTRAP_TEST_ADMIN_USERNAME and BOOTSTRAP_TEST_ADMIN_PASSWORD from the web service environment. Neither is needed after setup.
