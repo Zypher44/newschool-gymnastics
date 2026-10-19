@@ -490,21 +490,6 @@
             </div>
 
             <div class="sidebar-navigation">
-                {% if user.role == 'athlete' %}
-                    <a href="{% url 'skill_tracker:tracker' %}" class="sidebar-link" title="Skill Tracker" aria-label="Skill Tracker">
-                        <span class="sidebar-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 3 3 5-6"></path></svg></span>
-                        <span class="sidebar-label">Skill Tracker</span>
-                    </a>
-                {% endif %}
-
-                {% if user.role == 'coach' or user.role == 'head_coach' or user.role == 'athlete' %}
-                    
-                {% endif %}
-
-                {% if user.role == 'coach' or user.role == 'head_coach' %}
-                    
-                {% endif %}
-
                 {% if user.role == 'director' %}
                     <div class="sidebar-section">Gym Management</div>
 
@@ -645,39 +630,55 @@
                     </a>
 
                 {% elif user.role == 'athlete' %}
-<a href="{% url 'practice_focus:journal_history' %}" class="sidebar-link" title="My Practice Journal" aria-label="My Practice Journal"><span class="sidebar-icon" aria-hidden="true">📖</span><span class="sidebar-label">My Practice Journal</span></a>
-<a href="{% url 'practice_focus:family_progress' %}" class="sidebar-link" title="My Progress &amp; Feedback" aria-label="My Progress &amp; Feedback"><span class="sidebar-label">My Progress & Feedback</span></a>
                     <div class="sidebar-section">Home</div>
-<a href="{% url 'practice_focus:family_passport' %}" class="sidebar-link" title="Practice Passport" aria-label="Practice Passport"><span class="sidebar-icon" aria-hidden="true">🏅</span><span class="sidebar-label">Practice Passport</span></a>
-
 
                     <a href="{% url 'athlete_dashboard' %}" class="sidebar-link" title="Athlete Home" aria-label="Athlete Home">
-                        <span class="sidebar-icon">🏠</span>
+                        <span class="sidebar-icon" aria-hidden="true">🏠</span>
                         <span class="sidebar-label">Athlete Home</span>
                     </a>
 
-                    <div class="sidebar-section">Wellness</div>
+                    <div class="sidebar-section">My Practice</div>
+
+                    <a href="{% url 'skill_tracker:tracker' %}" class="sidebar-link" title="Skill Tracker" aria-label="Skill Tracker">
+                        <span class="sidebar-icon" aria-hidden="true">✅</span>
+                        <span class="sidebar-label">Skill Tracker</span>
+                    </a>
 
                     <a href="{% url 'submit_survey' %}" class="sidebar-link" title="Daily Survey" aria-label="Daily Survey">
-                        <span class="sidebar-icon">📝</span>
+                        <span class="sidebar-icon" aria-hidden="true">📝</span>
                         <span class="sidebar-label">Daily Survey</span>
                     </a>
 
-                    <div class="sidebar-section">Performance</div>
+                    <a href="{% url 'practice_focus:journal_history' %}" class="sidebar-link" title="My Practice Journal" aria-label="My Practice Journal">
+                        <span class="sidebar-icon" aria-hidden="true">📖</span>
+                        <span class="sidebar-label">My Practice Journal</span>
+                    </a>
+
+                    <div class="sidebar-section">My Progress</div>
+
+                    <a href="{% url 'practice_focus:family_passport' %}" class="sidebar-link" title="Practice Passport" aria-label="Practice Passport">
+                        <span class="sidebar-icon" aria-hidden="true">🏅</span>
+                        <span class="sidebar-label">Practice Passport</span>
+                    </a>
+
+                    <a href="{% url 'practice_focus:family_progress' %}" class="sidebar-link" title="My Progress &amp; Feedback" aria-label="My Progress &amp; Feedback">
+                        <span class="sidebar-icon" aria-hidden="true">💬</span>
+                        <span class="sidebar-label">My Progress &amp; Feedback</span>
+                    </a>
 
                     <a href="{% url 'athlete_testing_history' %}" class="sidebar-link" title="Testing Progress" aria-label="Testing Progress">
-                        <span class="sidebar-icon">📊</span>
+                        <span class="sidebar-icon" aria-hidden="true">📊</span>
                         <span class="sidebar-label">Testing Progress</span>
                     </a>
 
-                    <a href="{% url 'video_library:family_library' %}" class="sidebar-link" title="My Video Library" aria-label="My Video Library">
-                        <span class="sidebar-icon">🎥</span>
-                        <span class="sidebar-label">My Video Library</span>
+                    <a href="{% url 'routine_tracker:athlete_routine_consistency' %}" class="sidebar-link" title="Routine Consistency" aria-label="Routine Consistency">
+                        <span class="sidebar-icon" aria-hidden="true">📈</span>
+                        <span class="sidebar-label">Routine Consistency</span>
                     </a>
 
-                    <a href="{% url 'routine_tracker:athlete_routine_consistency' %}" class="sidebar-link" title="Routine Consistency" aria-label="Routine Consistency">
-                        <span class="sidebar-icon">📈</span>
-                        <span class="sidebar-label">Routine Consistency</span>
+                    <a href="{% url 'video_library:family_library' %}" class="sidebar-link" title="My Video Library" aria-label="My Video Library">
+                        <span class="sidebar-icon" aria-hidden="true">🎥</span>
+                        <span class="sidebar-label">My Video Library</span>
                     </a>
 
                 {% elif user.role == 'parent' %}
