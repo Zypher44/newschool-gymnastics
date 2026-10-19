@@ -2,10 +2,13 @@ from django.urls import path
 
 from . import views
 from .usage_views import gym_usage
+from .login_help import reset_person_password, calendar_instead_of_events
 from gym_scheduling.views import schedules, session_exceptions
 
 
 urlpatterns = [
+    path('people/<int:membership_id>/reset-password/', reset_person_password,
+         name='reset_gym_person_password'),
     path('schedules/<int:schedule_id>/exceptions/', session_exceptions, name='group_schedule_exceptions'),
     path('schedules/', schedules, name='group_schedules'),
     path('schedules/<int:schedule_id>/edit/', schedules, name='group_schedule_edit'),
@@ -88,7 +91,7 @@ path(
 
     path(
         'events/',
-        views.director_event_list,
+        calendar_instead_of_events,
         name='director_event_list'
     ),
 

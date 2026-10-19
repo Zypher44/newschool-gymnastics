@@ -245,6 +245,7 @@ People | {{ gym.name }}
                         </div>
 
 
+                        <div class="small">Username: <code>{{ membership.user.username }}</code></div>
                         <div class="small text-muted">
 
                             {% if membership.user.email %}
@@ -268,6 +269,7 @@ People | {{ gym.name }}
 
 
                     <div class="d-flex flex-wrap gap-2 person-actions">
+                        <a href="{% url 'reset_gym_person_password' membership.id %}" class="btn btn-outline-secondary btn-sm">Reset password</a>
 
                         {% if membership.is_active %}
 
