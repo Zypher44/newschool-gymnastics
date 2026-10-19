@@ -1087,18 +1087,15 @@ def pathway_overview(request):
         if any(card['level'].program == code for card in level_cards)
     ]
 
-    if request.user.role == 'parent':
-        parent_links = (
-            get_approved_parent_links(request.user)
-            .order_by(
-                'athlete__first_name',
-                'athlete__last_name',
-                'athlete__username',
-            )
-        )
+    if request.user.role in ('parent', 'athlete'):
+        if request.user.role == 'parent':
+            parent_links = get_approved_parent_links(request.user).order_by(
+                'athlete__first_name', 'athlete__last_name', 'athlete__username')
+            pathway_athletes = [link.athlete for link in parent_links]
+        else:
+            pathway_athletes = [request.user] if request.user.is_active else []
 
-        for link in parent_links:
-            athlete = link.athlete
+        for athlete in pathway_athletes:
 
             athlete_pathway = (
                 AthletePathway.objects

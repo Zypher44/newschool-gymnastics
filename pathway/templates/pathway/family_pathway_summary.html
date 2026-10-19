@@ -1,0 +1,112 @@
+            <section class="children-section mt-5">
+                <div class="mb-4">
+                    <div class="small text-uppercase fw-semibold text-primary mb-1">
+                        {% if request.user.role == 'athlete' %}My Pathway{% else %}Family Pathways{% endif %}
+                    </div>
+
+                    <h2 class="h3 fw-bold mb-1">
+                        {% if request.user.role == 'athlete' %}Where I Am and Where I Can Go{% else %}My Children's Pathways{% endif %}
+                    </h2>
+
+                    <p class="text-muted mb-0">
+                        {% if request.user.role == 'athlete' %}See your current level and next goal, as set by your coach. Explore the levels below to see what comes next.{% else %}View the current and target pathway progress shared by your child's coaching team.{% endif %}
+                    </p>
+                </div>
+
+                <div class="child-pathway-grid">
+                    {% for row in parent_pathway_cards %}
+                        <article class="child-pathway-card">
+                            <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                                <div>
+                                    <div class="small text-muted mb-1">Athlete</div>
+                                    <h3 class="h4 fw-bold mb-0">
+                                        {{ row.athlete.get_full_name|default:row.athlete.username }}
+                                    </h3>
+                                </div>
+
+                                {% if row.pathway %}
+                                    <span class="badge text-bg-primary">
+                                        {{ row.pathway.get_status_display }}
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            {% if row.pathway %}
+                                {% if row.pathway.current_level %}
+                                    <div class="small text-muted mb-2">
+                                        {{ row.pathway.current_level.get_program_display }}
+                                    </div>
+                                {% endif %}
+                                <div class="pathway-route mb-4">
+                                    <div>
+                                        <div class="small text-muted">Current</div>
+                                        <strong>
+                                            {{ row.pathway.current_level.name|default:"Not assigned" }}
+                                        </strong>
+                                    </div>
+
+                                    <span class="text-muted fw-bold">→</span>
+
+                                    <div>
+                                        <div class="small text-muted">Target</div>
+                                        <strong class="text-primary">
+                                            {{ row.pathway.target_level.name|default:"Not assigned" }}
+                                        </strong>
+                                    </div>
+                                </div>
+
+                                {% if row.current_progress %}
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between gap-3 mb-1">
+                                            <span class="small fw-semibold">
+                                                {{ row.current_progress.level.name }}
+                                            </span>
+                                            <span class="small fw-bold">
+                                                {{ row.current_progress.percentage }}%
+                                            </span>
+                                        </div>
+
+                                        <div class="progress" role="progressbar" aria-label="Current level progress" aria-valuenow="{{ row.current_progress.percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                            <div class="progress-bar bg-primary" style="width: {{ row.current_progress.percentage }}%;"></div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                {% if row.target_progress and row.pathway.target_level_id != row.pathway.current_level_id %}
+                                    <div class="mb-4">
+                                        <div class="d-flex justify-content-between gap-3 mb-1">
+                                            <span class="small fw-semibold">
+                                                {{ row.target_progress.level.name }}
+                                            </span>
+                                            <span class="small fw-bold">
+                                                {{ row.target_progress.percentage }}%
+                                            </span>
+                                        </div>
+
+                                        <div class="progress" role="progressbar" aria-label="Target level progress" aria-valuenow="{{ row.target_progress.percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                            <div class="progress-bar bg-success" style="width: {{ row.target_progress.percentage }}%;"></div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                {% if request.user.role == 'parent' %}
+                                <a
+                                    href="{% url 'pathway:parent_athlete_pathway' row.athlete.id %}"
+                                    class="btn btn-success w-100"
+                                >
+                                    View Child's Progress →
+                                </a>
+                                {% endif %}
+                            {% else %}
+                                <div class="alert alert-light border mb-0">
+                                    {% if request.user.role == 'athlete' %}Your coach has not set your pathway yet. You can explore the levels below and ask your coach about your next goal.{% else %}A pathway has not been configured for this athlete yet.{% endif %}
+                                </div>
+                            {% endif %}
+                        </article>
+                    {% empty %}
+                        <div class="alert alert-light border mb-0">
+                            No approved child connections were found. Connect an athlete from the Parent Dashboard first.
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
