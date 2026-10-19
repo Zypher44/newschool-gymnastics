@@ -16,12 +16,15 @@ def practice_hub_welcome(context):
     if request.path in (reverse('practice_hub:onboarding'), reverse('practice_hub:start')):
         return {}
     gym = member_gym(request.user)
+    if gym is None and request.session.get('practice_hub_dismissed_' + request.user.role):
+        return {}
     progress = OnboardingProgress.objects.filter(user=request.user, gym=gym,
         role=request.user.role).first() if gym else None
     if progress and (progress.completed_at or progress.dismissed_at):
         return {}
     return {'show': True, 'ready': bool(gym), 'started': bool(progress),
-        'url': reverse('practice_hub:onboarding')}
+        'url': reverse('practice_hub:onboarding'),
+        'next': request.get_full_path(), 'csrf_token': context.get('csrf_token')}
 
 
 @register.inclusion_tag('practice_hub/tracker_context.html', takes_context=True)

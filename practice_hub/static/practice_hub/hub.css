@@ -7,3 +7,5 @@
 
 /* Quick extensions stay beside the group countdown and wrap on small screens. */
 .ph-simple .ph-quick-timer{justify-content:flex-start}.ph-simple .ph-quick-timer>div{margin-right:auto}.ph-group-extend{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.ph-simple .ph-group-extend .ph-button{white-space:nowrap}
+
+.ph-banner-actions{display:flex;align-items:center;gap:14px;margin-left:auto}.ph-banner-actions form{margin:0}.ph-banner-close{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:0;border-radius:8px;background:transparent;color:#244a84;font-size:26px;line-height:1;cursor:pointer}.ph-banner-close:hover{background:#dce7f8}.ph-banner-close:focus-visible{outline:2px solid #244a84;outline-offset:2px}.ph-banner-close:disabled{opacity:.5;cursor:wait}.ph-banner [data-guide-error]{flex-basis:100%;color:#8a2222}.ph-banner [hidden]{display:none!important}
