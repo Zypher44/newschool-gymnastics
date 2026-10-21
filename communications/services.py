@@ -28,6 +28,11 @@ def create_notification(
     if recipient is None:
         return None
 
+    if recipient.role == 'parent' and notification_type not in (Notification.TYPE_MESSAGE, Notification.TYPE_SYSTEM):
+        from accounts.models import CommunicationPreference
+        if CommunicationPreference.objects.filter(user=recipient, in_app_updates=False).exists():
+            return None
+
     return Notification.objects.create(
         recipient=recipient,
         sender=sender,

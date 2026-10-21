@@ -1,0 +1,16 @@
+{% load static %}
+{% if show %}
+<link rel="stylesheet" href="{% static 'practice_hub/hub.css' %}?v=2">
+<aside class="ph-banner" aria-label="Getting started">
+  <p>{% if ready %}{% if started %}Continue your Getting Started guide.{% else %}Welcome. Take a short guide for your role.{% endif %}{% else %}Get connected to your gym to begin.{% endif %}</p>
+  <div class="ph-banner-actions">
+    <a href="{{ url }}">{% if started %}Continue guide{% else %}Getting Started{% endif %}</a>
+    <form method="post" action="{% url 'practice_hub:dismiss_guide' %}" data-guide-dismiss>
+      {% csrf_token %}<input type="hidden" name="next" value="{{ next }}">
+      <button type="submit" class="ph-banner-close" aria-label="Dismiss getting started reminder" title="Dismiss guide"><span aria-hidden="true">&times;</span></button>
+    </form>
+  </div>
+  <p data-guide-error role="status" hidden></p>
+</aside>
+<script src="{% static 'practice_hub/guide_notice.js' %}?v=1" defer></script>
+{% endif %}

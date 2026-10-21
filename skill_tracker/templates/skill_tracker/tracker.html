@@ -1,0 +1,88 @@
+{% extends "skill_tracker/layout.html" %}
+{% load static %}
+{% block skill_content %}
+<link rel="stylesheet" href="{% static 'skill_tracker/group_picker.css' %}?v=1">
+<!-- V3 skill attempt targets -->
+<link rel="stylesheet" href="{% static 'skill_tracker/practice_targets.css' %}?v=1">
+<header class="st-header">
+    <div>
+        <p class="st-eyebrow">Daily practice · {{ today|date:"M j, Y" }}</p>
+        <h1>Skill Tracker</h1>
+        <p>{% if coach %}Tap your name, choose a skill, then record your result.{% else %}Choose a skill, then record your result.{% endif %}</p>
+    </div>
+    {% if coach %}<a class="st-link" id="st-manage-skills" data-base-url="{% url 'skill_tracker:manage' %}" href="{% url 'skill_tracker:manage' %}">Manage skills</a>{% endif %}
+    <!-- V3 individual practice link -->
+    {% if coach %}<a class="st-link" href="{% url 'practice_focus:planner' %}">Practice Planner</a>{% else %}<a class="st-link" href="{% url 'practice_focus:my_plan' %}">My practice plan</a>{% endif %}
+</header>
+<form id="st-token">{% csrf_token %}</form>
+<!-- V3 practice progress upgrades -->
+<div id="st-tracker" data-autosave-url="{% url 'practice_focus:tracker_mutate' %}" data-state-url="{% url 'practice_focus:tracker_state' %}" data-date="{{ today|date:'Y-m-d' }}" data-gym="{{ gym_id }}"
+     data-user="{{ request.user.pk }}" data-selected-athlete="{{ requested_athlete_id }}"
+     data-save-url="{% url 'skill_tracker:save' %}">
+    {% if coach %}
+    {{ training_groups|json_script:"st-training-groups" }}
+    <section class="st-group-picker" aria-label="Choose your training group and name">
+        <h2 class="st-picker-label" id="st-group-label">Training today</h2>
+        <div class="st-group-buttons" role="group" aria-labelledby="st-group-label">
+            <button type="button" class="st-group-button" data-st-group="" aria-pressed="true">All athletes</button>
+            {% for group in training_groups %}<button type="button" class="st-group-button" data-st-group="{{ group.id }}" aria-pressed="false">{{ group.name }}</button>{% endfor %}
+        </div>
+        <div class="st-name-heading">
+            <h2 class="st-picker-label" id="st-name-label">Tap your name</h2>
+            <button type="button" class="st-secondary" id="st-show-group" disabled>Show all athletes</button>
+        </div>
+        <div class="st-name-grid" role="group" aria-labelledby="st-name-label">
+            {% for person in athletes %}<button type="button" class="st-name-button" data-st-athlete="{{ person.pk }}" aria-pressed="false" aria-controls="st-athlete-panels">{{ person }}</button>{% endfor %}
+        </div>
+        <p id="st-empty-group" class="st-empty" hidden>No active athletes are assigned to this group.</p>
+    </section>
+    <p id="st-visibility" role="status" aria-live="polite">Showing all athletes</p>
+    {% endif %}
+    <div id="st-athlete-panels">
+    {% for panel in athlete_panels %}
+    <section class="st-athlete-panel" data-panel-athlete="{{ panel.athlete.pk }}" data-athlete-name="{{ panel.athlete }}">
+        <h2 class="st-athlete">{{ panel.athlete }}</h2>
+        <div class="st-grid">
+        {% for row in panel.rows %}
+        <section class="st-card" data-event="{{ row.code }}">
+            <h2>{{ row.label }}</h2>
+            {% if row.assignments %}
+            <label class="st-skill-label">Skill completed
+                <select class="st-select" aria-label="{{ panel.athlete }} · {{ row.label }} skill">
+                    <option value="">Choose a skill</option>
+                    {% for a in row.assignments %}<option value="{{ a.pk }}" data-wow="{{ a.wow }}" data-hit="{{ a.hit }}" data-missed="{{ a.missed }}" data-target="{{ a.practice_target }}" data-skill-name="{{ a.skill.name }}">{{ a.skill.name }}{% if a.practice_target %} — {{ a.practice_target }} attempts{% endif %}</option>{% endfor %}
+                </select>
+            </label>
+            <div class="st-results">
+                <button type="button" class="st-wow" data-result="wow" disabled>Wow</button>
+                <button type="button" class="st-hit" data-result="hit" disabled>Hit</button>
+                <button type="button" class="st-attempt" data-result="missed" disabled>Attempt</button>
+            </div>
+            <div class="st-target" role="status" aria-live="polite"><p class="st-target-text">Choose a skill to see your coach’s attempt target.</p><progress max="1" value="0" aria-label="Saved attempts toward coach target" hidden></progress></div>
+            <p class="st-counts" aria-live="polite">Choose a skill to see today’s totals.</p>
+            {% else %}
+            <p class="st-empty">No current skills assigned.{% if coach %} Add skills in Manage skills.{% else %} Ask your coach to assign skills for this event.{% endif %}</p>
+            {% endif %}
+        </section>
+        {% endfor %}
+        </div>
+        <details class="st-history">
+            <summary>Recent results</summary>
+            <ul>{% for result in panel.recent %}<li><span>{{ result.assignment.skill.get_event_display }} · {{ result.assignment.skill.name }}</span><span class="st-badge st-{{ result.result }}">{{ result.get_result_display }}</span><time>{{ result.practice_date|date:"M j, Y" }}</time></li>{% empty %}<li>No saved skill results yet.</li>{% endfor %}</ul>
+        </details>
+    </section>
+    {% empty %}<p class="st-empty">No active athletes are available in this gym.</p>{% endfor %}
+    </div>
+    <section class="st-pending">
+        <div class="st-section"><h2>Recent results · Undo</h2><span id="st-pending-count">0 unsaved results</span></div>
+        <ol id="st-pending-list"></ol>
+        <p id="st-status" role="status" aria-live="polite">Autosave is on. Results save as you tap.</p>
+    </section>
+    <div class="st-footer"><p>Wow and Hit count as successful completions.</p><button type="button" class="st-primary" id="st-save" disabled>Retry save</button></div>
+</div>
+<!-- V3 shared tracker celebrations -->
+<script src="{% static 'skill_tracker/celebrations.js' %}?v=1" defer></script>
+<link rel="stylesheet" href="{% static 'practice_focus/progress.css' %}?v=1">
+<script src="{% static 'practice_focus/autosave.js' %}?v=1" defer></script>
+<script src="{% static 'skill_tracker/group_tracker.js' %}?v=4-autosave" defer></script>
+{% endblock %}

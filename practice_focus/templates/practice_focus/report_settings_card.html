@@ -1,0 +1,16 @@
+{% if available %}
+<section class="card mb-4" style="border-radius:18px;max-width:1100px;margin-left:auto;margin-right:auto;">
+    <div class="card-body p-4">
+        <h2 class="h5 mb-3">Report sharing</h2>
+        <form method="post" action="{% url 'practice_focus:report_settings' %}">
+            {% csrf_token %}
+            <div class="form-check mb-2" style="min-height:44px;">
+                {{ form.show_group_averages }}
+                <label class="form-check-label fw-semibold" for="{{ form.show_group_averages.id_for_label }}">{{ form.show_group_averages.label }}</label>
+            </div>
+            <p id="report-sharing-help" class="text-muted mb-3">Turn this off to hide group Wow, Hit, and Attempt averages and group success rates in the routine and skill progress reports you generate. Each athlete’s own results stay visible, including on printed reports you share with parents. This setting applies to your account in your current gym.</p>
+            <button type="submit" class="btn btn-primary" style="min-height:44px;">Save report settings</button>
+        </form>
+    </div>
+</section>
+{% endif %}

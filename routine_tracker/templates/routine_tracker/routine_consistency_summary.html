@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load practice_focus_tags %}
 
 {% block title %}
 Routine Consistency
@@ -56,6 +57,11 @@ Routine Consistency
             rgba(15, 23, 42, 0.06);
     }
 
+    .event-stat-breakdown { display: grid; gap: .45rem; margin-top: .65rem; }
+    .event-stat-set { padding: .55rem .65rem; border-radius: 10px; background: #f3f5f9; font-size: .72rem; }
+    .event-stat-set strong { display: block; margin-bottom: .2rem; color: #344054; }
+    .event-stat-set span { color: #667085; }
+
     .event-box {
         height: 100%;
         padding: 16px;
@@ -75,16 +81,6 @@ Routine Consistency
 
     .metric-row strong {
         color: #172033;
-    }
-
-    .quality-badge {
-        display: inline-flex;
-        padding: 5px 9px;
-        border-radius: 999px;
-        background: #eef4ff;
-        color: #0d6efd;
-        font-size: 0.75rem;
-        font-weight: 800;
     }
 
     .hit-badge {
@@ -156,12 +152,12 @@ Routine Consistency
 
         <div class="row g-3 mb-4">
 
-            <div class="col-6 col-lg-3">
+            <div class="col-6 col-lg-4">
 
                 <div class="summary-card">
 
                     <div class="small text-muted">
-                        Attempts
+                        Routines logged
                     </div>
 
                     <div class="summary-value">
@@ -173,7 +169,7 @@ Routine Consistency
             </div>
 
 
-            <div class="col-6 col-lg-3">
+            <div class="col-6 col-lg-4">
 
                 <div class="summary-card">
 
@@ -190,7 +186,7 @@ Routine Consistency
             </div>
 
 
-            <div class="col-6 col-lg-3">
+            <div class="col-6 col-lg-4">
 
                 <div class="summary-card">
 
@@ -206,22 +202,6 @@ Routine Consistency
 
             </div>
 
-
-            <div class="col-6 col-lg-3">
-
-                <div class="summary-card">
-
-                    <div class="small text-muted">
-                        Routine Quality
-                    </div>
-
-                    <div class="summary-value text-primary">
-                        {{ overall_stats.quality }}%
-                    </div>
-
-                </div>
-
-            </div>
 
         </div>
 
@@ -255,7 +235,7 @@ Routine Consistency
 
                             <div class="small text-muted">
                                 {{ row.overall.attempts }}
-                                total attempts
+                                routines logged
                             </div>
 
                         </div>
@@ -268,10 +248,6 @@ Routine Consistency
                                 {{ row.overall.hit_rate }}%
                             </span>
 
-                            <span class="quality-badge">
-                                Quality:
-                                {{ row.overall.quality }}%
-                            </span>
 
                         </div>
 
@@ -296,9 +272,11 @@ Routine Consistency
                                     </div>
 
 
-                                    <div class="metric-row">
+                                    {% current_skills row.athlete event_row.event.code %}
+
+<div class="metric-row">
                                         <span>
-                                            Attempts
+                                            Routines logged
                                         </span>
 
                                         <strong>
@@ -331,7 +309,7 @@ Routine Consistency
 
                                     <div class="metric-row">
                                         <span>
-                                            Misses
+                                            Attempts
                                         </span>
 
                                         <strong>
@@ -353,16 +331,12 @@ Routine Consistency
                                         </strong>
                                     </div>
 
-
-                                    <div class="metric-row">
-                                        <span>
-                                            Quality
-                                        </span>
-
-                                        <strong class="text-primary">
-                                            {{ event_row.stats.quality }}%
-                                        </strong>
+                                    <div class="event-stat-breakdown">
+                                        <div class="event-stat-set"><strong>Routine</strong><span>Wow {{ event_row.routine_stats.wows }} · Hit {{ event_row.routine_stats.hits }} · Attempt {{ event_row.routine_stats.missed }}</span></div>
+                                        <div class="event-stat-set"><strong>Pressure set</strong><span>Wow {{ event_row.pressure_stats.wows }} · Hit {{ event_row.pressure_stats.hits }} · Attempt {{ event_row.pressure_stats.missed }}</span></div>
                                     </div>
+
+
 
                                 </div>
 
@@ -371,6 +345,32 @@ Routine Consistency
                         {% endfor %}
 
                     </div>
+
+                    {% if row.group_comparison %}
+                        <section class="mt-4 p-3 p-md-4 rounded-4 border bg-light-subtle">
+                            <div class="d-flex flex-column flex-md-row justify-content-between gap-1 mb-3">
+                                <h3 class="h6 fw-bold mb-0">Quick group comparison</h3>
+                                <span class="small text-muted">7-day average for athletes in this coach’s assigned training group</span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle mb-0">
+                                    <thead><tr><th>Set</th><th>Event</th><th>This athlete<br><span class="fw-normal">Wow / Hit / Attempt</span></th><th>Group average<br><span class="fw-normal">Wow / Hit / Attempt</span></th></tr></thead>
+                                    <tbody>
+                                    {% for comparison in row.group_comparison %}
+                                        <tr>
+                                            <td>{{ comparison.context }}</td>
+                                            <td>{{ comparison.event }}</td>
+                                            <td>{{ comparison.athlete_counts.wow }} / {{ comparison.athlete_counts.hit }} / {{ comparison.athlete_counts.missed }}</td>
+                                            <td>{{ comparison.group_average.wow }} / {{ comparison.group_average.hit }} / {{ comparison.group_average.missed }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                    {% else %}
+                        <p class="small text-muted mt-3 mb-0">No assigned training-group comparison is available for this athlete.</p>
+                    {% endif %}
 
                 </div>
 

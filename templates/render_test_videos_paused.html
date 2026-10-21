@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Videos paused{% endblock %}
+{% block page_header %}Videos paused{% endblock %}
+{% block content %}
+<section class="card"><div class="card-body">
+  <h1 class="h4">Videos are paused for this test</h1>
+  <p>Keep testing practice plans, trackers, badges, journals and reports. Video and file uploads will be available when media storage is enabled.</p>
+  <a class="btn btn-primary" href="{% url 'account_settings' %}">My account</a>
+</div></section>
+{% endblock %}

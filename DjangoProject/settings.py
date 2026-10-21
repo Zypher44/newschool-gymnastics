@@ -128,6 +128,7 @@ INSTALLED_APPS = [
     "usag_pathway",
     "routine_tracker",
     "gyms",
+    "gym_scheduling",
 ]
 
 
@@ -145,6 +146,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "parents_portal.selection.FamilySelectionMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -169,6 +171,8 @@ TEMPLATES = [
             "context_processors": [
                 (
                     "django.template.context_processors.request"
+                ),
+                ("parents_portal.selection.family_context"
                 ),
                 (
                     "django.contrib.auth.context_processors.auth"
@@ -416,3 +420,25 @@ if not DEBUG:
 # ---------------------------------------------------------
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# V3 current-skills workspace
+if 'practice_focus' not in INSTALLED_APPS:
+    INSTALLED_APPS = [*INSTALLED_APPS, 'practice_focus']
+
+
+# V3 Skill Tracker
+if not any(app == 'skill_tracker' or app.startswith('skill_tracker.') for app in INSTALLED_APPS):
+    INSTALLED_APPS = [*INSTALLED_APPS, 'skill_tracker.apps.SkillTrackerConfig']
+
+# V3 report email delivery
+
+import os as report_email_env
+REPORT_EMAIL_API_KEY = report_email_env.environ.get('RESEND_API_KEY', '')
+REPORT_EMAIL_FROM = report_email_env.environ.get('REPORT_EMAIL_FROM', '')
+REPORT_EMAIL_APP_URL = report_email_env.environ.get('REPORT_EMAIL_APP_URL',
+    'https://' + report_email_env.environ['RENDER_EXTERNAL_HOSTNAME'] if report_email_env.environ.get('RENDER_EXTERNAL_HOSTNAME') else '')
+
+
+# V3 Start Practice and guided onboarding
+if 'practice_hub' not in INSTALLED_APPS and 'practice_hub.apps.PracticeHubConfig' not in INSTALLED_APPS:
+    INSTALLED_APPS = list(INSTALLED_APPS) + ['practice_hub.apps.PracticeHubConfig']

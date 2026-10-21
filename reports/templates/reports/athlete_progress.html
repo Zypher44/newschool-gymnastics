@@ -1,3 +1,4 @@
+<!-- V3 coach report preferences -->
 {% extends "base.html" %}
 
 {% block title %}Athlete Progress Report{% endblock %}
@@ -236,6 +237,8 @@
                     >
                         🖨️ Print Report
                     </button>
+<!-- V3 report email delivery -->
+{% if selected_athlete %}<div class="mt-2"><a class="btn btn-light fw-semibold" href="{% url 'practice_focus:email_report_preview' 'progress' %}?athlete={{ selected_athlete.pk }}&amp;start_date={{ start_date|date:'Y-m-d' }}&amp;end_date={{ end_date|date:'Y-m-d' }}">📧 Email report</a></div>{% endif %}
                 </div>
             </div>
         </div>
@@ -841,6 +844,78 @@
                         No upcoming team events.
                     </div>
                 {% endif %}
+            </div>
+        </div>
+
+        <div class="card report-card mb-4">
+            <div class="card-header">{% if show_group_averages %}🎯 Routine consistency vs. group{% else %}Routine consistency{% endif %}</div>
+            <div class="card-body">
+                <p class="text-muted">Attempt totals for each event during the selected dates.{% if show_group_averages %} Compared with the average for the athlete’s assigned training group.{% endif %}</p>
+                {% if routine_comparison %}
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead><tr><th>Set</th><th>Event</th><th>Gymnast Wow / Hit / Attempt</th>{% if show_group_averages %}<th>Group average Wow / Hit / Attempt</th>{% endif %}</tr></thead>
+                            <tbody>
+                            {% for row in routine_comparison %}
+                                <tr>
+                                    <td>{{ row.context }}</td><td>{{ row.event }}</td>
+                                    <td>{{ row.athlete_counts.wow }} / {{ row.athlete_counts.hit }} / {{ row.athlete_counts.missed }}</td>
+                                    {% if show_group_averages %}<td>{{ row.group_average.wow }} / {{ row.group_average.hit }} / {{ row.group_average.missed }}</td>{% endif %}
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-report">No routine tracker results are available in the selected period.</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- V3 SKILL PROGRESS START -->
+        <div class="card report-card mb-4">
+            <div class="card-header">{% if show_group_averages %}Skill consistency vs. group{% else %}Skill consistency{% endif %}</div>
+            <div class="card-body">
+                <p class="text-muted">Saved skill results during the selected dates.{% if show_group_averages %} Compared with the average for the athlete’s {{ skill_comparison.scope_label }}.{% endif %}</p>
+                {% if skill_comparison.rows %}
+                    <div class="row g-3 mb-4 text-center">
+                        <div class="col-6 col-lg-3"><div class="bg-light rounded-4 p-3"><div class="fs-3 fw-bold">{{ skill_comparison.attempts }}</div><div class="small text-muted">Total attempts</div></div></div>
+                        <div class="col-6 col-lg-3"><div class="bg-light rounded-4 p-3"><div class="fs-3 fw-bold text-success">{{ skill_comparison.wows }}</div><div class="small text-muted">Wows</div></div></div>
+                        <div class="col-6 col-lg-3"><div class="bg-light rounded-4 p-3"><div class="fs-3 fw-bold text-primary">{{ skill_comparison.hits }}</div><div class="small text-muted">Hits</div></div></div>
+                        <div class="col-6 col-lg-3"><div class="bg-light rounded-4 p-3"><div class="fs-3 fw-bold">{{ skill_comparison.success_rate }}%</div><div class="small text-muted">Success rate</div></div></div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead><tr><th scope="col">Event</th><th scope="col">Skill</th><th scope="col">Gymnast Wow / Hit / Attempt</th>{% if show_group_averages %}<th scope="col">Group average Wow / Hit / Attempt</th>{% endif %}</tr></thead>
+                            <tbody>
+                            {% for row in skill_comparison.rows %}
+                                <tr>
+                                    <td>{{ row.event }}</td><td style="min-width: 140px; overflow-wrap: anywhere;">{{ row.skill }}</td>
+                                    <td>{{ row.athlete_counts.wow }} / {{ row.athlete_counts.hit }} / {{ row.athlete_counts.missed }}<div class="small text-muted">Success: {% if row.athlete_total %}{{ row.athlete_success_rate }}%{% else %}—{% endif %}</div></td>
+                                    {% if show_group_averages %}<td>{{ row.group_average.wow }} / {{ row.group_average.hit }} / {{ row.group_average.missed }}<div class="small text-muted">Success: {{ row.group_success_rate }}% · {{ row.group_athletes }} athlete{{ row.group_athletes|pluralize }}</div></td>{% endif %}
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="small text-muted mb-0">Total attempts include every Wow, Hit, and Attempt. Success rate = (Wow + Hit) ÷ total attempts. {% if show_group_averages %}Group averages include athletes with saved results for that skill, including the selected athlete.{% endif %} Skills retain their result history after being unassigned.</p>
+                {% else %}
+                    <div class="empty-report">No saved skill tracker results are available in the selected period.</div>
+                {% endif %}
+            </div>
+        </div>
+        <!-- V3 SKILL PROGRESS END -->
+
+        <div class="card report-card mb-4">
+            <div class="card-header">📝 Attendance notes</div>
+            <div class="card-body">
+                {% if report_data.attendance.records %}
+                    <div class="table-responsive"><table class="table table-sm align-middle"><thead><tr><th>Date</th><th>Status</th><th>Notes</th></tr></thead><tbody>
+                    {% for record in report_data.attendance.records %}
+                        <tr><td>{{ record.attendance_date|date:"M j, Y" }}</td><td>{{ record.get_status_display }}</td><td>{{ record.notes|default:"—" }}</td></tr>
+                    {% endfor %}
+                    </tbody></table></div>
+                {% else %}<div class="empty-report">No attendance records in this period.</div>{% endif %}
             </div>
         </div>
 

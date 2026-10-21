@@ -297,8 +297,34 @@
             font-size: 0.95rem;
         }
     }
+
+    @media (max-width: 767.98px) {
+        .coach-dashboard-content,
+        .coach-dashboard-content .row,
+        .coach-dashboard-content [class*="col-"] {
+            min-width: 0;
+        }
+
+        .coach-dashboard-content {
+            overflow-x: clip;
+        }
+
+        .coach-dashboard-content .quick-action-description {
+            line-height: 1.35;
+        }
+
+        .coach-dashboard-content canvas {
+            max-width: 100%;
+        }
+
+        .coach-dashboard-content .table-responsive {
+            max-width: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+    }
 </style>
 
+<div class="coach-dashboard-content">
 <!-- HERO -->
 <div class="coach-hero mb-4">
     <div class="coach-hero-content">
@@ -326,6 +352,7 @@
             </div>
 
             <div class="col-lg-4 mt-4 mt-lg-0 text-lg-end">
+                <a href="{% url 'practice_hub:start' %}" class="btn btn-light btn-lg fw-bold d-inline-flex align-items-center justify-content-center gap-2 mb-3" style="border-radius:14px;min-height:48px;position:relative;z-index:2"><span aria-hidden="true">🚀</span> Start Practice</a><br>
                 <span class="coach-hero-badge">
                     👥 {{ total_athletes }} Active Athletes
                 </span>
@@ -596,6 +623,7 @@
             </div>
 
             <div class="card-body">
+                {% if numeric_readiness_count %}
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
                         <div class="readiness-number">
@@ -603,7 +631,7 @@
                         </div>
 
                         <div class="text-muted small mt-2">
-                            Average readiness today
+                            Average from legacy numeric surveys today
                         </div>
                     </div>
 
@@ -646,6 +674,7 @@
                     </div>
                 </div>
 
+                {% else %}<p class="text-muted">The new check-in uses individual answers and coaching prompts instead of a readiness score. Review today’s check-ins below.</p>{% endif %}
                 <div class="row g-2 text-center">
                     <div class="col-3">
                         <div class="flag-box">
@@ -1155,7 +1184,10 @@
                                     </a>
                                 </td>
 
-                                {% if item.survey %}
+                                {% if item.survey.checkin_version >= 2 %}
+                                    <td><span class="badge bg-success">Submitted</span></td>
+                                    <td colspan="5">{% include 'surveys/coach_checkin.html' with survey=item.survey %}</td>
+                                {% elif item.survey %}
                                     <td>
                                         <span class="badge bg-success">
                                             Submitted
@@ -1282,4 +1314,5 @@
     }
 </script>
 
+</div>
 {% endblock %}

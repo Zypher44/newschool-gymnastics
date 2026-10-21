@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load video_moments %}
 
 {% block title %}
 {{ video.title }}
@@ -224,6 +225,7 @@
                     <div class="card-body p-4">
 
                         <video
+                            id="vm-detail-player"
                             class="video-player"
                             controls
                             preload="metadata"
@@ -240,6 +242,8 @@
                             Your browser does not support video playback.
 
                         </video>
+
+                        {% video_moments_panel video request.user 'vm-detail-player' %}
 
                     </div>
 
@@ -562,6 +566,22 @@
 
                     <div class="card-body p-4">
 
+                        <form method="post" action="{% url 'video_library:update_camera_view' video.id %}" class="mb-3">
+                            {% csrf_token %}
+                            <label for="video-camera-view" class="form-label small">Camera view for the next analysis</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                <select id="video-camera-view" name="camera_view" class="form-select form-select-sm" style="max-width:220px">
+                                    {% for value, label in video.CAMERA_VIEW_CHOICES %}<option value="{{ value }}" {% if video.camera_view == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                                </select>
+                                <button class="btn btn-sm btn-outline-primary" type="submit">Save view</button>
+                            </div>
+                            <div class="small text-muted mt-1">Technique cues require a side view of one athlete. Other views support manual review.</div>
+                        </form>
+
+                        {% include "video_library/components/reference_compare.html" %}
+                        {% include "video_library/components/analysis_progress.html" with analysis=latest_analysis %}
+                        {% include "video_library/components/analysis_results.html" with analysis=latest_analysis %}
+
                         {% if latest_analysis %}
 
                             <div class="analysis-card">
@@ -700,6 +720,8 @@
                                 Key observations and extracted frames.
                             </p>
 
+                            {% include 'video_library/components/pose_skeleton_help.html' with analysis=latest_analysis %}
+
                         </div>
 
 
@@ -713,15 +735,7 @@
 
                                         <div class="moment-card h-100">
 
-                                            {% if item.moment.frame_image %}
-
-                                                <img
-                                                    src="{{ item.moment.frame_image.url }}"
-                                                    alt="{{ item.moment.label }}"
-                                                    class="moment-frame mb-3"
-                                                >
-
-                                            {% endif %}
+                                            {% include 'video_library/components/pose_frame_image.html' with frame=item.moment %}
 
                                             <div class="small text-muted">
                                                 {{ item.moment.timestamp_seconds }}s
@@ -911,7 +925,7 @@
 
                         <!-- ACTIVE BADGES -->
 
-                        {% if video.is_personal_best or video.is_reference_attempt or video.is_coaching_example %}
+                        {% if video.is_personal_best or video.is_reference_attempt or video.is_approved_skill_example %}
 
                             <div class="d-flex flex-wrap gap-2 mb-4">
 
@@ -933,10 +947,10 @@
                                 {% endif %}
 
 
-                                {% if video.is_coaching_example %}
+                                {% if video.is_approved_skill_example %}
 
                                     <span class="reference-badge reference-badge-example">
-                                        📌 Coaching Example
+                                        📚 Approved Skill Example
                                     </span>
 
                                 {% endif %}
@@ -998,8 +1012,16 @@
                         </form>
 
 
+                        {% if video.is_skill_library_video %}
+                        <a href="{% url 'video_library:skill_example_detail' video.pk %}" class="btn btn-outline-primary w-100 mb-2">Open Skill Library Entry</a>
+                        {% if video.skill_library_approved_by and video.skill_library_approved_at %}<p class="small text-muted">Skill example approved by {{ video.skill_library_approved_by.get_full_name|default:video.skill_library_approved_by.username }} · {{ video.skill_library_approved_at|date:'M j, Y' }}</p>{% endif %}
+                        {% else %}
+                        <form method="post" action="{% url 'video_library:add_skill_example' video.pk %}" class="mb-2">{% csrf_token %}<button type="submit" class="btn btn-outline-primary w-100">Review in Skill Library</button></form>
+                        {% endif %}
+
                         <!-- COACHING EXAMPLE -->
 
+                        {% if not video.is_approved_skill_example or video.uploaded_by == request.user or video.skill_library_approved_by == request.user or request.user.role == 'head_coach' %}
                         <form
                             method="post"
                             action="{% url 'video_library:toggle_coaching_example' video.id %}"
@@ -1009,18 +1031,19 @@
 
                             <button
                                 type="submit"
-                                class="btn {% if video.is_coaching_example %}btn-success{% else %}btn-outline-success{% endif %} w-100"
+                                class="btn {% if video.is_approved_skill_example %}btn-success{% else %}btn-outline-success{% endif %} w-100"
                             >
 
-                                {% if video.is_coaching_example %}
-                                    📌 Coaching Example
+                                {% if video.is_approved_skill_example %}
+                                    Remove Skill Example Approval
                                 {% else %}
-                                    📌 Mark Coaching Example
+                                    📚 Approve as Skill Example
                                 {% endif %}
 
                             </button>
 
                         </form>
+                        {% endif %}
 
 
                         {% if video.reference_marked_by %}

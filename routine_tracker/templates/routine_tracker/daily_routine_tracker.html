@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load practice_focus_tags routine_group_tags routine_plan_tags %}
 
 {% block title %}
 Daily Routine Tracker
@@ -15,6 +16,32 @@ Daily Routine Tracker
         max-width: 1650px;
         margin: 0 auto;
     }
+
+    .tracker-hero-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(17rem, 21rem);
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .tracker-date-form {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 0.625rem;
+        width: 100%;
+        min-width: 0;
+        margin: 0;
+    }
+
+    .tracker-date-form input[type="date"] { width: 100%; min-width: 0; }
+    .tracker-date-form button { min-width: 4.5rem; white-space: nowrap; }
+    .tracker-summary-link { white-space: nowrap; }
+    .routine-track { border-top: 1px solid #e5e7eb; margin-top: .75rem; padding-top: .75rem; width: 100%; min-width: 0; }
+    .routine-track-title { font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; font-weight: 700; color: #667085; margin-bottom: .55rem; }
+    .attempt-list { display: flex; flex-wrap: wrap; align-items: flex-start; gap: .4rem; min-height: 2rem; }
+    .pending-chip { outline: 2px dashed #f59e0b; }
+    .routine-save-bar { position: static; bottom: auto; z-index: auto; display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding:.8rem 1rem; background:#fff; border:1px solid #d0d5dd; border-radius:14px; box-shadow:none; margin:1rem 0; }
+    #routine-confetti { position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:10000; }
 
     .tracker-hero {
         padding: 30px;
@@ -69,6 +96,7 @@ Daily Routine Tracker
 
     .event-box {
         height: 100%;
+        min-width: 0;
         padding: 15px;
         border: 1px solid #e5e7eb;
         border-radius: 16px;
@@ -79,9 +107,10 @@ Daily Routine Tracker
         display: inline-flex;
         align-items: center;
         gap: 5px;
-        margin: 2px;
-        padding: 5px 8px;
+        margin: 0;
+        padding: 6px 9px;
         border-radius: 999px;
+        max-width: 100%;
         font-size: 0.72rem;
         font-weight: 700;
     }
@@ -97,15 +126,17 @@ Daily Routine Tracker
     }
 
     .attempt-missed {
-        color: #842029;
-        background: #f8d7da;
+        color: #7c4a03;
+        background: #fff1c2;
     }
 
     .quick-buttons {
         display: grid;
-        grid-template-columns:
-            repeat(3, 1fr);
-        gap: 5px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 7px;
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
     }
 
     .quick-buttons form {
@@ -114,8 +145,24 @@ Daily Routine Tracker
 
     .quick-buttons button {
         width: 100%;
-        font-size: 0.75rem;
+        min-width: 0;
+        min-height: 42px;
+        padding: .45rem .25rem;
+        font-size: clamp(.62rem, 2.2vw, .75rem);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: clip;
+        box-sizing: border-box;
     }
+
+    .attempt-result-button { color: #7c4a03; background: #fff1c2; border: 1px solid #f4d779; }
+    .attempt-result-button:hover, .attempt-result-button:focus { color: #65400c; background: #ffe69a; border-color: #e8c75f; }
+    .event-stat-breakdown { display: grid; gap: .45rem; margin-top: .65rem; }
+    .event-stat-set { padding: .55rem .65rem; border-radius: 10px; background: #f3f5f9; font-size: .72rem; }
+    .event-stat-set strong { display: block; margin-bottom: .2rem; color: #344054; }
+    .event-stat-set span { color: #667085; }
+
+    .attempt-chip .delete-staged { text-decoration: none !important; font-weight: 800; line-height: 1; }
 
     .event-stats {
         display: flex;
@@ -126,16 +173,138 @@ Daily Routine Tracker
         font-size: 0.72rem;
     }
 
-    .quality-score {
-        font-weight: 800;
-        color: #0d6efd;
+    @media (max-width: 991.98px) {
+        .tracker-hero-layout { grid-template-columns: minmax(0, 1fr) auto; gap: 1.25rem; }
+        .tracker-heading { grid-column: 1 / -1; }
+    }
+    @media (max-width: 575.98px) {
+        .tracker-hero { padding: 22px; }
+        .tracker-hero-layout { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+        .tracker-heading { grid-column: auto; }
+        .tracker-summary-link { justify-self: start; }
+        .routine-save-bar { align-items: stretch; flex-direction: column; }
     }
 
-    @media (max-width: 767px) {
-        .tracker-hero {
-            padding: 22px;
-        }
+    /* Keep result labels readable, including inside narrow event cards. */
+    .tracker-shell .event-box .quick-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        width: 100%;
+        min-width: 0;
     }
+    .tracker-shell .event-box .quick-buttons > .btn.stage-result {
+        flex: 1 0 auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: auto !important;
+        min-width: max-content;
+        max-width: 100%;
+        min-height: 44px;
+        padding: 10px 12px !important;
+        font-size: 0.75rem !important;
+        line-height: 1.25 !important;
+        letter-spacing: normal;
+        white-space: nowrap;
+        overflow: visible;
+        box-sizing: border-box;
+    }
+
+
+    .tracker-athlete-picker {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: end;
+        gap: 1rem;
+        padding: 20px;
+        margin-bottom: 1.5rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        background: #fff;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, .05);
+    }
+    .tracker-athlete-field { min-width: 0; }
+    .tracker-athlete-picker label {
+        display: block;
+        margin-bottom: .5rem;
+        font-weight: 700;
+        color: #344054;
+    }
+    .tracker-athlete-picker select {
+        width: 100%;
+        min-width: 0;
+        min-height: 44px;
+        font-size: 1rem;
+    }
+    .tracker-athlete-picker button {
+        min-height: 44px;
+        white-space: nowrap;
+    }
+    .tracker-athlete-hint {
+        grid-column: 1 / -1;
+        margin: 0;
+        color: #667085;
+        font-size: .875rem;
+    }
+    .tracker-shell .athlete-row[hidden] {
+        display: none !important;
+    }
+    @media (max-width: 575.98px) {
+        .tracker-athlete-picker {
+            grid-template-columns: minmax(0, 1fr);
+            padding: 16px;
+            gap: .75rem;
+        }
+        .tracker-athlete-hint { grid-column: auto; }
+        .tracker-athlete-picker button { width: 100%; }
+    }
+
+    .routine-group-picker {
+        padding: 20px;
+        margin-bottom: 1.5rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        background: #fff;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, .05);
+    }
+    .routine-picker-label { color: #344054; font-weight: 700; margin: 0 0 .75rem; }
+    .routine-group-buttons { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.25rem; }
+    .routine-group-button { min-height: 44px; max-width: 100%; padding: .6rem 1rem; border-radius: 12px; white-space: normal; overflow-wrap: anywhere; }
+    .routine-name-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; }
+    .routine-name-button {
+        min-width: 0;
+        min-height: 64px;
+        padding: .9rem 1rem;
+        font-size: 1.125rem;
+        font-weight: 700;
+        border: 2px solid #dce4f2;
+        border-radius: 14px;
+        background: #f7f9ff;
+        color: #1e3a8a;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+    .routine-name-button:hover { background: #eaf0ff; border-color: #93b4ff; }
+    .routine-name-button[aria-pressed="true"] { color: #fff; background: #1d4ed8; border-color: #1d4ed8; }
+    .routine-group-picker button:focus-visible { outline: 3px solid #f59e0b; outline-offset: 3px; }
+    .routine-group-picker [hidden], .tracker-shell .athlete-row[hidden] { display: none !important; }
+    .routine-name-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; margin-bottom: .75rem; }
+    .routine-name-heading .routine-picker-label { margin: 0; }
+    #routine-group-show-all { min-height: 44px; }
+    .routine-picker-hint { color: #667085; font-size: .875rem; margin: .75rem 0 0; }
+    @media (max-width: 767.98px) { .routine-name-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 575.98px) { .routine-group-picker { padding: 16px; } }
+    @media (max-width: 359.98px) { .routine-name-grid { grid-template-columns: minmax(0, 1fr); } }
+
+    /* V3 routine practice targets */
+    .routine-goal{padding:10px 12px;margin:8px 0 12px;border:1px solid #d3e2f7;border-radius:10px;background:#eff5fe;min-width:0}
+    .routine-goal .routine-goal-text{margin:0;color:#214e86;font-size:14px;font-weight:650;line-height:1.5;overflow-wrap:anywhere}
+    .routine-goal progress{display:block;width:100%;height:12px;margin-top:9px;accent-color:#225fab}
+    .routine-goal-met{background:#eef8f1;border-color:#b8ddc4}
+    .routine-goal-met .routine-goal-text{color:#176c3b}
+    .routine-goal-met progress{accent-color:#168348}
+
 </style>
 
 
@@ -147,9 +316,9 @@ Daily Routine Tracker
 
         <section class="tracker-hero mb-4">
 
-            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-4">
+            <div class="tracker-hero-layout">
 
-                <div>
+                <div class="tracker-heading">
 
                     <div class="small text-uppercase fw-semibold opacity-75 mb-2">
                         Practice Consistency
@@ -166,14 +335,15 @@ Daily Routine Tracker
                 </div>
                 <a
     href="{% url 'routine_tracker:routine_consistency_summary' %}"
-    class="btn btn-outline-light"
+    class="btn btn-outline-light tracker-summary-link"
 >
     📊 7-Day Summary
 </a>
 
                 <form
                     method="get"
-                    class="d-flex gap-2"
+                    class="tracker-date-form"
+                    aria-label="Choose routine tracking date"
                 >
 
                     <input
@@ -197,11 +367,38 @@ Daily Routine Tracker
         </section>
 
 
+        <!-- ATHLETE SELECTOR -->
+        <!-- ROUTINE GROUP AND NAME PICKER -->
+        {% routine_training_groups as routine_groups %}
+        {{ routine_groups|json_script:"routine-training-groups" }}
+        <section class="routine-group-picker" aria-label="Choose your training group and name"
+                 data-session-id="{{ session.id }}" data-user-id="{{ request.user.id }}" data-gym-id="{{ session.gym_id }}">
+            <h2 class="h6 routine-picker-label" id="routine-group-label">Training today</h2>
+            <div class="routine-group-buttons" role="group" aria-labelledby="routine-group-label">
+                <button type="button" class="btn btn-primary routine-group-button" data-routine-group="" aria-pressed="true">All athletes</button>
+                {% for group in routine_groups %}
+                    <button type="button" class="btn btn-outline-primary routine-group-button" data-routine-group="{{ group.id }}" aria-pressed="false">{{ group.name }}</button>
+                {% endfor %}
+            </div>
+            <div class="routine-name-heading">
+                <h3 class="h6 routine-picker-label" id="routine-name-label">Tap your name</h3>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="routine-group-show-all" disabled>Show all athletes</button>
+            </div>
+            <div class="routine-name-grid" role="group" aria-labelledby="routine-name-label">
+                {% for row in athlete_rows %}
+                    <button type="button" class="routine-name-button" data-routine-athlete="{{ row.athlete.id }}" aria-pressed="false" aria-controls="routine-athlete-list">{{ row.athlete.get_full_name|default:row.athlete.username }}</button>
+                {% endfor %}
+            </div>
+            <p id="routine-group-empty" class="text-muted my-3" hidden>No active athletes are assigned to this group.</p>
+            <p class="routine-picker-hint">Tap your name, then score your routine.</p>
+        </section>
+
         <!-- SUMMARY -->
+        <p class="small text-muted mb-2">Practice totals · All athletes</p>
 
         <div class="row g-3 mb-4">
 
-            <div class="col-6 col-lg-3">
+            <div class="col-6 col-lg-4">
 
                 <div class="summary-card">
 
@@ -218,7 +415,7 @@ Daily Routine Tracker
             </div>
 
 
-            <div class="col-6 col-lg-3">
+            <div class="col-6 col-lg-4">
 
                 <div class="summary-card">
 
@@ -235,7 +432,7 @@ Daily Routine Tracker
             </div>
 
 
-            <div class="col-6 col-lg-3">
+            <div class="col-6 col-lg-4">
 
                 <div class="summary-card">
 
@@ -251,22 +448,6 @@ Daily Routine Tracker
 
             </div>
 
-
-            <div class="col-6 col-lg-3">
-
-                <div class="summary-card">
-
-                    <div class="text-muted small">
-                        Routine Quality
-                    </div>
-
-                    <div class="summary-value text-primary">
-                        {{ overall_stats.quality }}%
-                    </div>
-
-                </div>
-
-            </div>
 
         </div>
 
@@ -284,18 +465,19 @@ Daily Routine Tracker
 
 
                 <p class="text-muted mb-0">
-                    Record each full routine as
-                    Wow, Hit, or Miss.
+                    Record routine attempts and pressure sets. Save your changes when practice is finished.
                 </p>
 
             </div>
 
 
-            <div class="card-body p-0">
+            <p id="routine-athlete-visibility" class="small text-muted px-4 pb-3 mb-0" role="status" aria-live="polite">Showing all athletes</p>
+
+            <div class="card-body p-0" id="routine-athlete-list">
 
                 {% for row in athlete_rows %}
 
-                    <div class="athlete-row">
+                    <div class="athlete-row" data-athlete-id="{{ row.athlete.id }}">
 
                         <div class="d-flex flex-column flex-xl-row gap-4">
 
@@ -321,7 +503,7 @@ Daily Routine Tracker
 
                                 <div class="small text-muted">
                                     {{ row.overall.attempts }}
-                                    attempts today
+                                    routines logged today
                                 </div>
 
 
@@ -336,14 +518,6 @@ Daily Routine Tracker
 
                                     </div>
 
-                                    <div class="small">
-
-                                        Quality:
-                                        <span class="quality-score">
-                                            {{ row.overall.quality }}%
-                                        </span>
-
-                                    </div>
 
                                 {% endif %}
 
@@ -369,223 +543,42 @@ Daily Routine Tracker
                                             </div>
 
 
-                                            <!-- ATTEMPTS -->
+                                            {% current_skills row.athlete event_row.event.code %}
 
-                                            <div class="mb-3">
-
-                                                {% for attempt in event_row.attempt_list %}
-
-                                                    <span
-                                                        class="
-                                                            attempt-chip
-
-                                                            {% if attempt.result == 'wow' %}
-                                                                attempt-wow
-                                                            {% elif attempt.result == 'hit' %}
-                                                                attempt-hit
-                                                            {% else %}
-                                                                attempt-missed
-                                                            {% endif %}
-                                                        "
-                                                    >
-
-                                                        #{{ attempt.attempt_number }}
-
-                                                        {{ attempt.get_result_display }}
-
-                                                        <form
-                                                            method="post"
-                                                            action="{% url 'routine_tracker:delete_routine_attempt' attempt.id %}"
-                                                            style="display:inline;"
-                                                        >
-
-                                                            {% csrf_token %}
-
-                                                            <button
-                                                                type="submit"
-                                                                class="btn btn-link p-0 text-reset"
-                                                                style="font-size: .65rem;"
-                                                                title="Remove attempt"
-                                                            >
-                                                                ×
-                                                            </button>
-
-                                                        </form>
-
-                                                    </span>
-
-                                                {% empty %}
-
-                                                    <span class="small text-muted">
-                                                        No attempts
-                                                    </span>
-
-                                                {% endfor %}
-
-                                            </div>
-
-
-                                            <!-- QUICK ADD -->
-
-                                            <div class="quick-buttons">
-
-                                                <form
-                                                    method="post"
-                                                    action="{% url 'routine_tracker:add_routine_attempt' %}"
-                                                >
-
-                                                    {% csrf_token %}
-
-                                                    <input
-                                                        type="hidden"
-                                                        name="session_id"
-                                                        value="{{ session.id }}"
-                                                    >
-
-                                                    <input
-                                                        type="hidden"
-                                                        name="athlete_id"
-                                                        value="{{ row.athlete.id }}"
-                                                    >
-
-                                                    <input
-                                                        type="hidden"
-                                                        name="event"
-                                                        value="{{ event_row.event.code }}"
-                                                    >
-
-                                                    <input
-                                                        type="hidden"
-                                                        name="result"
-                                                        value="wow"
-                                                    >
-
-                                                    <button
-                                                        type="submit"
-                                                        class="btn btn-primary"
-                                                    >
-                                                        WOW
-                                                    </button>
-
-                                                </form>
-
-
-                                                <form
-                                                    method="post"
-                                                    action="{% url 'routine_tracker:add_routine_attempt' %}"
-                                                >
-
-                                                    {% csrf_token %}
-
-                                                    <input
-                                                        type="hidden"
-                                                        name="session_id"
-                                                        value="{{ session.id }}"
-                                                    >
-
-                                                    <input
-                                                        type="hidden"
-                                                        name="athlete_id"
-                                                        value="{{ row.athlete.id }}"
-                                                    >
-
-                                                    <input
-                                                        type="hidden"
-                                                        name="event"
-                                                        value="{{ event_row.event.code }}"
-                                                    >
-
-                                                    <input
-                                                        type="hidden"
-                                                        name="result"
-                                                        value="hit"
-                                                    >
-
-                                                    <button
-                                                        type="submit"
-                                                        class="btn btn-success"
-                                                    >
-                                                        HIT
-                                                    </button>
-
-                                                </form>
-
-
-                                                <form
-                                                    method="post"
-                                                    action="{% url 'routine_tracker:add_routine_attempt' %}"
-                                                >
-
-                                                    {% csrf_token %}
-
-                                                    <input
-                                                        type="hidden"
-                                                        name="session_id"
-                                                        value="{{ session.id }}"
-                                                    >
-
-                                                    <input
-                                                        type="hidden"
-                                                        name="athlete_id"
-                                                        value="{{ row.athlete.id }}"
-                                                    >
-
-                                                    <input
-                                                        type="hidden"
-                                                        name="event"
-                                                        value="{{ event_row.event.code }}"
-                                                    >
-
-                                                    <input
-                                                        type="hidden"
-                                                        name="result"
-                                                        value="missed"
-                                                    >
-
-                                                    <button
-                                                        type="submit"
-                                                        class="btn btn-danger"
-                                                    >
-                                                        MISS
-                                                    </button>
-
-                                                </form>
-
-                                            </div>
-
+{% for track in event_row.tracks %}
+                                                <div class="routine-track" data-track data-athlete="{{ row.athlete.id }}" data-event="{{ event_row.event.code }}" data-pressure="{{ track.is_pressure|yesno:'true,false' }}">
+                                                    <div class="routine-track-title">{{ track.label }}</div>
+                                                    {% routine_plan_target row.athlete event_row.event.code track.is_pressure %}
+                                                    <div class="mb-2 attempt-list">
+                                                        {% for attempt in track.attempts %}
+                                                            <span class="attempt-chip {% if attempt.result == 'wow' %}attempt-wow{% elif attempt.result == 'hit' %}attempt-hit{% else %}attempt-missed{% endif %}" data-saved-attempt="{{ attempt.id }}">
+                                                                #{{ attempt.attempt_number }} {{ attempt.get_result_display }}
+                                                                <button type="button" class="btn btn-link p-0 text-reset delete-staged" data-delete-id="{{ attempt.id }}" title="Remove attempt" aria-label="Remove attempt">×</button>
+                                                            </span>
+                                                        {% empty %}
+                                                            <span class="small text-muted empty-attempts">No attempts</span>
+                                                        {% endfor %}
+                                                    </div>
+                                                    <div class="quick-buttons">
+                                                        <button type="button" class="btn btn-primary stage-result" data-result="wow">WOW</button>
+                                                        <button type="button" class="btn btn-success stage-result" data-result="hit">HIT</button>
+                                                        <button type="button" class="btn attempt-result-button stage-result" data-result="missed">ATTEMPT</button>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
 
                                             <!-- STATS -->
 
-                                            {% if event_row.stats.attempts %}
-
-                                                <div class="event-stats">
-
-                                                    <span>
-                                                        {{ event_row.stats.attempts }}
-                                                        attempts
-                                                    </span>
-
-                                                    <span>
-                                                        ·
-                                                    </span>
-
-                                                    <span>
-                                                        {{ event_row.stats.hit_rate }}%
-                                                        successful
-                                                    </span>
-
-                                                    <span>
-                                                        ·
-                                                    </span>
-
-                                                    <span>
-                                                        Q:
-                                                        {{ event_row.stats.quality }}%
-                                                    </span>
-
+                                            <div class="event-stat-breakdown" aria-label="Event statistics by set">
+                                                <div class="event-stat-set">
+                                                    <strong>Routine · {{ event_row.routine_stats.attempts }} logged · {{ event_row.routine_stats.hit_rate }}% success</strong>
+                                                    <span>Wow {{ event_row.routine_stats.wows }} · Hit {{ event_row.routine_stats.hits }} · Attempt {{ event_row.routine_stats.missed }}</span>
                                                 </div>
-
-                                            {% endif %}
+                                                <div class="event-stat-set">
+                                                    <strong>Pressure set · {{ event_row.pressure_stats.attempts }} logged · {{ event_row.pressure_stats.hit_rate }}% success</strong>
+                                                    <span>Wow {{ event_row.pressure_stats.wows }} · Hit {{ event_row.pressure_stats.hits }} · Attempt {{ event_row.pressure_stats.missed }}</span>
+                                                </div>
+                                            </div>
 
                                         </div>
 
@@ -613,8 +606,182 @@ Daily Routine Tracker
 
         </section>
 
+        <form id="routine-csrf-form" class="d-none">{% csrf_token %}</form>
+        <div class="routine-save-bar" id="routine-save-bar" data-date="{{ session.practice_date|date:'Y-m-d' }}" data-gym="{{ session.gym_id }}" data-user="{{ request.user.pk }}" data-autosave-url="{% url 'practice_focus:tracker_mutate' %}" data-state-url="{% url 'practice_focus:tracker_state' %}" data-session-id="{{ session.id }}" data-save-url="{% url 'routine_tracker:save_routine_practice' %}">
+            <span id="routine-save-status" role="status" aria-live="polite">Autosave is on</span>
+            <button type="button" id="save-routine-practice" class="btn btn-primary" disabled>Retry save</button>
+        </div>
+        <canvas id="routine-confetti" aria-hidden="true"></canvas>
+
     </div>
 
 </div>
+
+<!-- V3 shared tracker celebrations -->
+{% load static %}
+<link rel="stylesheet" href="{% static 'practice_focus/progress.css' %}?v=1">
+<script src="{% static 'practice_focus/autosave.js' %}?v=1"></script>
+<script src="{% static 'skill_tracker/celebrations.js' %}?v=1"></script>
+<script>
+(() => {
+    const picker = document.querySelector('.routine-group-picker');
+    const groups = JSON.parse(document.getElementById('routine-training-groups').textContent);
+    const groupButtons = [...picker.querySelectorAll('[data-routine-group]')];
+    const nameButtons = [...picker.querySelectorAll('[data-routine-athlete]')];
+    const athleteRows = [...document.querySelectorAll('#routine-athlete-list > .athlete-row')];
+    const showAllButton = document.getElementById('routine-group-show-all');
+    const athleteVisibilityStatus = document.getElementById('routine-athlete-visibility');
+    const emptyGroup = document.getElementById('routine-group-empty');
+    const storageKey = `routine-group-picker:${picker.dataset.gymId}:${picker.dataset.userId}:${picker.dataset.sessionId}`;
+    let selectedGroup = '';
+    let selectedAthlete = '';
+
+    function currentGroup() { return groups.find(group => group.id === selectedGroup); }
+    function groupContains(id) {
+        const group = currentGroup();
+        return !selectedGroup || Boolean(group && group.athlete_ids.includes(id));
+    }
+    function rememberSelection() {
+        try { sessionStorage.setItem(storageKey, JSON.stringify({group: selectedGroup, athlete: selectedAthlete})); }
+        catch (error) { /* Selection also works when browser storage is unavailable. */ }
+    }
+    function updatePicker() {
+        if (selectedAthlete && (!groupContains(selectedAthlete) || !nameButtons.some(button => button.dataset.routineAthlete === selectedAthlete))) {
+            selectedAthlete = '';
+        }
+        groupButtons.forEach(button => {
+            const chosen = button.dataset.routineGroup === selectedGroup;
+            button.setAttribute('aria-pressed', String(chosen));
+            button.classList.toggle('btn-primary', chosen);
+            button.classList.toggle('btn-outline-primary', !chosen);
+        });
+        let namesVisible = 0;
+        nameButtons.forEach(button => {
+            const id = button.dataset.routineAthlete;
+            button.hidden = !groupContains(id);
+            button.setAttribute('aria-pressed', String(id === selectedAthlete));
+            if (!button.hidden) namesVisible += 1;
+        });
+        let rowsVisible = 0;
+        athleteRows.forEach(row => {
+            const id = row.dataset.athleteId;
+            row.hidden = !groupContains(id) || Boolean(selectedAthlete && id !== selectedAthlete);
+            if (!row.hidden) rowsVisible += 1;
+        });
+        emptyGroup.hidden = namesVisible > 0;
+        emptyGroup.textContent = selectedGroup ? 'No active athletes are assigned to this group.' : 'No active athletes found.';
+        showAllButton.disabled = !selectedAthlete;
+        showAllButton.textContent = selectedGroup ? 'Show whole group' : 'Show all athletes';
+        if (selectedAthlete) {
+            const name = nameButtons.find(button => button.dataset.routineAthlete === selectedAthlete).textContent.trim();
+            athleteVisibilityStatus.textContent = `Showing ${name}`;
+        } else {
+            const group = currentGroup();
+            const label = group ? `${group.name}: ` : '';
+            athleteVisibilityStatus.textContent = `${label}Showing ${rowsVisible} athlete${rowsVisible === 1 ? '' : 's'}`;
+        }
+        rememberSelection();
+    }
+    try {
+        const saved = JSON.parse(sessionStorage.getItem(storageKey) || 'null');
+        if (saved && typeof saved.group === 'string' && groups.some(group => group.id === saved.group)) {
+            selectedGroup = saved.group;
+        }
+        if (saved && typeof saved.athlete === 'string') selectedAthlete = saved.athlete;
+    } catch (error) { /* Start with all athletes if the saved selection cannot be read. */ }
+    groupButtons.forEach(button => button.addEventListener('click', () => {
+        selectedGroup = button.dataset.routineGroup;
+        selectedAthlete = '';
+        updatePicker();
+    }));
+    nameButtons.forEach(button => button.addEventListener('click', () => {
+        selectedAthlete = button.dataset.routineAthlete;
+        updatePicker();
+    }));
+    showAllButton.addEventListener('click', () => {
+        selectedAthlete = '';
+        updatePicker();
+        const first = nameButtons.find(button => !button.hidden);
+        if (first) first.focus();
+    });
+    updatePicker();
+
+
+    // V3 practice progress upgrades
+    const bar = document.getElementById('routine-save-bar');
+    const saveButton = document.getElementById('save-routine-practice');
+    const status = document.getElementById('routine-save-status');
+    const tracks = [...document.querySelectorAll('[data-track]')];
+    const totals = new Map(tracks.map(track => [track, track.querySelectorAll('[data-saved-attempt]').length]));
+    let queue;
+    const log = document.createElement('ol'); log.className = 'progress-save-log';
+    bar.parentElement.insertBefore(log, bar);
+    function applyCounts(data) {
+        tracks.filter(track => track.dataset.athlete === String(data.athlete)).forEach(track => {
+            totals.set(track, (data.routines || []).filter(x => x.event === track.dataset.event && x.is_pressure === (track.dataset.pressure === 'true')).reduce((sum,x)=>sum+x.total,0));
+        });
+    }
+    function render(items, state) {
+        document.querySelectorAll('.autosave-routine-chip').forEach(chip => chip.remove());
+        log.replaceChildren();
+        items.filter(x => x.state !== 'saved' || x.undo).concat(items.filter(x => x.state === 'saved' && !x.undo).slice(-100)).reverse().forEach(item => {
+            if (item.state === 'undone') return;
+            const details = item.record?.details || item.body;
+            const track = tracks.find(t=>t.dataset.athlete === String(item.body.athlete) && t.dataset.event === details.event && (t.dataset.pressure === 'true') === Boolean(details.pressure));
+            if (item.body.action !== 'remove' && track && !(item.record?.source_id && track.querySelector(`[data-saved-attempt="${Number(item.record.source_id)}"]`))) {
+                const chip = document.createElement('span'); chip.className = 'attempt-chip autosave-routine-chip';
+                chip.textContent = `${details.result === 'missed' ? 'Attempt' : String(details.result || '').toUpperCase()} · ${item.state === 'saved' ? 'Saved' : 'Waiting to save'}`;
+                track.querySelector('.attempt-list').appendChild(chip);
+            }
+            const row = document.createElement('li'), name = document.querySelector(`.athlete-row[data-athlete-id="${Number(item.body.athlete)}"] .fw-bold`);
+            const text = document.createElement('span');
+            const description = item.undo ? 'Undo waiting to save' : item.state === 'saved' ? (item.record?.status === 'pending' ? 'Saved · needs coach review' : 'Saved') : 'Waiting to save';
+            text.textContent = `${name?.textContent.trim() || 'Athlete'} · ${details.label || details.event || 'Removal'} · ${details.result === 'missed' ? 'Attempt' : details.result || ''} · ${description}`;
+            row.appendChild(text);
+            if (item.body.action !== 'remove' || (item.state === 'failed' && item.definitelyRefused)) {
+                const undo = document.createElement('button'); undo.type = 'button'; undo.className = 'btn btn-outline-secondary btn-sm'; undo.textContent = item.body.action === 'remove' ? 'Dismiss failed removal' : 'Undo'; undo.disabled = Boolean(item.undo);
+                undo.onclick = () => queue.undo(item.id); row.appendChild(undo);
+            }
+            log.appendChild(row);
+        });
+        tracks.forEach(track => {
+            track.querySelectorAll('.delete-staged').forEach(button => {
+                button.disabled = items.some(x => x.body.action === 'remove' && Number(x.body.source_id) === Number(button.dataset.deleteId) && ['queued','sending'].includes(x.state));
+            });
+            let count = track.querySelector('.autosave-routine-count');
+            if (!count) {count = document.createElement('p'); count.className = 'autosave-routine-count'; track.appendChild(count);}
+            count.textContent = `${totals.get(track)} result(s) saved today`;
+            const empty = track.querySelector('.empty-attempts'); if (empty) empty.hidden = totals.get(track) > 0 || Boolean(track.querySelector('.autosave-routine-chip'));
+            const box = track.querySelector('[data-routine-goal]'); if (!box) return;
+            const target = Number(box.dataset.target), saved = totals.get(track);
+            const pending = items.filter(x => x.state !== 'saved' && x.state !== 'undone' && !x.undo && x.body.action === 'add' && String(x.body.athlete) === track.dataset.athlete && x.body.event === track.dataset.event && Boolean(x.body.pressure) === (track.dataset.pressure === 'true')).length;
+            box.querySelector('.routine-goal-text').textContent = `Coach’s target: ${target} ${box.dataset.kind} · ${saved} of ${target} saved` + (pending ? ` · ${pending} waiting to save` : '') + (saved >= target ? ' · Goal reached!' : '');
+            box.querySelector('progress').value = Math.min(saved,target); box.querySelector('progress').setAttribute('aria-label', `${saved} of ${target} saved`); box.classList.toggle('routine-goal-met', saved >= target);
+        });
+        status.textContent = state.error || (state.busy ? 'Saving automatically…' : state.pending ? `${state.pending} change(s) waiting to save. Retry is automatic.` : 'Autosave is on. Use Undo to correct an accidental tap.');
+        if (!state.storageOK && state.pending) status.textContent += ' Keep this tab open until saved; browser storage is unavailable.';
+        saveButton.textContent = 'Retry save'; saveButton.disabled = !state.pending || state.busy;
+    }
+    queue = new window.TrackerAutosave({kind:'routine', gym:bar.dataset.gym, user:bar.dataset.user, date:bar.dataset.date,
+        saveUrl:bar.dataset.autosaveUrl, stateUrl:bar.dataset.stateUrl, csrf:()=>document.querySelector('#routine-csrf-form [name=csrfmiddlewaretoken]').value,
+        counts:applyCounts, render, committed:(body,data)=>{
+            if (body.action === 'remove') document.querySelector(`[data-saved-attempt="${Number(body.source_id)}"]`)?.remove();
+            if (body.action === 'undo') {
+                if (data.removed_id) document.querySelector(`[data-saved-attempt="${Number(data.removed_id)}"]`)?.remove();
+            }
+        }});
+    tracks.forEach(track => {
+        track.querySelectorAll('.stage-result').forEach(button => button.addEventListener('click', ()=>{
+            queue.add({athlete:track.dataset.athlete, session:Number(bar.dataset.sessionId), event:track.dataset.event, pressure:track.dataset.pressure === 'true', result:button.dataset.result},button);
+        }));
+        track.querySelectorAll('.delete-staged').forEach(button=>button.addEventListener('click',()=>{
+            if (button.disabled) return; button.disabled = true;
+            queue.remove(Number(button.dataset.deleteId), track.dataset.athlete);
+        }));
+    });
+    saveButton.onclick = () => queue.retry();
+    queue.start();
+})();
+</script>
 
 {% endblock %}

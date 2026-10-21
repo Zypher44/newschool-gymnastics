@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.urls import reverse
 from django.http import Http404
 from django.shortcuts import (
     get_object_or_404,
@@ -176,6 +177,10 @@ def calculate_parent_readiness_status(
             ),
         }
 
+    if survey.checkin_version >= 2:
+        return {'label': 'Check-in Completed', 'level': 'ready', 'icon': '📝',
+                'message': 'Your child has checked in with their coaching team today.'}
+
     low_sleep = (
         survey.sleep_hours is not None
         and survey.sleep_hours < 7
@@ -183,8 +188,8 @@ def calculate_parent_readiness_status(
 
     needs_attention = (
         survey.energy <= 2
-        or survey.soreness >= 4
-        or survey.stress >= 4
+        or (survey.soreness is not None and survey.soreness >= 4)
+        or (survey.stress is not None and survey.stress >= 4)
         or low_sleep
     )
 
@@ -713,176 +718,29 @@ def parent_video_detail(
 
 @login_required
 def connect_athlete(request):
-    if request.user.role != 'parent':
-        return render(
-            request,
-            'coaches/not_allowed.html',
-            {
-                'role': request.user.role,
-                'username': request.user.username,
-            },
-        )
-
-    parent_gym_ids = (
-        GymMembership.objects
-        .filter(
-            user=request.user,
-            role='parent',
-            is_active=True,
-        )
-        .values_list(
-            'gym_id',
-            flat=True,
-        )
-    )
-
-    pending_links = (
-        ParentAthleteLink.objects
-        .filter(
-            parent=request.user,
-            approved=False,
-        )
-        .select_related('athlete')
-        .order_by(
-            'athlete__first_name',
-            'athlete__last_name',
-        )
-    )
-
-    if request.method == 'POST':
-        form = ConnectAthleteForm(
-            request.POST
-        )
-
-        if form.is_valid():
-            first_name = (
-                form.cleaned_data[
-                    'first_name'
-                ].strip()
-            )
-
-            last_name = (
-                form.cleaned_data[
-                    'last_name'
-                ].strip()
-            )
-
-            date_of_birth = (
-                form.cleaned_data[
-                    'date_of_birth'
-                ]
-            )
-
-            relationship = (
-                form.cleaned_data[
-                    'relationship'
-                ].strip()
-            )
-
-            athlete_membership = (
-                GymMembership.objects
-                .filter(
-                    gym_id__in=parent_gym_ids,
-                    role='athlete',
-                    is_active=True,
-                    user__first_name__iexact=first_name,
-                    user__last_name__iexact=last_name,
-                    user__athlete_profile__date_of_birth=date_of_birth,
-                )
-                .select_related(
-                    'user',
-                    'gym',
-                    'user__athlete_profile',
-                )
-                .first()
-            )
-
-            if not athlete_membership:
-                form.add_error(
-                    None,
-                    (
-                        'We could not find an athlete '
-                        'matching that name and date '
-                        'of birth in your gym.'
-                    ),
-                )
-
-            else:
-                athlete = (
-                    athlete_membership.user
-                )
-
-                existing_link = (
-                    ParentAthleteLink.objects
-                    .filter(
-                        parent=request.user,
-                        athlete=athlete,
-                    )
-                    .first()
-                )
-
-                if existing_link:
-                    if existing_link.approved:
-                        messages.info(
-                            request,
-                            (
-                                'This athlete is already '
-                                'connected to your account.'
-                            ),
-                        )
-
-                    else:
-                        messages.info(
-                            request,
-                            (
-                                'Your connection request '
-                                'is already waiting for '
-                                'approval.'
-                            ),
-                        )
-
-                    return redirect(
-                        'connect_athlete'
-                    )
-
-                ParentAthleteLink.objects.create(
-                    parent=request.user,
-                    athlete=athlete,
-                    relationship=relationship,
-                    approved=False,
-                )
-                notify_gym_directors(
-                    athlete_membership.gym, request.user,
-                    'Parent connection request',
-                    f'{request.user.get_full_name() or request.user.username} requested to connect with {athlete.get_full_name() or athlete.username}.',
-                    '/gyms/director/',
-                )
-
-                messages.success(
-                    request,
-                    (
-                        'Connection request sent. A Gym '
-                        'Director must approve it before '
-                        'the athlete appears in your '
-                        'account.'
-                    ),
-                )
-
-                return redirect(
-                    'connect_athlete'
-                )
-
-    else:
-        form = ConnectAthleteForm()
-
-    return render(
-        request,
-        'parents_portal/connect_athlete.html',
-        {
-            'form': form,
-            'pending_links': pending_links,
-        },
-    )
+    from .forms import ConnectAthleteDropdownForm
+    from .access import get_parent_gym_ids
+    if request.user.role != 'parent' or not request.user.is_active:
+        return parent_access_denied(request)
+    pending_links = ParentAthleteLink.objects.filter(parent=request.user, approved=False,
+        athlete__gym_memberships__gym_id__in=get_parent_gym_ids(request.user),
+        athlete__gym_memberships__is_active=True).select_related('athlete').distinct()
+    form = ConnectAthleteDropdownForm(request.POST if request.method == 'POST' else None, user=request.user)
+    if request.method == 'POST' and form.is_valid():
+        athlete = form.cleaned_data['athlete']
+        link, created = ParentAthleteLink.objects.get_or_create(parent=request.user, athlete=athlete,
+            defaults={'relationship': form.cleaned_data['relationship'].strip(), 'approved': False})
+        if created:
+            gym_membership = GymMembership.objects.filter(user=athlete, role='athlete', is_active=True,
+                gym_id__in=get_parent_gym_ids(request.user)).select_related('gym').first()
+            notify_gym_directors(gym_membership.gym, request.user, 'Parent connection request',
+                f'{request.user.get_full_name() or request.user.username} requested to connect with {athlete.get_full_name() or athlete.username}.',
+                reverse('parent_connection_requests') + f'#parent-request-{link.pk}')
+            messages.success(request, 'Connection requested. Your Gym Director must approve it before information is available.')
+        else:
+            messages.info(request, 'This child is already connected.' if link.approved else 'Your request is waiting for approval.')
+        return redirect('connect_athlete')
+    return render(request, 'parents_portal/connect_athlete.html', {'form': form, 'pending_links': pending_links})
 
 # ============================================================
 # PARENT CONDITIONING TESTING HISTORY

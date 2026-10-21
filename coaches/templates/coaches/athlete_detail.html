@@ -582,6 +582,7 @@
                     {% for survey in surveys %}
                     <tr>
                         <td>{{ survey.survey_date }}</td>
+                        {% if survey.checkin_version >= 2 %}<td colspan="8">{% include 'surveys/coach_checkin.html' with survey=survey %}</td>{% else %}
                         <td>{% if survey.energy == 1 %}🔴{% elif survey.energy == 2 %}🟠{% elif survey.energy == 3 %}🟡{% else %}🟢{% endif %} {{ survey.energy }}</td>
                         <td>{% if survey.soreness == 5 %}🔴{% elif survey.soreness == 4 %}🟠{% elif survey.soreness == 3 %}🟡{% else %}🟢{% endif %} {{ survey.soreness }}</td>
                         <td>{% if survey.stress == 5 %}🔴{% elif survey.stress == 4 %}🟠{% elif survey.stress == 3 %}🟡{% else %}🟢{% endif %} {{ survey.stress }}</td>
@@ -590,6 +591,7 @@
                         <td>{% if survey.hydrated %}✅{% else %}❌{% endif %}</td>
                         <td>{{ survey.soreness_area }}</td>
                         <td>{{ survey.notes }}</td>
+                        {% endif %}
                     </tr>
                     {% endfor %}
                 </tbody>

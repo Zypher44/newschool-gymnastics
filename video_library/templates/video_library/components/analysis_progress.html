@@ -1,0 +1,25 @@
+{% load static %}
+{% if analysis %}
+<div class="border rounded-3 p-3 mb-3" data-video-analysis-panel
+     data-status-url="{% url 'video_library:analysis_status' analysis.id %}"
+     data-finished="{% if analysis.is_finished %}true{% else %}false{% endif %}" aria-live="polite">
+  <div class="d-flex justify-content-between gap-2 mb-2">
+    <strong data-analysis-status>{{ analysis.get_status_display }}</strong>
+    <span data-analysis-percent>{{ analysis.progress_percentage }}%</span>
+  </div>
+  <div class="progress mb-2" style="height:8px">
+    <div class="progress-bar" data-analysis-progress role="progressbar" aria-label="Video analysis progress"
+         aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ analysis.progress_percentage }}"
+         style="width:{{ analysis.progress_percentage }}%"></div>
+  </div>
+  <div class="small text-muted" data-analysis-step>{{ analysis.current_step }}</div>
+  {% if not analysis.is_finished %}<div class="small text-muted mt-1">You can leave this page. Analysis continues in the background.</div>{% endif %}
+  {% if analysis.error_message %}<div class="small text-danger mt-2">{{ analysis.error_message }}</div>{% endif %}
+</div>
+{% if analysis.analysis_source == 'mock' %}
+<div class="alert alert-warning small">Historical demonstration result. Its confidence and summary measurements were not measured from this video. Run a new analysis for current results.</div>
+{% else %}
+<div class="small text-muted mb-3">Selected skill: {{ analysis.requested_skill|default:video.skill_name|default:'Not selected' }}. Camera view for these results: {{ analysis.raw_results.camera_view|default:'not confirmed' }}. Measurements are projected image angles and depend on camera view. Technique feedback needs coach review.</div>
+{% endif %}
+<script src="{% static 'video_library/analysis_status.js' %}" defer></script>
+{% endif %}

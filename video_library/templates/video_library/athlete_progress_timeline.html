@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ athlete.get_full_name|default:athlete.username }} — Video Progress{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'video_library/video-progress.css' %}">
+<div class="vp-page">
+  <header class="vp-hero">
+    <div><div class="small mb-1">📈 Progress Timeline</div><h1>{{ athlete.get_full_name|default:athlete.username }}</h1><p>{{ total_video_count }} available video{{ total_video_count|pluralize }} · Every attempt is part of the journey.</p></div>
+    <div class="d-flex gap-2 flex-wrap"><a class="btn btn-outline-light" href="{% url 'video_library:video_progress' %}">Choose athlete</a><a class="btn btn-outline-light" href="{{ library_url }}">← Video Library</a></div>
+  </header>
+  <section class="vp-panel" aria-labelledby="vp-choose-skill">
+    <h2 id="vp-choose-skill">Choose a skill or routine</h2>
+    <form method="get" class="vp-filter">
+      <div><label for="vp-event">Event</label><select id="vp-event" name="event" class="form-select"><option value="">All events</option>{% for value, label in event_choices %}<option value="{{ value }}" {% if value == event_filter %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+      <button class="btn btn-outline-primary" type="submit">Show event</button>
+      {% if event_filter %}<a class="btn btn-outline-secondary" href="{% url 'video_library:athlete_timeline' athlete.id %}">All events</a>{% endif %}
+    </form>
+    <div class="vp-grid">
+      {% for section in sections %}
+        <a class="vp-skill" href="{{ section.url }}" {% if section.key == selected.key %}aria-current="true"{% endif %}>
+          <span class="vp-meta">{{ section.event }} · {{ section.kind|capfirst }}</span><strong>{{ section.label }}</strong>
+          <span class="vp-meta">{{ section.count }} attempt{{ section.count|pluralize }} · {{ section.first.progress_date|date:'M j, Y' }} – {{ section.latest.progress_date|date:'M j, Y' }}</span>
+        </a>
+      {% empty %}
+        <div class="vp-empty"><h3 class="h5">No videos here yet</h3><p class="text-muted">{% if is_coach %}Upload a playable video, assign this athlete, and add an event and skill name to start their timeline.{% else %}Videos your coach shares with you will build this timeline.{% endif %}</p>{% if is_coach %}<a class="btn btn-primary" href="{% url 'video_library:upload' %}">Upload athlete video</a>{% endif %}</div>
+      {% endfor %}
+    </div>
+  </section>
+  {% if selected %}
+    <section class="vp-panel" aria-labelledby="vp-comparison-title">
+      <h2 id="vp-comparison-title">{{ selected.label }} · {{ selected.event }}</h2>
+      {% if comparison %}
+        <p class="text-muted">{% if comparison.is_latest %}Your first and latest available attempts.{% else %}Your first attempt and the attempt you selected.{% endif %} Find the same movement in each clip, then play them together.</p>
+        {% if comparison.camera_warning %}<p class="small text-muted">Camera angles or distances may differ. Similar filming positions make changes easier to see.</p>{% endif %}
+        <div class="vp-compare">
+          {% include 'video_library/components/progress_player.html' with video=comparison.first label='First attempt' player_id='compare-video-a' time_id='time-a' %}
+          {% if comparison.is_latest %}{% include 'video_library/components/progress_player.html' with video=comparison.current label='Latest attempt' player_id='compare-video-b' time_id='time-b' %}{% else %}{% include 'video_library/components/progress_player.html' with video=comparison.current label='Selected attempt' player_id='compare-video-b' time_id='time-b' %}{% endif %}
+        </div>
+        <div class="vp-controls" aria-label="Comparison playback">
+          <button type="button" class="btn btn-primary" id="play-both">▶ Play both</button>
+          <button type="button" class="btn btn-outline-primary" id="pause-both">Pause both</button>
+          <button type="button" class="btn btn-outline-secondary" id="align-current">Match current positions</button>
+          <button type="button" class="btn btn-outline-secondary" id="restart-both">Restart both</button>
+          <button type="button" class="btn btn-outline-secondary" data-comparison-speed="0.5" aria-pressed="false">Slow · ½ speed</button>
+          <button type="button" class="btn btn-outline-secondary active" data-comparison-speed="1" aria-pressed="true">Normal speed</button>
+        </div>
+        <p id="comparison-status" class="vp-meta mt-2" role="status" aria-live="polite">Use each video's controls to find the same movement, then select Match current positions.</p>
+        <div class="d-flex gap-2 flex-wrap mt-3">
+          {% if not comparison.is_latest %}<a class="btn btn-outline-primary" href="{{ selected.url }}">Back to first vs. latest</a>{% endif %}
+          {% if is_coach %}<a class="btn btn-outline-secondary" href="{% url 'video_library:video_compare' %}?video_1={{ comparison.first.id }}&amp;video_2={{ comparison.current.id }}">Open full comparison</a>{% endif %}
+        </div>
+        <script src="{% static 'video_library/free-comparison.js' %}" defer></script>
+      {% else %}
+        <p class="text-muted">{% if selected.count == 1 %}The first step is recorded. Add another attempt to compare the journey.{% elif selected.comparable %}This is the first attempt. Choose another attempt below to compare it.{% else %}Add skill names to unlabelled videos before comparing them.{% endif %}</p>
+      {% endif %}
+    </section>
+    <section class="vp-panel" aria-labelledby="vp-history-title">
+      <h2 id="vp-history-title">Attempt history <span class="vp-meta">· Oldest to newest</span></h2>
+      <ol class="vp-history" start="{{ page_obj.start_index }}">
+        {% for video in page_obj %}
+          <li class="vp-attempt">
+            <div class="vp-meta">{{ video.progress_date_source }} {{ video.progress_date|date:'M j, Y' }}</div>
+            <h3>{{ video.title }}</h3>
+            <span class="vp-badge">{{ video.get_video_type_display }}</span>
+            {% if video.id == selected.first.id %}<span class="vp-badge">First attempt</span>{% endif %}
+            {% if video.id == selected.latest.id %}<span class="vp-badge">Latest attempt</span>{% endif %}
+            {% if video.is_personal_best %}<span class="vp-badge vp-best">⭐ Coach-marked personal best</span>{% endif %}
+            {% if video.primary_athlete_id != athlete.id %}<span class="vp-badge">Tagged athlete · shared clip</span>{% endif %}
+            <details><summary>▶ Watch attempt</summary><video class="vp-player" controls playsinline preload="none" {% if video.thumbnail %}poster="{{ video.thumbnail.url }}"{% endif %} aria-label="{{ video.title }}"><source src="{{ video.video_file.url }}">Your browser cannot play this video.</video></details>
+            <div class="d-flex gap-2 flex-wrap mt-2">
+              <a class="btn btn-outline-primary btn-sm" href="{% url 'video_library:moment_feedback' video.id %}">💬 Moment feedback</a>
+              {% if video.compare_with_first_url %}<a class="btn btn-outline-primary btn-sm" href="{{ video.compare_with_first_url }}">Compare with first</a>{% endif %}
+              {% if is_coach %}<a class="btn btn-outline-secondary btn-sm" href="{% url 'video_library:video_detail' video.id %}">Open video &amp; review</a>{% endif %}
+            </div>
+          </li>
+        {% endfor %}
+      </ol>
+      {% if page_obj.has_other_pages %}
+        <nav class="vp-pagination" aria-label="Attempt pages">
+          {% if page_obj.has_previous %}<a class="btn btn-outline-primary" href="{{ page_url }}&amp;page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
+          <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}<a class="btn btn-outline-primary" href="{{ page_url }}&amp;page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+        </nav>
+      {% endif %}
+    </section>
+  {% endif %}
+</div>
+{% endblock %}

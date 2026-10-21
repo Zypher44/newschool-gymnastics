@@ -318,9 +318,15 @@ class VideoUploadForm(forms.Form):
         ),
     )
 
+    camera_view = forms.ChoiceField(
+        choices=Video.CAMERA_VIEW_CHOICES, required=False, initial='unknown', label='Camera view',
+        help_text='Record one athlete with the whole body visible. Joint-angle technique cues need a confirmed side view.',
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+
     request_ai_analysis = forms.BooleanField(
         required=False,
-        label='Add videos to the future AI analysis queue',
+        label='Analyze after video conversion',
         widget=forms.CheckboxInput(
             attrs={
                 'class': 'form-check-input',

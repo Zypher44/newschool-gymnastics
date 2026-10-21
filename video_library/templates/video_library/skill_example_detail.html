@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load video_moments %}
+{% block title %}{{ video.title }} · Skill Example{% endblock %}
+{% block content %}
+<style>.skill-example-shell{max-width:1150px;margin:auto}.skill-example-shell .btn{min-height:44px}.skill-example-player{display:block;width:100%;max-height:540px;object-fit:contain;background:#101827}.skill-example-shell h1{overflow-wrap:anywhere}</style>
+<div class="container-fluid py-4 skill-example-shell">
+  <a href="{% url 'video_library:skill_library' %}" class="small">← Coach-Approved Skill Library</a>
+  <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mt-3 mb-3"><div><h1 class="h3 mb-2">{{ video.title }}</h1><p class="text-muted mb-1">{{ video.get_event_display }} · {{ video.skill_name }} · {{ video.get_camera_view_display }}</p>
+    {% if approved %}<p class="small mb-0"><span class="badge text-bg-success">Coach Approved</span> by {{ video.skill_library_approved_by.get_full_name|default:video.skill_library_approved_by.username }} · {{ video.skill_library_approved_at|date:'M j, Y' }}</p>{% else %}<span class="badge text-bg-warning">Awaiting Coach Approval</span>{% endif %}
+  </div><div class="d-flex flex-wrap align-items-start gap-2"><a href="{% url 'video_library:video_detail' video.pk %}" class="btn btn-outline-primary">Open Video &amp; Analysis</a>{% if can_manage %}<a href="{% url 'video_library:skill_example_edit' video.pk %}" class="btn btn-outline-secondary">Edit Example</a>{% endif %}</div></div>
+  <section class="card border-0 shadow-sm mb-3"><div class="card-body p-3">
+    {% if video.status == 'ready' and video.video_file %}<video id="vm-skill-example-player" class="skill-example-player rounded" controls playsinline preload="metadata" {% if video.thumbnail %}poster="{{ video.thumbnail.url }}"{% endif %}><source src="{{ video.video_file.url }}" type="video/mp4">Your browser does not support video playback.</video>
+    {% video_moments_panel video request.user 'vm-skill-example-player' %}
+    {% elif video.status == 'failed' %}<h2 class="h5">Video processing failed</h2><p>Open Video &amp; Analysis to review its processing status, or upload a replacement example.</p>
+    {% else %}<h2 class="h5">Preparing video for playback</h2><p class="mb-0">Conversion and any requested pose analysis run through your existing worker. Refresh this page after processing finishes.</p>{% endif %}
+  </div></section>
+  {% if video.notes %}<section class="card border-0 shadow-sm mb-3"><div class="card-body"><h2 class="h5">Teaching Notes</h2><div style="white-space:pre-wrap;overflow-wrap:anywhere">{{ video.notes }}</div></div></section>{% endif %}
+  {% if not approved %}
+  <section class="card border-0 shadow-sm mb-3"><div class="card-body"><h2 class="h5">Coach Approval</h2>
+    {% if video.status == 'ready' and video.video_file %}<p class="small text-muted">Watch this example and confirm that it is suitable for the skill and event above. Approval makes it available in athlete comparison pickers.</p><form method="post" action="{% url 'video_library:approve_skill_example' video.pk %}">{% csrf_token %}<div class="form-check mb-3">{{ approval_form.confirmed }}<label class="form-check-label" for="{{ approval_form.confirmed.id_for_label }}">{{ approval_form.confirmed.label }}</label></div><button class="btn btn-success" type="submit">Approve Skill Example</button></form>
+    {% else %}<p class="small mb-0">The video must finish processing before a coach can approve it.</p>{% endif %}
+  </div></section>
+  {% else %}
+  <section class="card border-0 shadow-sm mb-3"><div class="card-body"><h2 class="h5">Compare an Athlete Attempt</h2>
+    {% if video.status != 'ready' %}<p class="small mb-0">This example must be ready for playback before comparison.</p>
+    {% elif attempts %}<form method="get" action="{% url 'video_library:video_compare' %}"><input type="hidden" name="video_1" value="{{ video.pk }}"><label class="form-label fw-semibold" for="example-athlete-attempt">{{ video.get_event_display }} · {{ video.skill_name }} attempts</label><div class="d-flex flex-column flex-sm-row gap-2"><select class="form-select" id="example-athlete-attempt" name="video_2" required><option value="">Choose an athlete video</option>{% for attempt in attempts %}<option value="{{ attempt.pk }}">{% if attempt.primary_athlete %}{{ attempt.primary_athlete.get_full_name|default:attempt.primary_athlete.username }} · {% endif %}{{ attempt.title }} · {{ attempt.uploaded_at|date:'M j, Y' }}</option>{% endfor %}</select><button class="btn btn-primary text-nowrap" type="submit">Compare Videos</button></div></form>
+    {% else %}<p class="small mb-0">No accessible athlete attempts match this skill and event yet. Upload an athlete video, then use Compare with Coaching Example on its page.</p>{% endif %}
+    <p class="small text-muted mt-2 mb-0">The approved example is A; the athlete attempt is B. Current side-view pose analyses on both videos enable joint highlights and skill timing.</p>
+  </div></section>{% endif %}
+  <section class="card border-0 shadow-sm mb-3"><div class="card-body"><h2 class="h5">Pose Analysis</h2>
+    {% if analysis %}<p class="small">{{ analysis.get_status_display }} · {{ analysis.current_step }}</p><a class="btn btn-outline-primary" href="{% url 'video_library:analysis_detail' analysis.pk %}">View Analysis</a>{% else %}<p class="small">No analysis has been requested for this example.</p>{% endif %}
+    {% if video.status == 'ready' %}<form method="post" action="{% url 'video_library:request_analysis' video.pk %}" class="d-inline">{% csrf_token %}<button type="submit" class="btn btn-outline-secondary">Run Free Pose Analysis</button></form>{% endif %}
+  </div></section>
+  {% if can_manage %}<details class="small mt-4"><summary>Remove from Skill Library</summary><p class="mt-2">This removes approval and the library entry. The original video stays in Video Library.</p><form method="post" action="{% url 'video_library:remove_skill_example' video.pk %}">{% csrf_token %}<button type="submit" class="btn btn-outline-danger">Remove from Skill Library</button></form></details>{% endif %}
+</div>
+{% endblock %}

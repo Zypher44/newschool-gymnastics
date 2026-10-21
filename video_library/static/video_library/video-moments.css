@@ -1,0 +1,28 @@
+.vm-panel { margin-top: 20px; border: 1px solid #dde6f1; border-radius: 16px; padding: 18px; background: #fff; color: #203850; }
+.vm-panel [hidden] { display: none !important; }
+.vm-heading { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.vm-heading h2 { font-size: 1.25rem; margin-bottom: 4px; }
+.vm-heading p, .vm-hint { margin: 0; font-size: .85rem; color: #587089; }
+.vm-actions, .vm-toolbar, .vm-save-row, .vm-draft-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.vm-panel button, .vm-panel select { min-height: 44px; }
+.vm-panel label { display: block; font-size: .9rem; font-weight: 600; }
+.vm-panel label:has(textarea) { width: 100%; }
+.vm-toolbar { padding: 12px 0; }
+.vm-toolbar label { display: flex; align-items: center; gap: 8px; }
+.vm-save-row { margin-top: 14px; align-items: end; }
+.vm-save-row select { margin-top: 4px; }
+.vm-draft-heading { color: #286597; padding-top: 8px; }
+.vm-status { margin: 12px 0; font-size: .88rem; color: #315d85; overflow-wrap: anywhere; }
+.vm-status.vm-error { color: #b42318; }
+.vm-notes { display: grid; gap: 10px; margin-top: 14px; }
+.vm-note { background: #f8faff; border: 1px solid #e1e8f1; border-radius: 12px; padding: 12px; overflow-wrap: anywhere; }
+.vm-note-header { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.vm-note-body { white-space: pre-wrap; margin: 8px 0; }
+.vm-note-meta { font-size: .8rem; color: #61758c; }
+.vm-note-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.vm-stage { position: relative; width: 100%; }
+.vm-stage > video { display: block; width: 100%; }
+.vm-overlay { position: absolute; pointer-events: none; z-index: 2; overflow: hidden; }
+.vm-overlay.vm-drawing { pointer-events: auto; cursor: crosshair; touch-action: none; }
+.vm-stage.vm-editing { outline: 3px solid #5a94ca; outline-offset: 3px; border-radius: 12px; }
+@media(max-width:640px) { .vm-panel { padding: 14px; } .vm-actions { width: 100%; } .vm-actions button { flex: 1 1 auto; } .vm-save-row > label { width: 100%; } .vm-save-row select { width: 100%; } .vm-toolbar { gap: 6px; } }

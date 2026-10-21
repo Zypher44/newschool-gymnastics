@@ -29,6 +29,10 @@ def generate_skill_observations(
             'observations_created': 0,
         }
 
+    if (analysis.raw_results or {}).get('camera_view', analysis.video.camera_view) != 'side':
+        analysis.moments.filter(label__startswith='Skill Observation:').delete()
+        return {'skill': skill_name, 'rule_set_found': True, 'observations_created': 0}
+
     frame_moments = list(
         analysis.moments
         .exclude(

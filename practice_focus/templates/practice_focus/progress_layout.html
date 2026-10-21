@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Practice progress{% endblock %}
+{% block page_header %}Practice progress{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'practice_focus/progress.css' %}?v=1">
+<div class="progress-shell">
+    <nav class="progress-nav" aria-label="Practice progress">
+    {% if user.role == 'coach' or user.role == 'head_coach' %}
+        <a href="{% url 'practice_focus:review_queue' %}" class="btn btn-outline-primary">Review queue</a>
+        <a href="{% url 'practice_focus:coach_feedback' %}" class="btn btn-outline-primary">Athlete feedback</a>
+        <a href="{% url 'practice_focus:journal_history' %}" class="btn btn-outline-primary">Shared journals</a>
+        <a href="{% url 'practice_focus:weekly_reports' %}" class="btn btn-outline-primary">Weekly reports</a>
+        <a href="{% url 'report_center' %}" class="btn btn-outline-secondary">Reports</a>
+    {% else %}
+        <a href="{% url 'practice_focus:family_progress' %}" class="btn btn-outline-primary">My progress and feedback</a>
+        <a href="{% url 'practice_focus:journal_history' %}" class="btn btn-outline-primary">{% if user.role == 'athlete' %}My practice journal{% else %}Shared journals{% endif %}</a>
+    {% endif %}
+    
+{% if user.role == 'coach' or user.role == 'head_coach' %}
+<a href="{% url 'practice_focus:coach_passport' %}" class="btn btn-outline-primary">🏅 Practice Passports</a>
+{% elif user.role == 'athlete' or user.role == 'parent' %}
+<a href="{% url 'practice_focus:family_passport' %}" class="btn btn-outline-primary">🏅 Practice Passport</a>
+{% endif %}
+</nav>
+    {% block progress_content %}{% endblock %}
+</div>
+{% endblock %}

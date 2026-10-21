@@ -26,6 +26,8 @@
 
 
         <div class="card-body px-4 pb-4">
+            {% include 'video_library/components/pose_skeleton_help.html' with analysis=latest_analysis %}
+
 
             <div class="row g-3">
 
@@ -37,90 +39,7 @@
 
                             <article class="border rounded-4 h-100 overflow-hidden bg-white">
 
-                                {% if item.moment.frame_image %}
-
-                                    <div
-                                        class="key-frame-container"
-                                        data-moment="{{ item.moment.id }}"
-                                    >
-
-                                        {% if item.moment.annotated_frame_image %}
-
-                                            <div
-                                                class="btn-group btn-group-sm w-100 rounded-0"
-                                                role="group"
-                                            >
-
-                                                <button
-                                                    type="button"
-                                                    class="btn btn-outline-secondary key-frame-toggle active"
-                                                    data-target="key-original-{{ item.moment.id }}"
-                                                >
-                                                    Original
-                                                </button>
-
-                                                <button
-                                                    type="button"
-                                                    class="btn btn-outline-secondary key-frame-toggle"
-                                                    data-target="key-overlay-{{ item.moment.id }}"
-                                                >
-                                                    Pose Overlay
-                                                </button>
-
-                                            </div>
-
-                                        {% endif %}
-
-
-                                        <button
-                                            type="button"
-                                            class="btn p-0 border-0 w-100 analysis-moment-button"
-                                            data-timestamp="{{ item.moment.timestamp_seconds }}"
-                                            title="Jump video to this frame"
-                                        >
-
-                                            <img
-                                                id="key-original-{{ item.moment.id }}"
-                                                src="{{ item.moment.frame_image.url }}?v={{ item.moment.updated_at|date:'U' }}"
-                                                class="w-100 key-frame-image key-frame-version"
-                                                alt="Key frame for {{ item.moment.label }}"
-                                            >
-
-
-                                            {% if item.moment.annotated_frame_image %}
-
-                                                <img
-                                                    id="key-overlay-{{ item.moment.id }}"
-                                                    src="{{ item.moment.annotated_frame_image.url }}?v={{ item.moment.updated_at|date:'U' }}"
-                                                    class="w-100 key-frame-image key-frame-version d-none"
-                                                    alt="Pose overlay for {{ item.moment.label }}"
-                                                >
-
-                                            {% endif %}
-
-                                        </button>
-
-                                    </div>
-
-
-                                {% elif item.moment.annotated_frame_image %}
-
-                                    <button
-                                        type="button"
-                                        class="btn p-0 border-0 w-100 analysis-moment-button"
-                                        data-timestamp="{{ item.moment.timestamp_seconds }}"
-                                    >
-
-                                        <img
-                                            src="{{ item.moment.annotated_frame_image.url }}?v={{ item.moment.updated_at|date:'U' }}"
-                                            class="w-100 key-frame-image"
-                                            alt="Pose overlay for {{ item.moment.label }}"
-                                        >
-
-                                    </button>
-
-                                {% endif %}
-
+                                {% include 'video_library/components/pose_frame_image.html' with frame=item.moment %}
 
                                 <div class="p-3">
 

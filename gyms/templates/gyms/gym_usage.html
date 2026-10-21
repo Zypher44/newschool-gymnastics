@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Gym Usage{% endblock %}
+{% block page_header %}Gym Usage{% endblock %}
+{% block extra_css %}<style>
+.usage-week {display:grid;grid-template-columns:repeat(7,minmax(155px,1fr));min-width:1100px}
+.usage-day {padding:16px;border-right:1px solid #e5e7eb;min-height:220px}
+.usage-item {border-radius:8px;padding:10px;margin-top:10px;overflow-wrap:anywhere;background:#edf4ff;color:#183c75}
+.usage-event {background:#fff5db;color:#573c0c}
+</style>{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between gap-3 mb-4">
+ <div><h1 class="h3">Gym Usage</h1><p class="text-muted">{{ gym.name }} · {% if mode == 'week' %}{{ week_start|date:'M j' }} – {{ week_end|date:'M j, Y' }}{% else %}{{ selected|date:'l, F j, Y' }}{% endif %}</p></div>
+ <div class="d-flex flex-wrap gap-2 align-items-start">
+  <a class="btn btn-outline-primary" href="?view={{ mode }}&date={{ previous|date:'Y-m-d' }}">← Previous {{ mode }}</a>
+  <a class="btn btn-outline-primary" href="?view={{ mode }}">{% if mode == 'week' %}This week{% else %}Today{% endif %}</a>
+  <a class="btn btn-outline-primary" href="?view={{ mode }}&date={{ next|date:'Y-m-d' }}">Next {{ mode }} →</a>
+ </div>
+</div>
+<a class="btn btn-primary mb-3" href="{% url 'group_schedules' %}">Manage training group schedules</a>
+<form method="get" class="d-flex flex-wrap gap-2 mb-3 align-items-end">
+ <div><label for="usage-date" class="form-label">Choose date</label><input id="usage-date" type="date" name="date" value="{{ selected|date:'Y-m-d' }}" class="form-control"></div>
+ <div><label for="usage-view" class="form-label">View</label><select id="usage-view" name="view" class="form-select"><option value="week" {% if mode == 'week' %}selected{% endif %}>Weekly</option><option value="day" {% if mode == 'day' %}selected{% endif %}>Daily / hourly</option></select></div>
+ <button class="btn btn-primary">Show schedule</button>
+ <a class="btn btn-outline-secondary" href="{% url 'gym_calendar' %}">Calendar</a>
+</form>
+<div class="d-flex flex-wrap gap-3 mb-3"><div class="card p-3"><strong>{{ recurring_count }} recurring sessions</strong></div><div class="card p-3"><strong>{{ practice_count }} practices</strong></div><div class="card p-3"><strong>{{ event_count }} events</strong></div></div>
+<p class="small text-muted">Recurring sessions are shown alongside practice plans and events; these may describe the same training session and are not combined. Scheduled activity, not actual attendance or a capacity measurement. Draft and cancelled practices are excluded. Calendar events may take place outside the gym. A blank slot means no recorded activity, not confirmed availability.</p>
+{% if mode == 'week' %}
+<div class="card border-0 shadow-sm overflow-auto"><div class="usage-week">
+{% for day in days %}<section class="usage-day">
+ <a class="fw-bold {% if day.today %}text-primary{% endif %}" href="?view=day&date={{ day.date|date:'Y-m-d' }}">{{ day.date|date:'D, M j' }}{% if day.today %} · Today{% endif %}</a>
+ {% for item in day.cancelled %}<div class="border rounded p-2 mt-2 text-muted">{% include 'gyms/includes/usage_item.html' %}</div>{% endfor %}
+ {% for item in day.items %}{% include 'gyms/includes/usage_item.html' %}{% empty %}<p class="text-muted small mt-3">No scheduled activity</p>{% endfor %}
+ <a class="small d-block mt-3" href="?view=day&date={{ day.date|date:'Y-m-d' }}">View hourly schedule →</a>
+</section>{% endfor %}
+</div></div>
+{% else %}
+{% if current.cancelled %}<div class="card p-3 mb-3"><h2 class="h6">Cancelled sessions</h2>{% for item in current.cancelled %}{% include 'gyms/includes/usage_item.html' %}{% endfor %}</div>{% endif %}
+{% if current.untimed %}<div class="card p-3 mb-3"><h2 class="h6">Time not fully specified</h2><p class="small text-muted">These items are not placed into hourly slots.</p>{% for item in current.untimed %}{% include 'gyms/includes/usage_item.html' %}{% endfor %}</div>{% endif %}
+<div class="card border-0 shadow-sm">
+{% for slot in current.hours %}<div class="row g-0 border-bottom p-3"><div class="col-sm-2 fw-semibold">{{ slot.label }}</div><div class="col-sm-10">{% for item in slot.items %}{% include 'gyms/includes/usage_item.html' %}{% empty %}<span class="small text-muted">No scheduled activity</span>{% endfor %}</div></div>{% endfor %}
+</div>
+{% endif %}
+{% endblock %}

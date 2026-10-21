@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Training Group Schedules{% endblock %}
+{% block page_header %}Training Group Schedules{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between gap-3 mb-4"><div><h1 class="h3">Training Group Schedules</h1><p class="text-muted">Set weekly training times for your gym’s groups.</p></div><a class="btn btn-outline-primary align-self-start" href="{% url 'gym_usage' %}?view=week">View gym usage</a></div>
+<div class="card p-4 mb-4"><h2 class="h5">{% if editing %}Edit schedule{% else %}Add recurring schedule{% endif %}</h2>
+<p class="small text-muted">Select a group, training days and season dates. Clear “Schedule active” to pause the entire series. Editing changes the whole series, including earlier dates. Sessions start and finish on the same day.</p>
+<form method="post">{% csrf_token %}{{ form.non_field_errors }}<div class="row g-3">
+{% for field in form %}<div class="col-12 {% if field.name != 'weekdays' %}col-md-6{% endif %}"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}<div class="text-danger">{{ field.errors }}</div></div>{% endfor %}
+</div><button class="btn btn-primary mt-3">Save schedule</button>{% if editing %}<a class="btn btn-outline-secondary mt-3" href="{% url 'group_schedules' %}">Cancel edit</a>{% endif %}</form>
+</div>
+<div class="card p-3"><h2 class="h5">Your recurring schedules</h2><div class="table-responsive"><table class="table"><thead><tr><th>Group</th><th>Days</th><th>Time</th><th>Season</th><th>Status</th><th>Action</th></tr></thead><tbody>
+{% for schedule in schedules %}<tr><td>{{ schedule.group.name }}</td><td>{{ schedule.weekday_labels }}</td><td>{{ schedule.start_time|time:'g:i A' }}–{{ schedule.end_time|time:'g:i A' }}</td><td>{{ schedule.start_date|date:'M j, Y' }}–{{ schedule.end_date|date:'M j, Y' }}</td><td>{% if schedule.is_active %}Active{% else %}Paused{% endif %}{% if not schedule.group.is_active %} · Group inactive{% endif %}</td><td><a href="{% url 'group_schedule_edit' schedule.id %}">Edit series</a> · <a href="{% url 'group_schedule_exceptions' schedule.id %}">Single-day changes</a></td></tr>{% empty %}<tr><td colspan="6">No recurring schedules yet. Add one above. If the group dropdown is empty, <a href="{% url 'create_training_group' %}">create a training group</a> first.</td></tr>{% endfor %}
+</tbody></table></div></div>
+{% endblock %}

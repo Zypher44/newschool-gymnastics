@@ -1,0 +1,11 @@
+{% extends 'practice_focus/journal_layout.html' %}
+{% block journal_content %}
+<article class="aj-card"><div class="aj-detail-heading"><div><p class="aj-eyebrow">Practice date</p><h2>{{ entry.entry_date|date:'l, F j, Y' }}</h2>{% if not owner %}<p class="aj-author">{{ entry.athlete.get_full_name|default:entry.athlete.username }}</p>{% endif %}<p class="aj-tag">{{ entry.audience_label }}</p></div>{% if owner %}<a class="aj-button aj-primary" href="{% url 'practice_focus:journal_edit' entry.pk %}">Edit this entry</a>{% endif %}</div>
+{% if entry.mood %}<section class="aj-answer"><h3>How practice felt</h3><p>{{ entry.get_mood_display }}</p></section>{% endif %}
+{% if entry.win %}<section class="aj-answer"><h3>My win today</h3>{{ entry.win|linebreaks }}</section>{% endif %}
+{% if entry.challenge %}<section class="aj-answer"><h3>Something I found challenging</h3>{{ entry.challenge|linebreaks }}</section>{% endif %}
+{% if entry.next_focus %}<section class="aj-answer"><h3>What I want to work on next</h3>{{ entry.next_focus|linebreaks }}</section>{% endif %}
+<p class="aj-muted aj-saved-at">First saved {{ entry.created_at|date:'M j, Y, g:i a' }} · Last updated {{ entry.updated_at|date:'M j, Y, g:i a' }}</p>
+{% if owner %}<p class="aj-muted">Sharing choices can be changed with Edit this entry. The whole entry stays out of family reports and email reports.</p>{% else %}<p class="aj-muted">This entry was shared by the athlete. Only the athlete can edit its words or sharing choices.</p>{% endif %}
+</article>
+{% endblock %}

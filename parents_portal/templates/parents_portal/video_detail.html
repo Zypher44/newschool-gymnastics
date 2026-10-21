@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load video_moments %}
 
 {% block title %}{{ video.title }}{% endblock %}
 {% block page_header %}Parent Video{% endblock %}
@@ -23,16 +24,17 @@
                 <h1 class="h3 mb-1">{{ video.title }}</h1>
                 {% if video.primary_athlete %}<div class="text-muted">{{ video.primary_athlete.get_full_name|default:video.primary_athlete.username }}</div>{% endif %}
             </div>
-            <a href="{% url 'parents_portal:parent_video_library' %}" class="btn btn-outline-secondary">← Back to Videos</a>
+            <a href="{% url 'video_library:family_library' %}" class="btn btn-outline-secondary">← Back to Videos</a>
         </div>
 
         <section class="card parent-video-info mb-4">
             <div class="card-body p-4">
                 {% if video.video_file %}
-                    <video class="parent-video-player" controls playsinline preload="metadata" poster="{% if video.thumbnail %}{{ video.thumbnail.url }}{% endif %}">
+                    <video id="vm-parent-player" class="parent-video-player" controls playsinline preload="metadata" poster="{% if video.thumbnail %}{{ video.thumbnail.url }}{% endif %}">
                         <source src="{{ video.video_file.url }}" type="video/mp4">
                         Your browser does not support video playback.
                     </video>
+                    {% video_moments_panel video request.user 'vm-parent-player' %}
                 {% else %}<div class="alert alert-secondary mb-0">This video file is not available.</div>{% endif %}
             </div>
         </section>

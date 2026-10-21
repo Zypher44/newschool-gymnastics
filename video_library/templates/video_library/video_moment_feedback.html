@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% load video_moments %}
+{% block title %}{{ video.title }} · Moment Feedback{% endblock %}
+{% block content %}
+<div class="container-fluid" style="max-width:1200px">
+  <div class="d-flex justify-content-between flex-wrap gap-3 mb-3"><div><h1 class="h3">{{ video.title }}</h1><p class="text-muted mb-0">{{ video.get_event_display }}{% if video.skill_name %} · {{ video.skill_name }}{% endif %}</p></div><a class="btn btn-outline-secondary" href="{{ library_url }}">← Video Library</a></div>
+  <video id="vm-feedback-player" controls playsinline preload="metadata" style="display:block;width:100%;max-height:70dvh;object-fit:contain;background:#101b2b;border-radius:14px" {% if video.thumbnail %}poster="{{ video.thumbnail.url }}"{% endif %}><source src="{{ video.video_file.url }}">Your browser cannot play this video.</video>
+  {% video_moments_panel video request.user 'vm-feedback-player' %}
+  {% if is_coach %}<a class="btn btn-outline-primary mt-3" href="{% url 'video_library:video_detail' video.id %}">Open full video review</a>{% endif %}
+</div>
+{% endblock %}

@@ -1,5 +1,6 @@
 import tempfile
 from pathlib import Path
+from .storage_files import local_storage_file
 
 from django.core.files import File
 
@@ -37,30 +38,25 @@ def extract_analysis_frames(
             'This video does not have a source file.'
         )
 
-    video_path = Path(
-        video.video_file.path
-    )
-
-    metadata = read_video_metadata(
-        str(video_path)
-    )
-
-    if sample_count is None:
-        sample_count = (
-            calculate_dynamic_sample_count(
-                duration_seconds=(
-                    metadata.duration_seconds
-                ),
-                fps=metadata.fps,
+    with local_storage_file(video.video_file) as video_path, tempfile.TemporaryDirectory() as temp_directory:
+        metadata = read_video_metadata(
+            str(video_path)
+        )
+    
+        if sample_count is None:
+            sample_count = (
+                calculate_dynamic_sample_count(
+                    duration_seconds=(
+                        metadata.duration_seconds
+                    ),
+                    fps=metadata.fps,
+                )
             )
-        )
-
-    if metadata.duration_seconds <= 0:
-        raise ValueError(
-            'Video duration could not be determined.'
-        )
-
-    with tempfile.TemporaryDirectory() as temp_directory:
+    
+        if metadata.duration_seconds <= 0:
+            raise ValueError(
+                'Video duration could not be determined.'
+            )
         extracted_frames = extract_sample_frames(
             video_path=str(video_path),
             output_directory=temp_directory,
@@ -119,6 +115,7 @@ def extract_analysis_frames(
                     ),
                     'source': 'opencv',
                     'real_frame': True,
+                    'image_width': metadata.width, 'image_height': metadata.height,
                 },
                 display_order=100 + index,
             )

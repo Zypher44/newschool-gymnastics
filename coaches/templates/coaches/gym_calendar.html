@@ -12,7 +12,8 @@
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
     <div><h1 class="h3 mb-0">{{ month|date:'F Y' }}</h1><div class="text-muted">Events for your gym</div></div>
-    <div class="d-flex gap-2">
+    <div class="d-flex flex-wrap gap-2">
+        {% if user.role == 'parent' %}<a class="btn btn-primary" href="{% url 'parent_absence' %}">Absent or arriving late?</a>{% endif %}
         <a class="btn btn-outline-primary" href="?month={{ previous_month }}" aria-label="Previous month">← Previous</a>
         <a class="btn btn-outline-primary" href="?month={{ next_month }}" aria-label="Next month">Next →</a>
         {% if can_create %}<a class="btn btn-primary" href="{% url 'add_event' %}">+ Create Event</a>{% endif %}
@@ -28,12 +29,15 @@
                     {% for event in day.events %}<span class="calendar-event text-primary">
                         {% if event.start_time %}{{ event.start_time|time:'g:i A' }} · {% endif %}{{ event.title }}
                         {% if event.training_group %}<small class="d-block">{{ event.training_group.name }}</small>{% endif %}
+                    {% if user.role == 'parent' %}<a href="{% url 'parent_absence' %}?event={{ event.pk }}" class="d-block">Notify coach</a>{% endif %}
                     </span>{% endfor %}
+                    {% for notice in day.notices %}<span class="calendar-event text-warning-emphasis">{{ notice.athlete.get_full_name|default:notice.athlete.username }} · {{ notice.get_status_display }}</span>{% endfor %}
                 </td>{% endfor %}
             </tr>{% endfor %}
         </tbody>
     </table>
 </div>
+{% if notices %}<section class="card card-body mb-4"><h2 class="h5">Parent attendance notices</h2>{% for notice in notices %}<div class="border-top py-2"><strong>{{ notice.athlete.get_full_name|default:notice.athlete.username }}</strong> · {{ notice.practice_date }} · {{ notice.get_status_display }}{% if notice.expected_arrival %} · {{ notice.expected_arrival }}{% endif %}<div>{{ notice.note }}</div>{% if user.role == 'parent' %}<a href="{% url 'parent_absence' %}?edit={{ notice.pk }}">Update or cancel</a>{% endif %}</div>{% endfor %}</section>{% endif %}
 <h2 class="h5">Events this month</h2>
 <ul class="list-group mb-4">
     {% for event in events %}<li class="list-group-item d-flex justify-content-between gap-3">

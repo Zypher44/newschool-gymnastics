@@ -1,0 +1,10 @@
+{% extends 'practice_focus/progress_layout.html' %}
+{% block progress_content %}
+<section class="progress-card"><h1 class="h3">Coach review queue</h1><p>{{ pending_total }} result{{ pending_total|pluralize }} awaiting review. Select results, adjust any accidental scores, then approve or remove them. Only approved results enter weekly parent summaries.</p></section>
+{% if records %}<form method="post" class="progress-card">{% csrf_token %}
+<div class="progress-actions mb-3"><button type="button" class="btn btn-outline-secondary" onclick="this.form.querySelectorAll('[name=results]').forEach(input=>input.checked=true)">Select displayed results</button></div>
+<div class="progress-table-wrap"><table><thead><tr><th>Select</th><th>Athlete</th><th>Date</th><th>Skill or routine</th><th>Result</th></tr></thead><tbody>
+{% for record in records %}<tr><td><input type="checkbox" name="results" value="{{ record.pk }}" aria-label="Select result for {{ record.athlete.get_full_name|default:record.athlete.username }}"></td><td>{{ record.athlete.get_full_name|default:record.athlete.username }}</td><td>{{ record.practice_date|date:'M j' }}</td><td>{{ record.details.label }}</td><td><select name="result_{{ record.pk }}" aria-label="Result for {{ record.details.label }}"><option value="wow" {% if record.details.result == 'wow' %}selected{% endif %}>Wow</option><option value="hit" {% if record.details.result == 'hit' %}selected{% endif %}>Hit</option><option value="missed" {% if record.details.result == 'missed' %}selected{% endif %}>Attempt</option></select></td></tr>{% endfor %}
+</tbody></table></div><div class="progress-nav mt-3"><button class="btn btn-primary" name="action" value="approve">Approve selected results</button><button class="btn btn-outline-danger" name="action" value="reject">Remove selected results</button></div>
+</form>{% else %}<section class="progress-card">All caught up. No athlete-entered results need review.</section>{% endif %}
+{% endblock %}

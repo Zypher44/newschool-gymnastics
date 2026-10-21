@@ -1,0 +1,39 @@
+{% extends 'practice_focus/progress_layout.html' %}
+{% load static %}
+{% block title %}Practice Passport{% endblock %}
+{% block page_header %}Practice Passport{% endblock %}
+{% block progress_content %}
+<link rel="stylesheet" href="{% static 'practice_focus/passport.css' %}?v=2">
+<div class="passport-page">
+  {% if staff %}<div class="d-flex justify-content-end mb-3"><a href="{% url 'practice_focus:badge_editor' %}" class="btn btn-outline-primary">🏅 Create &amp; edit badges</a></div>{% endif %}
+  <header class="passport-hero"><div><p class="passport-eyebrow">A little progress. A new adventure.</p><h1>{% if staff %}Practice Passports{% else %}My Practice Passport{% endif %}</h1><p>{% if staff %}Recognize each child’s effort, learning, and personal progress. You approve every stamp.{% else %}Collect stamps, try your next adventure, and celebrate how far you’ve come.{% endif %}</p></div><span class="passport-hero-icon" aria-hidden="true">🏅</span></header>
+  <section class="progress-card passport-select">
+    {% if athletes %}{% if user.role == 'parent' %}<p>Viewing {{ athlete.get_full_name|default:athlete.username }}</p>{% else %}<form method="get"><label for="passport-athlete">{% if staff or user.role == 'parent' %}Choose an athlete{% else %}Your passport{% endif %}</label><div class="passport-filter"><select id="passport-athlete" name="athlete">{% for person in athletes %}<option value="{{ person.pk }}" {% if person == athlete %}selected{% endif %}>{{ person.get_full_name|default:person.username }}</option>{% endfor %}</select><button class="btn btn-outline-primary" type="submit">Show passport</button></div></form>{% endif %}{% else %}<p>{% if staff %}No active athletes are on your coaching roster.{% else %}Your passport will appear when your athlete connection is approved.{% endif %}</p>{% endif %}
+  </section>
+  {% if athlete %}
+  <div class="passport-summary"><div><h2>{{ athlete.get_full_name|default:athlete.username }}</h2><p>{{ earned_count }} of {{ total_stamps }} stamps collected · {{ badge_families }} badge families</p></div><div><strong>{{ metrics.attendance }}</strong><span>practices attended</span></div></div>
+  {% if staff %}
+  <section class="progress-card passport-award" id="passport-award"><h2>Award a stamp</h2><p class="progress-muted">Messages here are shared with the athlete and their approved linked parents. Learning and teamwork stamps use your observation; measurable stamps use approved results and recorded attendance.</p>
+    {% if award_catalog %}<form method="post" id="passport-award-form">{% csrf_token %}<input type="hidden" name="action" value="award"><input type="hidden" name="athlete" value="{{ athlete.pk }}">{{ form.as_p }}<p id="passport-rule" class="passport-rule" role="status" aria-live="polite"></p><button type="submit" class="btn btn-primary" id="passport-award-submit">Award stamp</button></form>{% else %}<p>No badges are available for new awards. Use Create &amp; edit badges to add or reactivate one.</p>{% endif %}
+  </section>
+  {{ card_data|json_script:'passport-card-data' }}
+  {% else %}
+    {% if user.role == 'athlete' %}<section class="passport-new" id="passport-new" hidden><p id="passport-new-message" role="status" aria-live="polite"></p><button type="button" class="btn btn-primary" id="passport-open-stamp">Open my new stamp</button></section>{{ celebrations|json_script:'passport-celebrations' }}<div id="passport-scope" data-scope="{{ celebration_scope }}" hidden></div>{% endif %}
+    {% if adventures %}<section class="progress-card"><h2>My next adventures</h2><div class="passport-adventures">{% for card in adventures %}<div><strong><span aria-hidden="true">{{ card.icon }}</span> {{ card.title }}</strong><p>{{ card.rule }}</p><p class="progress-muted">{% if card.ready %}Ready for your coach to award!{% else %}{{ card.progress }} of {{ card.target }} toward this stamp{% endif %}</p><progress value="{{ card.progress }}" max="{{ card.target }}" aria-label="{{ card.title }} progress"></progress></div>{% endfor %}</div></section>{% endif %}
+  {% endif %}
+  <section aria-labelledby="passport-collection-title"><h2 id="passport-collection-title">{% if staff %}Their stamp collection{% else %}My stamp collection{% endif %}</h2><p class="progress-muted">Every child has their own journey. Planned breaks do not reset attendance progress.</p>
+  <div class="passport-grid">{% for card in cards %}<article class="passport-stamp {% if card.earned %}passport-earned{% else %}passport-next{% endif %}" data-passport-slot="{{ card.slot }}">
+    <span class="passport-emblem" aria-hidden="true">{{ card.icon }}</span><p class="passport-level">{% if card.variant != 'earned' %}{{ card.label }}{% else %}Personal achievement{% endif %}</p><h3>{{ card.name }}</h3><p>{{ card.rule }}</p>
+    {% if card.requirement and card.requirement != card.rule and not card.manual %}<p class="progress-muted">Recorded requirement: {{ card.requirement }}</p>{% endif %}
+    {% if card.deleted %}<p class="progress-muted">Badge removed from new awards · earned stamp kept</p>{% elif not card.is_active %}<p class="progress-muted">Retired from new awards · earned stamp kept</p>{% endif %}
+    {% if card.earned %}<span class="passport-earned-label">Stamp collected!</span><p class="passport-date">{{ card.award.date|date:'M j, Y' }} · {{ card.award.coach }}</p>{% if card.award.note %}<p class="passport-note">{{ card.award.note }}</p>{% endif %}
+    {% else %}<p class="passport-progress">{% if card.manual %}{% if staff %}Your recognition makes this stamp ready.{% else %}Show your coach what you’ve learned!{% endif %}{% elif card.ready %}Ready for a coach’s stamp!{% else %}{{ card.progress }} of {{ card.target }} toward this stamp{% endif %}</p>{% if not card.manual %}<progress value="{{ card.progress }}" max="{{ card.target }}" aria-label="{{ card.title }} progress"></progress>{% endif %}
+    {% if staff %}<a class="btn btn-outline-primary" href="?athlete={{ athlete.pk }}&amp;slot={{ card.slot }}#passport-award" data-passport-choice="{{ card.slot }}">{% if card.ready %}Choose this stamp{% else %}View requirement{% endif %}</a>{% endif %}{% endif %}
+    {% if staff and card.earned %}<details class="passport-correct"><summary>Correct an award</summary><form method="post">{% csrf_token %}<input type="hidden" name="action" value="withdraw"><input type="hidden" name="athlete" value="{{ athlete.pk }}"><input type="hidden" name="stamp" value="{{ card.award.id }}"><input type="hidden" name="version" value="{{ card.award.version }}"><label for="withdraw-{{ card.award.id }}">Reason (coach history only)</label><input id="withdraw-{{ card.award.id }}" name="reason" maxlength="300" required placeholder="Example: Awarded to the wrong athlete"><button type="submit" class="btn btn-outline-danger">Withdraw stamp</button></form></details>{% endif %}
+  </article>{% endfor %}</div></section>
+  {% if staff and history %}<details class="progress-card passport-history"><summary>Coach award history</summary><p class="progress-muted">Recent awards and corrections. Withdrawal reasons stay visible to coaches only.</p>{% for item in history %}<p>{{ item.created_at|date:'M j, Y, g:i a' }} · {{ item.actor.get_full_name|default:item.actor.username }} · {{ item.get_action_display }}{% if item.snapshot.title %}: {{ item.snapshot.title }}{% endif %}{% if item.snapshot.reason %} · {{ item.snapshot.reason }}{% endif %}</p>{% endfor %}</details>{% endif %}
+  {% endif %}
+</div>
+{% if user.role == 'athlete' %}<script src="{% static 'skill_tracker/celebrations.js' %}?v=1" defer></script>{% endif %}
+<script src="{% static 'practice_focus/passport.js' %}?v=2" defer></script>
+{% endblock %}

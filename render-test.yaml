@@ -1,0 +1,39 @@
+# Free core test; create your own director using /accounts/signup/director/.
+databases:
+- name: newschool-v2-test-db
+  databaseName: newschool_v2_test
+  user: newschool_v2_test
+  plan: free
+  region: ohio
+  ipAllowList: []
+envVarGroups:
+- name: newschool-v2-test-env
+  envVars:
+  - key: DJANGO_SETTINGS_MODULE
+    value: DjangoProject.render_test_settings
+  - key: DJANGO_DEBUG
+    value: 'False'
+  - key: DJANGO_TIME_ZONE
+    value: America/Toronto
+  - key: DJANGO_SECRET_KEY
+    generateValue: true
+services:
+- type: web
+  name: newschool-v2-test
+  runtime: docker
+  repo: https://github.com/Zypher44/newschool-gymnastics
+  branch: staging/v2-render-test
+  dockerfilePath: ./Dockerfile.render-test
+  dockerCommand: bash deploy/start_render_test.sh web
+  plan: free
+  region: ohio
+  autoDeployTrigger: 'off'
+  healthCheckPath: /_render-test/health/
+  envVars:
+  - fromGroup: newschool-v2-test-env
+  - key: DATABASE_URL
+    fromDatabase:
+      name: newschool-v2-test-db
+      property: connectionString
+  - key: RENDER_TEST_VIDEOS_ENABLED
+    value: 'False'

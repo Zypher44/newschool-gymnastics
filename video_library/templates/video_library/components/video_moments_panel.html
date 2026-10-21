@@ -1,0 +1,43 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'video_library/video-moments.css' %}">
+<section class="vm-panel" data-video-moments data-player-id="{{ player_id }}"
+         data-list-url="{% url 'video_library:video_moments' video.id %}"
+         data-change-url="{% url 'video_library:change_video_moment' video.id 0 %}"
+         data-is-coach="{{ is_coach|yesno:'true,false' }}" aria-label="Video moment feedback">
+  <div class="vm-heading"><div><h2>Moment feedback</h2><p>Tap a time to see exactly what your coach means.</p></div>
+    {% if is_coach %}<div class="vm-actions"><button type="button" class="btn btn-primary" data-capture>Pause &amp; comment</button><button type="button" class="btn btn-outline-primary" data-draw-new>Draw on frame</button></div>{% endif %}
+  </div>
+  <p class="vm-status" data-status role="status" aria-live="polite">Loading moment feedback…</p>
+  {% if is_coach %}
+    <form data-editor hidden>
+      {% csrf_token %}
+      <div class="vm-draft-heading"><strong data-draft-label>New moment</strong><span data-draft-time></span><button type="button" class="btn btn-sm btn-outline-secondary" data-return-frame>Show this frame</button></div>
+      <label class="form-label mt-2">Coaching comment<textarea class="form-control" rows="3" maxlength="2500" data-comment placeholder="One clear cue or next step…"></textarea></label>
+      <div class="vm-toolbar" role="group" aria-label="Drawing tools">
+        <button type="button" class="btn btn-outline-primary" data-toggle-draw aria-pressed="false">Draw on this frame</button>
+        <button type="button" class="btn btn-outline-secondary active" data-tool="pen" aria-pressed="true">Pen</button>
+        <button type="button" class="btn btn-outline-secondary" data-tool="arrow" aria-pressed="false">Arrow</button>
+        <button type="button" class="btn btn-outline-secondary" data-tool="line" aria-pressed="false">Line</button>
+        <button type="button" class="btn btn-outline-secondary" data-tool="circle" aria-pressed="false">Circle</button>
+        <label>Color<select class="form-select" data-color><option value="#ef4444">Red</option><option value="#facc15">Yellow</option><option value="#3b82f6">Blue</option><option value="#22c55e">Green</option></select></label>
+        <button type="button" class="btn btn-outline-secondary" data-undo>Undo stroke</button>
+        <button type="button" class="btn btn-outline-secondary" data-clear>Clear drawing</button>
+      </div>
+      <p class="vm-hint">Draw with your mouse or finger. Markings stay attached to this paused moment.</p>
+      <div class="vm-save-row">
+        <label>Who can see this?<select class="form-select" data-visibility>
+          <option value="private">Only me</option><option value="coaches">Coaches with video access</option>
+          <option value="athlete" {% if video.visibility != 'athlete' and video.visibility != 'parents' %}disabled{% endif %}>Athlete</option>
+          <option value="parents" {% if video.visibility != 'parents' %}disabled{% endif %}>Athlete &amp; parents</option>
+        </select></label>
+        <button type="submit" class="btn btn-primary" data-save>Save moment</button>
+        <button type="button" class="btn btn-outline-secondary" data-cancel>Cancel</button>
+      </div>
+      {% if video.visibility == 'coaches' or video.visibility == 'private' %}<p class="vm-hint mt-2">Share the video first to enable athlete or parent feedback. Saving a comment does not change video sharing.</p>{% endif %}
+    </form>
+  {% endif %}
+  <div data-notes class="vm-notes"></div>
+  <button type="button" data-more class="btn btn-outline-primary mt-2" hidden>Load more moments</button>
+  <button type="button" data-retry class="btn btn-outline-secondary" hidden>Reload feedback</button>
+</section>
+<script src="{% static 'video_library/video-moments.js' %}" defer></script>

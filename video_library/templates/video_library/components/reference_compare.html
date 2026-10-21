@@ -1,0 +1,28 @@
+{% load video_references %}
+{% coaching_reference_videos video request.user as reference_examples %}
+<section class="card border rounded-3 mb-3">
+  <div class="card-body p-3 p-md-4">
+    <h2 class="h5 mb-2">Compare with Coaching Example</h2>
+    <p class="small text-muted mb-3">Choose a coach-approved skill example for {{ video.get_event_display }} · {{ video.skill_name|default:'this skill' }}. The example can feature another athlete.</p>
+    {% if video.status != 'ready' %}
+      <p class="small mb-0">Your upload must finish video processing before it can be compared.</p>
+    {% elif not video.skill_name or not video.event %}
+      <p class="small mb-0">Set the event and skill on this video so matching coaching examples can be found.</p>
+    {% elif reference_examples %}
+      <form method="get" action="{% url 'video_library:video_compare' %}" class="d-flex flex-column flex-sm-row align-items-sm-end gap-2">
+        <input type="hidden" name="video_2" value="{{ video.pk }}">
+        <div class="flex-grow-1"><label class="form-label small fw-semibold" for="reference-example-{{ video.pk }}">Coach-approved example</label>
+          <select class="form-select" name="video_1" id="reference-example-{{ video.pk }}" required>
+            <option value="">Choose an example</option>
+            {% for example in reference_examples %}<option value="{{ example.pk }}">{{ example.title }} — approved by {{ example.skill_library_approved_by.get_full_name|default:example.skill_library_approved_by.username }}</option>{% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary text-nowrap">Compare Videos</button>
+      </form>
+      <p class="small text-muted mt-2 mb-0">The example opens first and your attempt second. Side-by-side playback works without analysis; phase and angle comparisons require current side-view analyses of both videos.</p>
+    {% else %}
+      <p class="small mb-0">No matching example is available. <a href="{% url 'video_library:skill_example_upload' %}?event={{ video.event|urlencode }}&amp;skill={{ video.skill_name|urlencode }}">Upload a skill example</a> or open an existing video and click <strong>Approve as Skill Example</strong>.</p>
+    {% endif %}
+    <a class="btn btn-outline-secondary btn-sm mt-3" href="{% url 'video_library:skill_library' %}?attempt={{ video.pk }}">Browse Coach-Approved Skill Library</a>
+  </div>
+</section>

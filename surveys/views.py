@@ -1,55 +1,41 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError, transaction
 from django.shortcuts import render, redirect
 from django.utils import timezone
-
+from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_http_methods
 from .models import DailySurvey
-from coaches.models import TeamEvent
-from gyms.tenant import single_active_gym_id
+from .forms import DailySurveyForm
 
 
 @login_required
+@never_cache
+@require_http_methods(['GET', 'POST'])
 def submit_survey(request):
-    if request.user.role != "athlete":
-        return render(request, "surveys/not_allowed.html")
-
-    if request.method == "POST":
-        survey_date = timezone.now().date()
-
-        existing_survey = DailySurvey.objects.filter(
-            athlete=request.user,
-            survey_date=survey_date
-        ).first()
-
-        if existing_survey:
-            messages.error(request, "You already submitted a survey for today.")
-            return redirect("submit_survey")
-
-        DailySurvey.objects.create(
-            athlete=request.user,
-            survey_date=survey_date,
-            energy=int(request.POST.get("energy", 3)),
-            soreness=int(request.POST.get("soreness", 3)),
-            stress=int(request.POST.get("stress", 3)),
-            sleep_hours=request.POST.get("sleep_hours") or None,
-            ate_well=request.POST.get("ate_well") == "on",
-            hydrated=request.POST.get("hydrated") == "on",
-            soreness_area=request.POST.get("soreness_area", ""),
-            notes=request.POST.get("notes", ""),
-        )
-
-        return redirect("survey_success")
-
-    upcoming_events = TeamEvent.objects.filter(
-        gym_id=single_active_gym_id(request.user, ['athlete']),
-        event_date__gte=timezone.now().date()
-    ).order_by("event_date", "start_time")[:5]
-
-    return render(request, "surveys/submit_survey.html", {
-        "upcoming_events": upcoming_events,
-    })
+    if request.user.role != 'athlete' or not request.user.is_active:
+        return render(request, 'surveys/not_allowed.html', status=403)
+    today = timezone.localdate()
+    existing = DailySurvey.objects.filter(athlete=request.user, survey_date=today).first()
+    form = DailySurveyForm(request.POST if request.method == 'POST' else None, user=request.user)
+    if request.method == 'POST':
+        if existing:
+            messages.info(request, 'Your check-in is already saved for today.')
+            return redirect('submit_survey')
+        if form.is_valid():
+            survey = form.save(commit=False)
+            survey.athlete = request.user
+            survey.survey_date = today
+            try:
+                with transaction.atomic():
+                    survey.save()
+            except IntegrityError:
+                messages.info(request, 'Your check-in is already saved for today.')
+                return redirect('submit_survey')
+            return redirect('survey_success')
+    return render(request, 'surveys/submit_survey.html', {'form': form, 'existing': existing, 'today': today})
 
 
 @login_required
 def survey_success(request):
-    return render(request, "surveys/success.html")
+    return render(request, 'surveys/success.html')

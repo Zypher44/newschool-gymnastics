@@ -1,0 +1,14 @@
+{% load static l10n video_pose_frames %}
+{% pose_frame_picture frame as picture %}
+{% if picture.image %}
+<figure class="mb-3" data-pose-frame-picture>
+  <div class="small mb-2"><strong>{% if picture.overlay %}Skeleton Overlay{% else %}Original Frame{% endif %}</strong>{% if frame.measurements.is_key_frame %} · Key Frame{% endif %} · {{ frame.timestamp_seconds|unlocalize }}s</div>
+  <button type="button" class="btn border rounded-3 p-0 w-100" data-pose-frame-seek="{{ frame.timestamp_seconds|unlocalize }}" aria-label="View {{ frame.label }} at {{ frame.timestamp_seconds|unlocalize }} seconds">
+    <img src="{{ picture.image.url }}" loading="lazy" class="w-100 rounded-3" style="display:block;max-height:340px;object-fit:contain;background:#101827" alt="{% if picture.overlay %}Skeleton overlay{% else %}Original frame{% endif %} for {{ frame.label }} at {{ frame.timestamp_seconds|unlocalize }} seconds" data-pose-frame-image>
+  </button>
+  {% if picture.overlay and frame.frame_image %}<a href="{{ frame.frame_image.url }}" class="small" target="_blank" rel="noopener noreferrer">Open Original Picture</a>{% endif %}
+  {% if picture.reason %}<p class="small text-muted mt-2 mb-0">{{ picture.reason }}</p>{% endif %}
+  <p class="small text-muted mt-2 mb-0" data-pose-frame-status role="status" aria-live="polite"></p>
+</figure>
+<script src="{% static 'video_library/pose-frame-display.js' %}" defer></script>
+{% endif %}

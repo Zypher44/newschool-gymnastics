@@ -134,6 +134,10 @@ Analysis | {{ video.title }}
         <div class="row g-4">
 
             <main class="col-12 col-xl-8">
+                {% include "video_library/components/reference_compare.html" %}
+                {% include "video_library/components/analysis_progress.html" %}
+                {% include "video_library/components/analysis_results.html" %}
+                {% include "video_library/components/video_review.html" with latest_analysis=analysis %}
 
                 <section class="card analysis-card mb-4">
 
@@ -166,6 +170,8 @@ Analysis | {{ video.title }}
                                 Click an observation to jump to its timestamp.
                             </p>
 
+                            {% include 'video_library/components/pose_skeleton_help.html' %}
+
                         </div>
 
                         <div class="card-body px-4 pb-4">
@@ -175,6 +181,8 @@ Analysis | {{ video.title }}
                                 {% for item in analysis_moment_items %}
 
                                     <article class="moment-card p-3">
+
+                                        {% include 'video_library/components/pose_frame_image.html' with frame=item.moment %}
 
                                         <button
                                             type="button"

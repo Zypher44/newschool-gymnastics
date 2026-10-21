@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-import cv2
 
 
 @dataclass
@@ -24,6 +23,7 @@ def read_video_metadata(
     """
     Read real metadata from a video using OpenCV.
     """
+    import cv2
 
     path = Path(video_path)
 
@@ -93,6 +93,7 @@ def extract_thumbnail(
     """
     Extract one frame from the video and save it as a JPEG.
     """
+    import cv2
 
     video_path = Path(
         video_path

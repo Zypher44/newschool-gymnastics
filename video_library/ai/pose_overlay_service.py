@@ -6,7 +6,7 @@ from django.core.files import File
 
 from video_library.models import VideoAnalysis
 
-from .pose_drawing import draw_pose_overlay
+from .storage_files import local_storage_file
 
 
 def generate_pose_overlay_frames(
@@ -57,10 +57,6 @@ def generate_pose_overlay_frames(
                 or {}
             )
 
-            original_path = Path(
-                moment.frame_image.path
-            )
-
             unique_name = (
                 f'pose_overlay_'
                 f'{moment.id}_'
@@ -72,12 +68,14 @@ def generate_pose_overlay_frames(
                 / unique_name
             )
 
-            draw_pose_overlay(
-                image_path=original_path,
-                output_path=output_path,
-                landmarks=landmarks,
-                pose_angles=pose_angles,
-            )
+            from .pose_drawing import draw_pose_overlay
+            with local_storage_file(moment.frame_image, maximum_bytes=25 * 1024 * 1024) as original_path:
+                draw_pose_overlay(
+                    image_path=original_path,
+                    output_path=output_path,
+                    landmarks=landmarks,
+                    pose_angles=pose_angles,
+                )
 
             if not output_path.exists():
                 raise ValueError(
@@ -86,6 +84,9 @@ def generate_pose_overlay_frames(
                         f'{output_path}'
                     )
                 )
+
+            if moment.annotated_frame_image:
+                moment.annotated_frame_image.delete(save=False)
 
             with output_path.open(
                 'rb'

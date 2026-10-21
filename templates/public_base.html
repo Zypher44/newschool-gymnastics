@@ -232,19 +232,19 @@
                 <ul class="list-unstyled">
 
                     <li class="mb-2">
-                        <a href="#" class="text-decoration-none text-muted">
+                        <a href="{% url 'public_features' %}" class="text-decoration-none text-muted">
                             Features
                         </a>
                     </li>
 
                     <li class="mb-2">
-                        <a href="#" class="text-decoration-none text-muted">
+                        <a href="{% url 'public_pricing' %}" class="text-decoration-none text-muted">
                             Pricing
                         </a>
                     </li>
 
                     <li class="mb-2">
-                        <a href="#" class="text-decoration-none text-muted">
+                        <a href="{% url 'public_roadmap' %}" class="text-decoration-none text-muted">
                             Roadmap
                         </a>
                     </li>
@@ -263,19 +263,19 @@
                 <ul class="list-unstyled">
 
                     <li class="mb-2">
-                        <a href="#" class="text-decoration-none text-muted">
+                        <a href="{% url 'public_help' %}" class="text-decoration-none text-muted">
                             Help Center
                         </a>
                     </li>
 
                     <li class="mb-2">
-                        <a href="#" class="text-decoration-none text-muted">
+                        <a href="{% url 'public_contact' %}" class="text-decoration-none text-muted">
                             Contact
                         </a>
                     </li>
 
                     <li class="mb-2">
-                        <a href="#" class="text-decoration-none text-muted">
+                        <a href="{% url 'public_support' %}" class="text-decoration-none text-muted">
                             Support
                         </a>
                     </li>
@@ -294,19 +294,19 @@
                 <ul class="list-unstyled">
 
                     <li class="mb-2">
-                        <a href="#" class="text-decoration-none text-muted">
+                        <a href="{% url 'public_privacy' %}" class="text-decoration-none text-muted">
                             Privacy
                         </a>
                     </li>
 
                     <li class="mb-2">
-                        <a href="#" class="text-decoration-none text-muted">
+                        <a href="{% url 'public_terms' %}" class="text-decoration-none text-muted">
                             Terms
                         </a>
                     </li>
 
                     <li class="mb-2">
-                        <a href="#" class="text-decoration-none text-muted">
+                        <a href="{% url 'public_cookies' %}" class="text-decoration-none text-muted">
                             Cookies
                         </a>
                     </li>
@@ -353,15 +353,15 @@
 
             <div class="d-flex gap-4">
 
-                <a href="#" class="text-muted text-decoration-none">
+                <a href="{% url 'public_privacy' %}" class="text-muted text-decoration-none">
                     Privacy
                 </a>
 
-                <a href="#" class="text-muted text-decoration-none">
+                <a href="{% url 'public_terms' %}" class="text-muted text-decoration-none">
                     Terms
                 </a>
 
-                <a href="#" class="text-muted text-decoration-none">
+                <a href="{% url 'public_contact' %}" class="text-muted text-decoration-none">
                     Contact
                 </a>
 
@@ -380,5 +380,6 @@
 {% block extra_js %}
 {% endblock %}
 
+{% include "mobile/mobile_support.html" %}
 </body>
 </html>

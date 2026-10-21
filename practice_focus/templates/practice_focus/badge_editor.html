@@ -1,0 +1,23 @@
+{% extends 'practice_focus/progress_layout.html' %}
+{% block title %}Create & edit badges{% endblock %}
+{% block page_header %}Badge library{% endblock %}
+{% block progress_content %}
+<style>
+.badge-editor-shell {max-width:1160px;margin:auto}.badge-editor-top {display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:12px 0 24px}.badge-editor-grid {display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:24px;align-items:start}.badge-editor-form p {margin-bottom:16px}.badge-editor-list {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.badge-editor-item {display:flex;flex-direction:column;gap:10px;padding:18px;border:1px solid #dde3ed;border-radius:16px;background:white;overflow-wrap:anywhere}.badge-editor-item p {margin:0}.badge-editor-item .btn {align-self:flex-start;min-height:44px;margin-top:auto}.badge-editor-symbol {font-size:32px}.badge-editor-item h3 {font-size:1.1rem;margin:0}.badge-editor-shell .errorlist {color:#b42318}.badge-editor-retired {background:#f4f5f7}.badge-editor-form .btn {min-height:44px}@media(max-width:850px){.badge-editor-grid{grid-template-columns:minmax(0,1fr)}}@media(max-width:520px){.badge-editor-list{grid-template-columns:minmax(0,1fr)}}
+</style>
+<div class="badge-editor-shell">
+  <header class="badge-editor-top"><div><h1>🏅 Your gym’s badge library</h1><p class="progress-muted mb-0">Celebrate the achievements that matter to your athletes.</p></div><a href="{% url 'practice_focus:coach_passport' %}" class="btn btn-outline-primary">Back to Practice Passports</a></header>
+  <div class="badge-editor-grid">
+    <section class="progress-card badge-editor-form">
+      <h2>{% if definition %}Edit badge{% else %}Create a badge{% endif %}</h2>
+      <p class="progress-muted">Badges are shared with coaches in your gym. Athletes and parents see the name and how to earn it.</p>
+      {% if definition and not definition.custom %}<p class="p-3 border rounded">Saved result requirement: <strong>{{ definition.requirement }}</strong><br><span class="progress-muted">This check stays the same when you change the badge’s wording.</span></p>{% else %}<p class="p-3 border rounded">Custom badges are awarded when a coach confirms the achievement.</p>{% endif %}
+      <form method="post">{% csrf_token %}<input type="hidden" name="action" value="save"><input type="hidden" name="slot" value="{{ slot }}">{{ form.as_p }}<button type="submit" class="btn btn-primary">{% if definition %}Save changes{% else %}Create badge{% endif %}</button>{% if definition %}<a href="{% url 'practice_focus:badge_editor' %}" class="btn btn-outline-secondary">New badge</a>{% endif %}</form>
+      <p class="progress-muted mt-3 mb-0">Turn off “Available for new awards” to retire a badge. Existing earned stamps keep their original name, emoji and achievement details.</p>
+    </section>
+    <section aria-labelledby="badge-library-title"><h2 id="badge-library-title">Your badges</h2><p class="progress-muted">{{ badges|length }} stamps · select Edit to customize one.</p><div class="badge-editor-list">
+      {% for badge in badges %}<article class="badge-editor-item {% if not badge.is_active %}badge-editor-retired{% endif %}"><span class="badge-editor-symbol" aria-hidden="true">{{ badge.icon }}</span><h3>{{ badge.title }}</h3><p>{{ badge.rule }}</p><p class="small text-muted">{% if badge.custom %}Coach confirmed{% else %}Built-in{% endif %} · {% if badge.is_active %}Available{% else %}Retired{% endif %}</p><div class="d-flex flex-wrap gap-2 mt-auto"><a href="?slot={{ badge.slot|urlencode }}" class="btn btn-outline-primary" aria-label="Edit {{ badge.title }}">Edit</a><a href="{% url 'practice_focus:badge_delete' code=badge.code variant=badge.variant %}" class="btn btn-outline-danger" aria-label="Delete {{ badge.title }}">Delete</a></div></article>{% empty %}<p>No badges in your library. Create a badge to get started.</p>{% endfor %}
+    </div></section>
+  </div>
+</div>
+{% endblock %}

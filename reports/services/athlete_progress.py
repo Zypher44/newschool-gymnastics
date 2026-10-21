@@ -214,13 +214,13 @@ def calculate_wellness_summary(
     high_soreness_days = len([
         survey
         for survey in surveys
-        if survey.soreness >= 4
+        if (survey.soreness is not None and survey.soreness >= 4)
     ])
 
     high_stress_days = len([
         survey
         for survey in surveys
-        if survey.stress >= 4
+        if (survey.stress is not None and survey.stress >= 4)
     ])
 
     low_sleep_days = len([

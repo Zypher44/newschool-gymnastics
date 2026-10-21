@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load practice_focus_tags %}
 
 {% block title %}
 {{ athlete.get_full_name|default:athlete.username }} Routine Consistency
@@ -50,6 +51,11 @@ Routine Consistency
         color: #172033;
     }
 
+    .event-stat-breakdown { display: grid; gap: .45rem; margin-top: .65rem; }
+    .event-stat-set { padding: .55rem .65rem; border-radius: 10px; background: #f3f5f9; font-size: .72rem; }
+    .event-stat-set strong { display: block; margin-bottom: .2rem; color: #344054; }
+    .event-stat-set span { color: #667085; }
+
     .event-card {
         height: 100%;
         padding: 20px;
@@ -90,10 +96,6 @@ Routine Consistency
     .metric-value {
         color: #172033;
         font-weight: 750;
-    }
-
-    .quality-value {
-        color: #0d6efd;
     }
 
     .hit-value {
@@ -208,12 +210,12 @@ Routine Consistency
 
         <div class="row g-3 mb-4">
 
-            <div class="col-6 col-lg-3">
+            <div class="col-6 col-lg-4">
 
                 <div class="summary-card">
 
                     <div class="small text-muted">
-                        Routine Attempts
+                        Routines logged
                     </div>
 
                     <div class="summary-value">
@@ -229,7 +231,7 @@ Routine Consistency
             </div>
 
 
-            <div class="col-6 col-lg-3">
+            <div class="col-6 col-lg-4">
 
                 <div class="summary-card">
 
@@ -250,7 +252,7 @@ Routine Consistency
             </div>
 
 
-            <div class="col-6 col-lg-3">
+            <div class="col-6 col-lg-4">
 
                 <div class="summary-card">
 
@@ -270,26 +272,6 @@ Routine Consistency
 
             </div>
 
-
-            <div class="col-6 col-lg-3">
-
-                <div class="summary-card">
-
-                    <div class="small text-muted">
-                        Routine Quality
-                    </div>
-
-                    <div class="summary-value text-primary">
-                        {{ overall_stats.quality }}%
-                    </div>
-
-                    <div class="small text-muted">
-                        Wow + partial credit for Hit
-                    </div>
-
-                </div>
-
-            </div>
 
         </div>
 
@@ -325,10 +307,12 @@ Routine Consistency
                         </div>
 
 
-                        <div class="metric-row">
+                        {% current_skills athlete event_row.event.code %}
+
+<div class="metric-row">
 
                             <span>
-                                Attempts
+                                Routines logged
                             </span>
 
                             <span class="metric-value">
@@ -367,7 +351,7 @@ Routine Consistency
                         <div class="metric-row">
 
                             <span>
-                                Misses
+                                Attempts
                             </span>
 
                             <span class="metric-value">
@@ -389,18 +373,12 @@ Routine Consistency
 
                         </div>
 
-
-                        <div class="metric-row">
-
-                            <span>
-                                Quality
-                            </span>
-
-                            <span class="metric-value quality-value">
-                                {{ event_row.stats.quality }}%
-                            </span>
-
+                        <div class="event-stat-breakdown">
+                            <div class="event-stat-set"><strong>Routine</strong><span>Wow {{ event_row.routine_stats.wows }} · Hit {{ event_row.routine_stats.hits }} · Attempt {{ event_row.routine_stats.missed }}</span></div>
+                            <div class="event-stat-set"><strong>Pressure set</strong><span>Wow {{ event_row.pressure_stats.wows }} · Hit {{ event_row.pressure_stats.hits }} · Attempt {{ event_row.pressure_stats.missed }}</span></div>
                         </div>
+
+
 
                     </article>
 
@@ -428,18 +406,8 @@ Routine Consistency
                     </h3>
 
                     <div class="small text-muted">
-
-                        <strong>Attempts</strong>
-                        show routine volume.
-
-                        <strong>Success Rate</strong>
-                        shows how often routines were marked Wow or Hit.
-
-                        <strong>Routine Quality</strong>
-                        gives full credit to Wow routines and partial
-                        credit to Hit routines, helping show both
-                        successful volume and exceptional quality.
-
+                        <strong>Wow</strong>, <strong>Hit</strong>, and <strong>Attempt</strong> show how each routine was recorded.
+                        <strong>Success Rate</strong> is the share marked Wow or Hit.
                     </div>
 
                 </div>

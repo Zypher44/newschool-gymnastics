@@ -15,13 +15,13 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from .ai import VideoAnalysisProcessor
 from .ai.comparison_interpretation import build_coaching_interpretation
 from .ai.comparison_service import compare_analyses
 from .ai.comparison_summary import build_comparison_summary
 from .ai.frame_service import extract_analysis_frames
 from .ai.pose_overlay_service import generate_pose_overlay_frames
 from .ai.pose_service import analyze_extracted_frames
+from .analysis_queue import enqueue_analysis
 from .ai.video_service import process_video_file
 
 from .forms import TechniqueProfileForm, VideoUploadForm
@@ -82,6 +82,7 @@ def get_accessible_videos(user):
     videos = (
         Video.objects
         .filter(gym_id=gym_id)
+        .filter(~Q(visibility=Video.VISIBILITY_PRIVATE) | Q(uploaded_by=user))
         .select_related(
             'primary_athlete',
             'uploaded_by',
@@ -115,7 +116,7 @@ def user_can_access_analysis(user, analysis):
     )
 
 
-def get_comparison_candidates(video):
+def get_comparison_candidates(video, user):
     """
     Completed analyses belonging to another video
     for the same athlete and skill.
@@ -135,8 +136,11 @@ def get_comparison_candidates(video):
         .filter(
             video__primary_athlete_id=video.primary_athlete_id,
             video__gym_id=video.gym_id,
+            video_id__in=get_accessible_videos(user).values("id"),
             video__skill_name__iexact=video.skill_name.strip(),
             status=VideoAnalysis.STATUS_COMPLETED,
+            analysis_source=VideoAnalysis.SOURCE_POSE, analysis_version="pose-evidence-1.0.0",
+            raw_results__camera_view="side",
         )
         .exclude(video_id=video.id)
         .order_by('-created_at')
@@ -168,6 +172,11 @@ def update_video_sharing(
         ),
         id=video_id,
     )
+
+    if video.is_skill_library_video:
+        from .skill_library import can_manage
+        if not can_manage(video, request.user):
+            return JsonResponse({'error': 'Only the uploader, approving coach or head coach can change this example sharing.'}, status=403)
 
     visibility = (
         request.POST.get(
@@ -363,7 +372,7 @@ def toggle_reference_attempt(request, video_id):
         )
 
     (
-        Video.objects
+        get_accessible_videos(request.user)
         .filter(
             primary_athlete_id=video.primary_athlete_id,
             gym_id=video.gym_id,
@@ -404,42 +413,8 @@ def toggle_reference_attempt(request, video_id):
 @login_required
 @require_POST
 def toggle_coaching_example(request, video_id):
-    if not user_is_coach(request.user):
-        messages.error(
-            request,
-            'Only coaches can update video references.',
-        )
-        return redirect('role_redirect')
-
-    video = get_object_or_404(
-        get_accessible_videos(request.user),
-        id=video_id,
-    )
-
-    video.is_coaching_example = not video.is_coaching_example
-
-    if video.is_coaching_example:
-        video.reference_marked_by = request.user
-        video.reference_marked_at = timezone.now()
-
-    video.save(
-        update_fields=[
-            'is_coaching_example',
-            'reference_marked_by',
-            'reference_marked_at',
-            'updated_at',
-        ],
-    )
-
-    messages.success(
-        request,
-        'Coaching Example was updated.',
-    )
-
-    return redirect(
-        'video_library:video_detail',
-        video_id=video.id,
-    )
+    from .skill_library_views import toggle_existing_example
+    return toggle_existing_example(request, video_id)
 
 
 # ============================================================
@@ -766,6 +741,7 @@ def video_list(request):
         'date_from': date_from,
         'date_to': date_to,
         'result_count': videos.count(),
+        'is_mock_meet_view': type_filter == Video.TYPE_MOCK_MEET,
     }
 
     return render(
@@ -773,6 +749,18 @@ def video_list(request):
         'video_library/video_list.html',
         context,
     )
+
+
+@login_required
+def mock_meet_library(request):
+    """Open the video library directly to mock-meet pressure clips."""
+    if not user_is_coach(request.user):
+        messages.error(request, 'Only coaches and head coaches can access Mock Meet videos.')
+        return redirect('role_redirect')
+    params = request.GET.copy()
+    params['video_type'] = Video.TYPE_MOCK_MEET
+    request.GET = params
+    return video_list(request)
 
 
 # ============================================================
@@ -867,7 +855,7 @@ def video_detail(request, video_id):
         'latest_analysis': latest_analysis,
         'analysis_moment_items': analysis_moment_items,
         'analysis_count': video.analyses.count(),
-        'comparison_candidates': get_comparison_candidates(video),
+        'comparison_candidates': get_comparison_candidates(video, request.user),
     }
 
     return render(
@@ -1029,6 +1017,7 @@ def video_upload(request):
                             'content_type',
                             '',
                         ),
+                        camera_view=form.cleaned_data.get('camera_view') or 'unknown',
                         ai_status=ai_status,
                         status=Video.STATUS_UPLOADING,
                     )
@@ -1038,6 +1027,9 @@ def video_upload(request):
                             'tagged_athletes'
                         ]
                     )
+
+                    if form.cleaned_data['request_ai_analysis']:
+                        enqueue_analysis(video, request.user)
 
                     uploaded_videos.append(video)
 
@@ -1058,8 +1050,13 @@ def video_upload(request):
             )
 
     else:
+        requested_type = request.GET.get('video_type', '')
+        valid_types = {value for value, _label in Video.VIDEO_TYPE_CHOICES}
         form = VideoUploadForm(
             user=request.user,
+            initial={
+                'video_type': requested_type if requested_type in valid_types else Video.TYPE_PRACTICE,
+            },
         )
 
     return render(
@@ -1195,57 +1192,13 @@ def request_video_analysis(request, video_id):
         id=video_id,
     )
 
-    active_analysis = (
-        video.analyses
-        .filter(
-            status__in=ACTIVE_ANALYSIS_STATUSES,
-        )
-        .order_by('-created_at')
-        .first()
-    )
-
-    if active_analysis:
-        messages.info(
-            request,
-            (
-                'This video already has an '
-                'analysis in progress.'
-            ),
-        )
-
-        return redirect(
-            'video_library:video_detail',
-            video_id=video.id,
-        )
-
-    VideoAnalysis.objects.create(
-        video=video,
-        requested_by=request.user,
-        status=VideoAnalysis.STATUS_QUEUED,
-        progress_percentage=0,
-        current_step='Waiting to begin',
-        analysis_source=VideoAnalysis.SOURCE_MOCK,
-        analysis_version='0.1.0',
-        requested_skill=video.skill_name,
-    )
-
-    video.ai_status = Video.AI_QUEUED
-    video.save(
-        update_fields=[
-            'ai_status',
-            'updated_at',
-        ],
-    )
-
-    messages.success(
-        request,
-        'Video analysis was added to the queue.',
-    )
-
-    return redirect(
-        'video_library:video_detail',
-        video_id=video.id,
-    )
+    try:
+        analysis, created = enqueue_analysis(video, request.user)
+    except ValueError as error:
+        messages.error(request, str(error))
+    else:
+        messages.success(request, 'Analysis queued. You can leave this page while it processes.' if created else 'This video already has an analysis in progress.')
+    return redirect('video_library:video_detail', video_id=video.id)
 
 
 # ============================================================
@@ -1271,79 +1224,13 @@ def rerun_video_analysis(request, video_id):
         id=video_id,
     )
 
-    active_analysis = (
-        video.analyses
-        .filter(
-            status__in=ACTIVE_ANALYSIS_STATUSES,
-        )
-        .order_by('-created_at')
-        .first()
-    )
-
-    if active_analysis:
-        messages.info(
-            request,
-            (
-                'This video already has an '
-                'analysis in progress.'
-            ),
-        )
-
-        return redirect(
-            'video_library:analysis_detail',
-            analysis_id=active_analysis.id,
-        )
-
-    latest_analysis = (
-        video.analyses
-        .order_by('-created_at')
-        .first()
-    )
-
-    requested_skill = (
-        video.skill_name
-        or ''
-    ).strip()
-
-    if not requested_skill and latest_analysis:
-        requested_skill = (
-            latest_analysis.requested_skill
-            or latest_analysis.detected_skill
-            or ''
-        )
-
-    VideoAnalysis.objects.create(
-        video=video,
-        requested_by=request.user,
-        status=VideoAnalysis.STATUS_QUEUED,
-        progress_percentage=0,
-        current_step='Waiting to begin',
-        analysis_source=VideoAnalysis.SOURCE_MOCK,
-        analysis_version='0.1.0',
-        requested_skill=requested_skill,
-    )
-
-    video.ai_status = Video.AI_QUEUED
-    video.save(
-        update_fields=[
-            'ai_status',
-            'updated_at',
-        ],
-    )
-
-    messages.success(
-        request,
-        (
-            'A new analysis was created. '
-            'Previous results and coach reviews '
-            'were preserved.'
-        ),
-    )
-
-    return redirect(
-        'video_library:video_detail',
-        video_id=video.id,
-    )
+    try:
+        analysis, created = enqueue_analysis(video, request.user)
+    except ValueError as error:
+        messages.error(request, str(error))
+    else:
+        messages.success(request, 'Analysis queued. You can leave this page while it processes.' if created else 'This video already has an analysis in progress.')
+    return redirect('video_library:video_detail', video_id=video.id)
 
 
 # ============================================================
@@ -1355,76 +1242,10 @@ def rerun_video_analysis(request, video_id):
 @require_POST
 def process_mock_analysis(request, analysis_id):
     if not user_is_coach(request.user):
-        return JsonResponse(
-            {'error': 'Permission denied.'},
-            status=403,
-        )
-
-    analysis = get_object_or_404(
-        VideoAnalysis.objects.select_related('video'),
-        id=analysis_id,
-    )
-
-    if not user_can_access_analysis(
-        request.user,
-        analysis,
-    ):
-        return JsonResponse(
-            {'error': 'Permission denied.'},
-            status=403,
-        )
-
-    if analysis.is_finished:
-        return JsonResponse({
-            'status': analysis.status,
-            'status_display': (
-                analysis.get_status_display()
-            ),
-            'progress_percentage': (
-                analysis.progress_percentage
-            ),
-            'current_step': analysis.current_step,
-            'is_finished': True,
-        })
-
-    try:
-        processor = VideoAnalysisProcessor()
-        processor.process(analysis=analysis)
-
-    except Exception as error:
-        analysis.refresh_from_db()
-
-        return JsonResponse(
-            {
-                'status': analysis.status,
-                'status_display': (
-                    analysis.get_status_display()
-                ),
-                'progress_percentage': (
-                    analysis.progress_percentage
-                ),
-                'current_step': (
-                    analysis.current_step
-                ),
-                'is_finished': analysis.is_finished,
-                'error': str(error),
-            },
-            status=500,
-        )
-
-    analysis.refresh_from_db()
-
-    return JsonResponse({
-        'status': analysis.status,
-        'status_display': (
-            analysis.get_status_display()
-        ),
-        'progress_percentage': (
-            analysis.progress_percentage
-        ),
-        'current_step': analysis.current_step,
-        'is_finished': analysis.is_finished,
-    })
+        return JsonResponse({'error': 'Permission denied.'}, status=403)
+    analysis = get_object_or_404(VideoAnalysis, pk=analysis_id, video__in=get_accessible_videos(request.user))
+    return JsonResponse({'status': analysis.status, 'is_finished': analysis.is_finished,
+                         'message': 'Processing is handled by the background analysis worker.'}, status=202)
 
 
 # ============================================================
@@ -1631,7 +1452,7 @@ def video_analysis_detail(request, analysis_id):
         'next_analysis': next_analysis,
         'comparison_candidates': (
             get_comparison_candidates(
-                analysis.video
+                analysis.video, request.user
             )
         ),
     }
@@ -1878,72 +1699,8 @@ def review_analysis_moment(request, moment_id):
 
 @login_required
 @require_POST
-def extract_video_analysis_frames(
-    request,
-    video_id,
-):
-    if not user_is_coach(request.user):
-        messages.error(
-            request,
-            (
-                'You do not have permission to '
-                'extract frames from this video.'
-            ),
-        )
-        return redirect('role_redirect')
-
-    video = get_object_or_404(
-        get_accessible_videos(request.user),
-        id=video_id,
-    )
-
-    analysis = (
-        video.analyses
-        .order_by('-created_at')
-        .first()
-    )
-
-    if not analysis:
-        messages.error(
-            request,
-            (
-                'Run an analysis first so the '
-                'extracted frames have an analysis '
-                'record to belong to.'
-            ),
-        )
-        return redirect(
-            'video_library:video_detail',
-            video_id=video.id,
-        )
-
-    try:
-        frames = extract_analysis_frames(
-            analysis=analysis,
-            sample_count=None,
-        )
-
-        messages.success(
-            request,
-            (
-                f'{len(frames)} real video '
-                'frames were extracted successfully.'
-            ),
-        )
-
-    except Exception as error:
-        messages.error(
-            request,
-            (
-                'Frame extraction failed: '
-                f'{error}'
-            ),
-        )
-
-    return redirect(
-        'video_library:video_detail',
-        video_id=video.id,
-    )
+def extract_video_analysis_frames(request, video_id):
+    return request_video_analysis(request, video_id)
 
 
 # ============================================================
@@ -1954,87 +1711,7 @@ def extract_video_analysis_frames(
 @login_required
 @require_POST
 def detect_video_pose(request, video_id):
-    if not user_is_coach(request.user):
-        messages.error(
-            request,
-            (
-                'You do not have permission '
-                'to run pose detection.'
-            ),
-        )
-        return redirect('role_redirect')
-
-    video = get_object_or_404(
-        get_accessible_videos(request.user),
-        id=video_id,
-    )
-
-    analysis = (
-        video.analyses
-        .order_by('-created_at')
-        .first()
-    )
-
-    if not analysis:
-        messages.error(
-            request,
-            (
-                'Run an analysis before '
-                'running pose detection.'
-            ),
-        )
-        return redirect(
-            'video_library:video_detail',
-            video_id=video.id,
-        )
-
-    frame_count = (
-        analysis.moments
-        .exclude(frame_image='')
-        .count()
-    )
-
-    if frame_count == 0:
-        messages.error(
-            request,
-            (
-                'Extract real analysis frames '
-                'before running pose detection.'
-            ),
-        )
-        return redirect(
-            'video_library:video_detail',
-            video_id=video.id,
-        )
-
-    try:
-        results = analyze_extracted_frames(
-            analysis
-        )
-
-        messages.success(
-            request,
-            (
-                'Pose detection completed. '
-                f'{results["frames_with_pose"]} of '
-                f'{results["analyzed_frames"]} frames '
-                'contained a detected pose.'
-            ),
-        )
-
-    except Exception as error:
-        messages.error(
-            request,
-            (
-                'Pose detection failed: '
-                f'{error}'
-            ),
-        )
-
-    return redirect(
-        'video_library:video_detail',
-        video_id=video.id,
-    )
+    return request_video_analysis(request, video_id)
 
 
 # ============================================================
@@ -2045,86 +1722,7 @@ def detect_video_pose(request, video_id):
 @login_required
 @require_POST
 def generate_pose_overlays(request, video_id):
-    if not user_is_coach(request.user):
-        messages.error(
-            request,
-            (
-                'You do not have permission '
-                'to generate pose overlays.'
-            ),
-        )
-        return redirect('role_redirect')
-
-    video = get_object_or_404(
-        get_accessible_videos(request.user),
-        id=video_id,
-    )
-
-    analysis = (
-        video.analyses
-        .order_by('-created_at')
-        .first()
-    )
-
-    if not analysis:
-        messages.error(
-            request,
-            'Run an analysis first.',
-        )
-        return redirect(
-            'video_library:video_detail',
-            video_id=video.id,
-        )
-
-    pose_frame_count = 0
-
-    for moment in analysis.moments.all():
-        measurements = moment.measurements or {}
-
-        if measurements.get(
-            'pose_landmarks'
-        ):
-            pose_frame_count += 1
-
-    if pose_frame_count == 0:
-        messages.error(
-            request,
-            (
-                'Run pose detection before '
-                'generating overlays.'
-            ),
-        )
-        return redirect(
-            'video_library:video_detail',
-            video_id=video.id,
-        )
-
-    try:
-        result = generate_pose_overlay_frames(
-            analysis
-        )
-
-        messages.success(
-            request,
-            (
-                f'{result["generated_frames"]} '
-                'annotated pose frames were generated.'
-            ),
-        )
-
-    except Exception as error:
-        messages.error(
-            request,
-            (
-                'Pose overlay generation failed: '
-                f'{error}'
-            ),
-        )
-
-    return redirect(
-        'video_library:video_detail',
-        video_id=video.id,
-    )
+    return request_video_analysis(request, video_id)
 
 
 # ============================================================
@@ -2184,6 +1782,11 @@ def compare_video_analyses(
         return redirect(
             'video_library:video_list'
         )
+
+    if any(a.analysis_source != 'pose' or a.analysis_version != 'pose-evidence-1.0.0'
+           or a.status != 'completed' or (a.raw_results or {}).get('camera_view') != 'side' for a in (first_analysis, second_analysis)):
+        messages.info(request, 'Run current side-view analysis on both videos before comparing measurements.')
+        return redirect('video_library:video_compare')
 
     comparison = compare_analyses(
         first_analysis=first_analysis,
@@ -2416,6 +2019,8 @@ def video_compare(request):
         first_video.analyses
         .filter(
             status=VideoAnalysis.STATUS_COMPLETED,
+            analysis_source=VideoAnalysis.SOURCE_POSE, analysis_version="pose-evidence-1.0.0",
+            raw_results__camera_view="side",
         )
         .prefetch_related('moments')
         .order_by('-created_at')
@@ -2426,6 +2031,8 @@ def video_compare(request):
         second_video.analyses
         .filter(
             status=VideoAnalysis.STATUS_COMPLETED,
+            analysis_source=VideoAnalysis.SOURCE_POSE, analysis_version="pose-evidence-1.0.0",
+            raw_results__camera_view="side",
         )
         .prefetch_related('moments')
         .order_by('-created_at')
@@ -2450,6 +2057,7 @@ def video_compare(request):
         moments = list(
             analysis.moments
             .exclude(frame_image='')
+            .exclude(frame_image__isnull=True)
             .order_by('timestamp_seconds')
         )
 
@@ -2527,6 +2135,7 @@ def video_compare(request):
                 )
 
             phase_map[phase] = {
+                'frame_moment': best_moment,
                 'timestamp': float(
                     best_moment.timestamp_seconds
                 ),
@@ -2639,6 +2248,7 @@ def video_compare(request):
         'first_analysis': first_analysis,
         'second_analysis': second_analysis,
         'phase_comparisons': phase_comparisons,
+        'keyframe_comparisons': [phase for phase in phase_comparisons if phase['first'] and phase['second']],
         'comparison_summary': comparison_summary,
         'comparison_skill_name': (
             comparison_skill_name
@@ -3110,6 +2720,8 @@ def athlete_skill_progress(
                 status=(
                     VideoAnalysis.STATUS_COMPLETED
                 ),
+                analysis_source=VideoAnalysis.SOURCE_POSE, analysis_version="pose-evidence-1.0.0",
+            raw_results__camera_view="side",
             )
             .order_by(
                 '-created_at',
@@ -4596,3 +4208,28 @@ def update_skill_goal_status(
             f'?skill={goal.skill_name}'
         )
     )
+
+
+@login_required
+@require_POST
+def update_video_camera_view(request, video_id):
+    if not user_is_coach(request.user):
+        return JsonResponse({'error': 'Permission denied.'}, status=403)
+    video = get_object_or_404(get_accessible_videos(request.user), pk=video_id)
+    if video.is_skill_library_video:
+        from .skill_library import can_manage
+        if not can_manage(video, request.user):
+            return JsonResponse({'error': 'Only the uploader, approving coach or head coach can change this example.'}, status=403)
+    camera_view = request.POST.get('camera_view', '')
+    if camera_view not in dict(Video.CAMERA_VIEW_CHOICES):
+        messages.error(request, 'Choose a valid camera view.')
+    else:
+        changed = video.camera_view != camera_view
+        video.camera_view = camera_view
+        video.save(update_fields=['camera_view', 'updated_at'])
+        if changed and video.is_skill_library_video:
+            from .skill_library import remove_approval
+            remove_approval(video)
+            messages.info(request, 'This skill example needs a new coach approval after changing its camera view.')
+        messages.success(request, 'Camera view saved. Run a new analysis to use this view; previous results keep their original view.')
+    return redirect('video_library:video_detail', video_id=video.pk)

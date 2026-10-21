@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{% if owner %}My Practice Journal{% else %}Shared Practice Journals{% endif %}{% endblock %}
+{% block page_header %}Practice Journal{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'practice_focus/journal.css' %}?v=1">{% endblock %}
+{% block content %}<div class="aj-shell">
+  <header class="aj-heading"><div><p class="aj-eyebrow">Practice reflections</p><h1>{% if owner %}My Practice Journal{% else %}Shared Practice Journals{% endif %}</h1><p class="aj-muted">{% if owner %}Remember your wins, work through challenges, and choose your next step.{% else %}Read the entries athletes have chosen to share with you.{% endif %}</p></div><a class="aj-button" href="{% url 'practice_focus:journal_history' %}">{% if owner %}Past entries{% else %}Shared entries{% endif %}</a></header>
+  {% block journal_content %}{% endblock %}
+</div>{% endblock %}

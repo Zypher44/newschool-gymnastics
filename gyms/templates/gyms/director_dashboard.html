@@ -103,6 +103,7 @@ Director Dashboard | {{ gym.name }}
 
         <div class="d-flex flex-wrap gap-2">
 
+            <a href="{% url 'gym_usage' %}?view=week" class="btn btn-outline-primary">📊 Gym Usage</a>
             <a href="{% url 'gym_settings' %}" class="btn btn-outline-primary">⚙️ Gym Settings</a>
 
             <a
@@ -120,10 +121,10 @@ Director Dashboard | {{ gym.name }}
             </a>
 
             <a
-            href="{% url 'director_event_list' %}"
+            href="{% url 'gym_calendar' %}"
             class="btn btn-outline-primary"
             >
-                📅 Manage Events
+                📅 Open Calendar
             </a>
 
             <a

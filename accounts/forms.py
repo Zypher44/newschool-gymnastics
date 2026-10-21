@@ -254,3 +254,16 @@ class PublicSignUpForm(UserCreationForm):
             user.save()
 
         return user
+
+
+from .models import CommunicationPreference
+
+
+class CommunicationPreferenceForm(forms.ModelForm):
+    class Meta:
+        model = CommunicationPreference
+        fields = ['in_app_updates', 'email_reports', 'report_frequency']
+        labels = {'in_app_updates': 'Show routine update notifications in the app',
+                  'email_reports': 'Email me reports shared by the coaching team',
+                  'report_frequency': 'Report email timing'}
+        widgets = {'report_frequency': forms.Select(attrs={'class': 'form-select'})}

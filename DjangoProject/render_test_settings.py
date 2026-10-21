@@ -1,0 +1,36 @@
+"""Separate settings used only by the proposed Render test services."""
+from django.core.exceptions import ImproperlyConfigured
+from .settings import *
+
+RENDER_TEST_ENVIRONMENT = True
+
+if DEBUG:
+    raise ImproperlyConfigured('The public test service requires DJANGO_DEBUG=False.')
+if not DATABASE_URL:
+    raise ImproperlyConfigured('The test service requires its own PostgreSQL DATABASE_URL.')
+if DATABASES['default']['ENGINE'] != 'django.db.backends.postgresql':
+    raise ImproperlyConfigured('A separate PostgreSQL test database is required.')
+if DATABASES['default']['NAME'] != 'newschool_v2_test':
+    raise ImproperlyConfigured('Refusing the database: use the separate newschool_v2_test database.')
+RENDER_TEST_VIDEOS_ENABLED = env_bool('RENDER_TEST_VIDEOS_ENABLED', False)
+if RENDER_TEST_VIDEOS_ENABLED:
+    if not USE_SUPABASE_STORAGE or SUPABASE_STORAGE_BUCKET != 'athlete-videos-test':
+        raise ImproperlyConfigured('Use a private athlete-videos-test storage bucket for the test environment.')
+    STORAGES['default']['OPTIONS']['location'] = 'render-test'
+else:
+    # Core testing does not require cloud storage. Reject media writes instead
+    # of allowing uploads to disappear from Render's temporary filesystem.
+    USE_SUPABASE_STORAGE = False
+    STORAGES['default'] = {'BACKEND': 'DjangoProject.render_test_media.DisabledTestMediaStorage'}
+ROOT_URLCONF = 'DjangoProject.render_test_urls'
+MIDDLEWARE = [*MIDDLEWARE, 'DjangoProject.render_test_urls.TestResponseHeaders',
+              'DjangoProject.render_test_media.TestMediaMiddleware']
+
+# Report delivery uses a provider directly, independently of Django EMAIL_BACKEND.
+# Keep it unconfigured until an explicit test delivery setup is requested.
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+REPORT_EMAIL_API_KEY = ''
+REPORT_EMAIL_FROM = ''
+REPORT_EMAIL_APP_URL = ''
+SESSION_COOKIE_NAME = 'newschool_render_test_session'
+CSRF_COOKIE_NAME = 'newschool_render_test_csrf'

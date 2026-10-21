@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Practice Planner{% endblock %}
+{% block page_header %}Practice Planner{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'practice_focus/personal_planner.css' %}?v=1">
+<div class="pp-shell" id="pp-page" data-live-page><div data-live-messages role="status" aria-live="polite"></div>
+    <header class="pp-header"><div><p class="pp-eyebrow">Individual training</p><h1>Practice Planner</h1><p>A plan for each athlete. Reuse the structure, then make it their own.</p></div>
+        <nav class="pp-links" aria-label="Practice tools"><a href="{% url 'routine_tracker:daily_routine_tracker' %}">Routine Tracker</a><a href="{% url 'skill_tracker:tracker' %}{% if selected_athlete %}?athlete={{ selected_athlete.pk }}{% endif %}">Skill Tracker</a><a href="{% url 'skill_tracker:manage' %}{% if selected_athlete %}?athlete={{ selected_athlete.pk }}{% endif %}">Manage skills</a></nav>
+    </header>
+    <section class="pp-card pp-select">
+        <form method="get" data-pp-leave class="pp-filter">
+            <label>Group<select name="group"><option value="">All athletes</option>{% for group in groups %}<option value="{{ group.pk }}" {% if group.pk == selected_group.pk %}selected{% endif %}>{{ group.name }}</option>{% endfor %}</select></label>
+            <label>Practice date<input type="date" name="date" value="{{ day|date:'Y-m-d' }}" required></label>
+            <button class="pp-secondary" type="submit">Show athletes</button>
+        </form>
+        <div class="pp-athletes" aria-label="Choose athlete">{% for athlete in athletes %}<a href="?athlete={{ athlete.pk }}&amp;date={{ day|date:'Y-m-d' }}{% if selected_group %}&amp;group={{ selected_group.pk }}{% endif %}" data-pp-leave {% if athlete.pk == selected_athlete.pk %}aria-current="page"{% endif %}>{{ athlete.get_full_name|default:athlete.username }}</a>{% empty %}<p>No active athletes in this group.</p>{% endfor %}</div>
+    </section>
+    {% if selected_athlete %}
+    <div class="pp-heading"><div><h2>{{ selected_athlete.get_full_name|default:selected_athlete.username }}</h2><p>{{ day|date:"l, F j, Y" }} · {% if saved_plan %}Saved plan{% else %}New plan{% endif %}</p></div></div>
+    <section class="pp-reuse">
+        {% if templates %}<form method="post" class="pp-card pp-inline" data-pp-leave>{% csrf_token %}<input type="hidden" name="athlete" value="{{ selected_athlete.pk }}"><input type="hidden" name="group" value="{{ selected_group.pk|default:'' }}"><input type="hidden" name="date" value="{{ day|date:'Y-m-d' }}"><input type="hidden" name="action" value="load_template"><label>Start from a template<select name="template" required>{% for template in templates %}<option value="{{ template.pk }}">{{ template.name }}{% if template.level %} · {{ template.level }}{% endif %}</option>{% endfor %}</select></label><button type="submit" class="pp-secondary">Load draft</button></form>{% endif %}
+        {% if copy_plans %}<form method="post" class="pp-card pp-inline" data-pp-leave>{% csrf_token %}<input type="hidden" name="athlete" value="{{ selected_athlete.pk }}"><input type="hidden" name="group" value="{{ selected_group.pk|default:'' }}"><input type="hidden" name="date" value="{{ day|date:'Y-m-d' }}"><input type="hidden" name="action" value="copy"><label>Reuse this athlete’s plan<select name="copy_date" required>{% for previous in copy_plans %}<option value="{{ previous.practice_date|date:'Y-m-d' }}">{{ previous.practice_date|date:'M j, Y' }} · {{ previous.title }}</option>{% endfor %}</select></label><button type="submit" class="pp-secondary">Copy draft</button></form>{% endif %}
+    </section>
+    {% if draft %}<p class="pp-notice" role="status">Draft loaded. Customize it for this athlete, then save. The original plan and template stay unchanged.</p>{% endif %}
+    <form method="post" id="pp-plan" data-draft="{% if draft or form.errors %}1{% else %}0{% endif %}">{% csrf_token %}
+        <input type="hidden" name="athlete" value="{{ selected_athlete.pk }}"><input type="hidden" name="group" value="{{ selected_group.pk|default:'' }}"><input type="hidden" name="date" value="{{ day|date:'Y-m-d' }}">{{ form.version }}{{ form.current_version }}
+        {% if form.errors %}<div class="pp-error" role="alert"><strong>The plan was not saved.</strong>{{ form.non_field_errors }}{% for field in form %}{% if field.errors %}<p>{{ field.label }}: {{ field.errors|striptags }}</p>{% endif %}{% endfor %}</div>{% endif %}
+        <section class="pp-card pp-fields"><label>{{ form.title.label }}{{ form.title }}</label><label>{{ form.level.label }}{{ form.level }}</label><label class="pp-wide">{{ form.focus.label }}{{ form.focus }}</label></section>
+        <div class="pp-grid">
+        {% for event in event_forms %}<section class="pp-card pp-event"><h2>{{ event.label }}</h2>
+            <div class="pp-targets"><label>Minutes{{ event.minutes }}</label><label>Routine target{{ event.routines }}</label><label>Pressure sets{{ event.pressure }}</label></div>
+            <label>Event focus{{ event.cue }}</label>
+            <div class="pp-skill-controls"><label class="pp-search">Find a skill<input type="search" data-pp-search placeholder="Search {{ event.label|lower }} skills"></label><label class="pp-selected"><input type="checkbox" data-pp-selected> Selected only</label></div>
+            <p class="pp-small">Check each skill for this child. Attempt targets are optional.</p>
+            <div class="pp-skills">
+                {% for item in event.skills %}<div class="pp-skill" data-pp-skill data-name="{{ item.skill.name|lower }}"><label class="pp-check">{{ item.check }}<span>{{ item.skill.name }}</span></label><label class="pp-attempts" for="{{ item.target.id_for_label }}">Attempts{{ item.target }}</label></div>{% empty %}<p class="pp-small">Add {{ event.label|lower }} skills using Manage skills above.</p>{% endfor %}
+            </div><p class="pp-no-match" hidden>No matching skills. Change your search or turn off Selected only.</p>
+        </section>{% endfor %}
+        </div>
+        <section class="pp-card"><label>{{ form.notes.label }}{{ form.notes }}</label></section>
+        <section class="pp-card pp-template"><label>Save this structure as a reusable template<input type="text" name="template_name" value="{{ template_name }}" maxlength="150" placeholder="Example: Beam basics — Level 2"></label><button class="pp-secondary" type="submit" name="action" value="template">Save template</button><p class="pp-small">Copies skills, targets, level, and notes. Athlete accounts, dates, and results stay separate.</p></section>
+        <footer class="pp-card pp-footer"><div><p id="pp-save-status" role="status">{% if saved_plan %}Saved for this athlete and date.{% else %}Save when this athlete’s plan is ready.{% endif %}</p><p class="pp-small">Save plan keeps the daily plan separate. Setting current skills replaces this child’s current skill list in the trackers and retains all result history.</p></div><div class="pp-actions"><button class="pp-secondary" type="submit" name="action" value="save">Save plan</button>{% if day == today %}<button class="pp-primary" type="submit" name="action" value="publish">Save and set current skills</button>{% endif %}</div></footer>
+    </form>
+    {% if saved_plan %}<details class="pp-card pp-progress"><summary>Saved progress for this date</summary><p class="pp-small">Counts come from saved tracker results. Unsaved plan edits do not change this summary.</p>{% include "practice_focus/plan_progress.html" %}</details>{% endif %}
+    {% else %}<div class="pp-card"><p>Add athletes to your gym to create individual plans.</p></div>{% endif %}
+</div>
+<script src="{% static 'practice_hub/live_page.js' %}?v=3" defer></script>
+<script src="{% static 'practice_focus/personal_planner.js' %}?v=3" defer></script>
+{% endblock %}

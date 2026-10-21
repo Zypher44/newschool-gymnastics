@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Parent Connection Requests{% endblock %}
+{% block content %}
+<style>
+    .parent-requests-page { max-width: 900px; margin: 0 auto; }
+    .parent-request { scroll-margin-top: 100px; border-radius: 16px; }
+    .parent-request:target { border-color: #0d6efd !important; box-shadow: 0 0 0 3px rgba(13, 110, 253, .12); }
+</style>
+<div class="parent-requests-page">
+    <a href="{% url 'director_dashboard' %}" class="small text-decoration-none">← Director Dashboard</a>
+    <h1 class="h3 fw-bold mt-3 mb-1">Parent connection requests</h1>
+    <p class="text-muted mb-4">{{ gym.name }} · Review each request before sharing a child's information.</p>
+    {% for link in pending_parent_links %}
+    <section id="parent-request-{{ link.pk }}" class="parent-request card border p-3 p-sm-4 mb-3" aria-labelledby="request-title-{{ link.pk }}">
+        <h2 id="request-title-{{ link.pk }}" class="h5 mb-2">{{ link.parent.get_full_name|default:link.parent.username }}</h2>
+        <p class="mb-1">Requesting access to <strong>{{ link.athlete.get_full_name|default:link.athlete.username }}</strong></p>
+        {% if link.relationship %}<p class="small text-muted mb-2">Relationship: {{ link.relationship }}</p>{% endif %}
+        <div class="d-flex flex-wrap gap-2 mt-3">
+            <form method="post" action="{% url 'approve_parent_link' link.pk %}">
+                {% csrf_token %}<button type="submit" class="btn btn-success btn-sm">Approve</button>
+            </form>
+            <form method="post" action="{% url 'decline_parent_link' link.pk %}">
+                {% csrf_token %}<button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Decline this parent connection request?');">Decline</button>
+            </form>
+            <a href="{% url 'director_athlete_profile' link.athlete_id %}" class="btn btn-outline-secondary btn-sm">View athlete</a>
+        </div>
+    </section>
+    {% empty %}
+    <div class="card border-0 shadow-sm p-4">
+        <h2 class="h5">No pending parent connections</h2>
+        <p class="text-muted mb-0">There are no requests waiting for your review. Requests already approved or declined no longer appear here.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

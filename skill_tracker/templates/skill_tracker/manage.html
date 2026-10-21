@@ -1,0 +1,18 @@
+{% extends "skill_tracker/layout.html" %}
+{% block skill_content %}
+<header class="st-header"><div><p class="st-eyebrow">Practice planner</p><h1>Manage skills</h1><p>Create your gym’s skill list, then assign skills to an athlete.</p></div><a class="st-link" href="{% url 'skill_tracker:tracker' %}{% if athlete %}?athlete={{ athlete.pk }}{% endif %}">Open Skill Tracker</a></header>
+{% if error %}<p class="st-error" role="alert">{{ error }}</p>{% endif %}
+<details class="st-catalogue"><summary>Add to skill list</summary>
+<form method="post" class="st-add">{% csrf_token %}<input type="hidden" name="action" value="catalogue">{% if athlete %}<input type="hidden" name="athlete" value="{{ athlete.pk }}">{% endif %}
+<label>Event<select name="event">{% for row in rows %}<option value="{{ row.code }}">{{ row.label }}</option>{% endfor %}</select></label>
+<label>Skills — one per line<textarea name="names" rows="4" maxlength="8000" required placeholder="Back handspring&#10;Round-off"></textarea></label><button class="st-primary" type="submit">Add skills</button></form></details>
+<form method="get" class="st-picker"><label>Athlete<select name="athlete" required>{% for person in athletes %}<option value="{{ person.pk }}" {% if person.pk == athlete.pk %}selected{% endif %}>{{ person }}</option>{% endfor %}</select></label><button class="st-secondary" type="submit">Load athlete</button></form>
+{% if athlete %}
+<form method="post" id="st-assign">{% csrf_token %}<input type="hidden" name="action" value="assign"><input type="hidden" name="athlete" value="{{ athlete.pk }}">
+<div class="st-section"><h2>{{ athlete }}’s current skills</h2><p>Select the skills this athlete is working on. Unchecking a skill keeps its result history.</p></div>
+<div class="st-grid">{% for row in rows %}<section class="st-card"><h2>{{ row.label }}</h2><input type="hidden" name="version_{{ row.code }}" value="{{ row.version }}"><div class="st-checklist">
+{% for skill in row.skills %}<label class="st-check"><input type="checkbox" name="skills" value="{{ skill.pk }}" {% if skill.pk in active_ids %}checked{% endif %}><span>{{ skill.name }}</span></label>{% empty %}<p class="st-empty">Add {{ row.label|lower }} skills to your skill list above.</p>{% endfor %}</div></section>{% endfor %}</div>
+<div class="st-footer"><p>Assignments also appear in the practice planner and routine tracker.</p><button type="submit" class="st-primary">Save athlete skills</button></div></form>
+<script>let changed=false;document.getElementById('st-assign').addEventListener('change',()=>changed=true);document.getElementById('st-assign').addEventListener('submit',()=>changed=false);window.addEventListener('beforeunload',e=>{if(changed){e.preventDefault();e.returnValue='';}});</script>
+{% else %}<p class="st-empty">No active athletes are available in this gym.</p>{% endif %}
+{% endblock %}

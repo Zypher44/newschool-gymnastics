@@ -17,6 +17,7 @@ class DailyRoutineAttemptInline(
     fields = [
         'athlete',
         'event',
+        'is_pressure',
         'attempt_number',
         'result',
         'notes',
@@ -54,6 +55,7 @@ class DailyRoutineAttemptAdmin(
         'athlete',
         'session',
         'event',
+        'is_pressure',
         'attempt_number',
         'result',
         'recorded_by',
@@ -61,6 +63,7 @@ class DailyRoutineAttemptAdmin(
 
     list_filter = [
         'event',
+        'is_pressure',
         'result',
         'session__practice_date',
     ]

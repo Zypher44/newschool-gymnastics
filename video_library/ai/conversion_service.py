@@ -97,6 +97,7 @@ def convert_video_to_mp4(video):
             capture_output=True,
             text=True,
             check=False,
+            timeout=600,
         )
 
         if completed_process.returncode != 0:

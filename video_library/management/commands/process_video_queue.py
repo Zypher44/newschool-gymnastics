@@ -63,7 +63,7 @@ class Command(BaseCommand):
                 Video.objects
                 .select_for_update(skip_locked=True)
                 .filter(status=Video.STATUS_UPLOADING)
-                .order_by('created_at')
+                .order_by('uploaded_at', 'pk')
                 .first()
             )
 

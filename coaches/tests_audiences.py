@@ -132,7 +132,7 @@ class GymAudienceTests(TestCase):
 
     def test_calendar_sidebar_and_account_menu_placement(self):
         for name, section, following in (
-            ('director_test', 'Gym Management', 'Gym Events'),
+            ('director_test', 'Gym Management', 'Create Training Group'),
             ('coach_test', 'Planning', 'Pathway Manager'),
             ('parent_test', 'Communication', 'Notifications'),
         ):

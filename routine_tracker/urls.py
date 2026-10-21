@@ -21,6 +21,12 @@ urlpatterns = [
     ),
 
     path(
+        'practice/save/',
+        views.save_routine_practice,
+        name='save_routine_practice',
+    ),
+
+    path(
         'attempt/<int:attempt_id>/delete/',
         views.delete_routine_attempt,
         name='delete_routine_attempt',

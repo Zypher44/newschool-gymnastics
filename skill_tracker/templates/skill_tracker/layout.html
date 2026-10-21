@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Skill Tracker{% endblock %}
+{% block page_header %}Skill Tracker{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'skill_tracker/tracker.css' %}">
+<div class="st-page">
+{% block skill_content %}{% endblock %}
+</div>
+{% endblock %}
