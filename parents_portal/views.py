@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.urls import reverse
 from django.http import Http404
 from django.shortcuts import (
     get_object_or_404,
@@ -733,7 +734,8 @@ def connect_athlete(request):
             gym_membership = GymMembership.objects.filter(user=athlete, role='athlete', is_active=True,
                 gym_id__in=get_parent_gym_ids(request.user)).select_related('gym').first()
             notify_gym_directors(gym_membership.gym, request.user, 'Parent connection request',
-                f'{request.user.get_full_name() or request.user.username} requested to connect with {athlete.get_full_name() or athlete.username}.', '/gyms/director/')
+                f'{request.user.get_full_name() or request.user.username} requested to connect with {athlete.get_full_name() or athlete.username}.',
+                reverse('parent_connection_requests') + f'#parent-request-{link.pk}')
             messages.success(request, 'Connection requested. Your Gym Director must approve it before information is available.')
         else:
             messages.info(request, 'This child is already connected.' if link.approved else 'Your request is waiting for approval.')

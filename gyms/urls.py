@@ -3,6 +3,7 @@ from django.urls import path
 from . import views
 from . import roster_views
 from .setup_checklist import setup_checklist
+from .parent_requests import parent_connection_requests
 from .roster_invitations import RosterPasswordSetup
 from .usage_views import gym_usage
 from .login_help import reset_person_password, calendar_instead_of_events
@@ -10,6 +11,7 @@ from gym_scheduling.views import schedules, session_exceptions
 
 
 urlpatterns = [
+    path('parent-requests/', parent_connection_requests, name='parent_connection_requests'),
     path('people/setup-checklist/', setup_checklist, name='setup_checklist'),
     path('people/roster/', roster_views.roster_import, name='roster_import'),
     path('people/roster/download/', roster_views.roster_download, name='roster_download'),

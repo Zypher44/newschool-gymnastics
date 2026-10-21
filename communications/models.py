@@ -109,6 +109,12 @@ class Notification(models.Model):
         )
 
     def get_destination(self):
+        # Older family-request notifications were saved with the dashboard URL.
+        # Resolve them at click time so existing notifications are fixed too.
+        if (self.title == 'Parent connection request'
+                and self.recipient.role == 'director'
+                and self.link in ('', reverse('director_dashboard'))):
+            return reverse('parent_connection_requests')
         if self.link:
             return self.link
 
