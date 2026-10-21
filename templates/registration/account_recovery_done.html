@@ -1,0 +1,3 @@
+{% extends 'public_base.html' %}
+{% block title %}Check your email{% endblock %}
+{% block content %}<section class="container py-5" style="max-width:600px"><h1 class="h3">Check your email</h1><p>If the username and email match an active account with a password, we will attempt to send a reset link. Check your spam folder. If it does not arrive, contact your gym director for help.</p><a href="{% url 'login' %}">Back to sign in</a></section>{% endblock %}

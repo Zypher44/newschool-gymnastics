@@ -1,0 +1,14 @@
+{% extends 'public_base.html' %}
+{% block title %}Reset password{% endblock %}
+{% block content %}
+<section class="container py-5" style="max-width:600px">
+    <h1 class="h3">Reset your password</h1>
+    {% if recovery_available %}
+    <p>Enter your username and the email address on your account. Each family member uses their own username.</p>
+    <form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary" type="submit">Send reset link</button></form>
+    {% else %}
+    <p>Email recovery is not enabled on this site yet. Contact your gym director through your gym's usual contact details for help resetting your password.</p>
+    {% endif %}
+    <a href="{% url 'login' %}" class="d-inline-block mt-3">Back to sign in</a>
+</section>
+{% endblock %}
