@@ -4,6 +4,7 @@ from . import views
 from . import roster_views
 from .roster_invitations import RosterPasswordSetup
 from .usage_views import gym_usage
+from .login_help import reset_person_password, calendar_instead_of_events
 from gym_scheduling.views import schedules, session_exceptions
 
 
@@ -12,6 +13,8 @@ urlpatterns = [
     path('people/roster/download/', roster_views.roster_download, name='roster_download'),
     path('people/roster/<uuid:batch_id>/', roster_views.roster_preview, name='roster_import_preview'),
     path('account-setup/<uidb64>/<token>/', RosterPasswordSetup.as_view(), name='roster_password_setup'),
+    path('people/<int:membership_id>/reset-password/', reset_person_password,
+         name='reset_gym_person_password'),
     path('schedules/<int:schedule_id>/exceptions/', session_exceptions, name='group_schedule_exceptions'),
     path('schedules/', schedules, name='group_schedules'),
     path('schedules/<int:schedule_id>/edit/', schedules, name='group_schedule_edit'),
@@ -94,7 +97,7 @@ path(
 
     path(
         'events/',
-        views.director_event_list,
+        calendar_instead_of_events,
         name='director_event_list'
     ),
 
@@ -126,3 +129,4 @@ path(
     path('settings/', views.gym_settings, name='gym_settings'),
 
 ]
+
