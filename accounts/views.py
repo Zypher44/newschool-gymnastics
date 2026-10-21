@@ -3,7 +3,8 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
-from .forms import AccountProfileForm, StyledPasswordChangeForm
+from .forms import AccountProfileForm, StyledPasswordChangeForm, CommunicationPreferenceForm
+from .models import CommunicationPreference
 
 
 def _sync_legacy_phone(user):
@@ -32,10 +33,21 @@ def account_settings(request):
         prefix='password',
     )
 
+    preference = CommunicationPreference.objects.filter(user=request.user).first()
+    communication_form = CommunicationPreferenceForm(instance=preference)
     if request.method == 'POST':
         action = request.POST.get('action')
 
-        if action == 'profile':
+        if action == 'communication' and request.user.role == 'parent':
+            communication_form = CommunicationPreferenceForm(request.POST, instance=preference)
+            if communication_form.is_valid():
+                preference = communication_form.save(commit=False)
+                preference.user = request.user
+                preference.save()
+                messages.success(request, 'Communication preferences saved.')
+                return redirect('account_settings')
+
+        elif action == 'profile':
             profile_form = AccountProfileForm(
                 request.POST,
                 instance=request.user,
@@ -69,6 +81,7 @@ def account_settings(request):
                 return redirect('account_settings')
 
     return render(request, 'accounts/account_settings.html', {
+        'communication_form': communication_form,
         'profile_form': profile_form,
         'password_form': password_form,
     })

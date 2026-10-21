@@ -623,6 +623,7 @@
             </div>
 
             <div class="card-body">
+                {% if numeric_readiness_count %}
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
                         <div class="readiness-number">
@@ -630,7 +631,7 @@
                         </div>
 
                         <div class="text-muted small mt-2">
-                            Average readiness today
+                            Average from legacy numeric surveys today
                         </div>
                     </div>
 
@@ -673,6 +674,7 @@
                     </div>
                 </div>
 
+                {% else %}<p class="text-muted">The new check-in uses individual answers and coaching prompts instead of a readiness score. Review today’s check-ins below.</p>{% endif %}
                 <div class="row g-2 text-center">
                     <div class="col-3">
                         <div class="flag-box">
@@ -1182,7 +1184,10 @@
                                     </a>
                                 </td>
 
-                                {% if item.survey %}
+                                {% if item.survey.checkin_version >= 2 %}
+                                    <td><span class="badge bg-success">Submitted</span></td>
+                                    <td colspan="5">{% include 'surveys/coach_checkin.html' with survey=item.survey %}</td>
+                                {% elif item.survey %}
                                     <td>
                                         <span class="badge bg-success">
                                             Submitted

@@ -41,6 +41,10 @@ def athlete_rows(gym_id, roster, day, event, group, session=None):
     pending = {r['athlete_id']: r['total'] for r in TrackedResult.objects.filter(
         gym_id=gym_id, athlete_id__in=ids, practice_date=day, status='pending'
         ).order_by().values('athlete_id').annotate(total=Count('pk'))}
+    from surveys.models import DailySurvey
+    surveys = {s.athlete_id: s for s in DailySurvey.objects.filter(athlete_id__in=ids, survey_date=day).select_related("help_skill__skill")}
+    from parents_portal.models import PracticeAbsenceNotice
+    notices = {n.athlete_id: n for n in PracticeAbsenceNotice.objects.filter(gym_id=gym_id, athlete_id__in=ids, practice_date=day).exclude(status="cancelled")}
     rows = []
     for person in people:
         plan = plans.get(person.pk)
@@ -71,7 +75,7 @@ def athlete_rows(gym_id, roster, day, event, group, session=None):
         query = {'group': group.pk, 'athlete': person.pk, 'event': event}
         if session and not session.finished_at:
             query['practice_session'] = session.pk
-        row = {'athlete': person, 'plan': plan, 'skills': skills, 'extra_skills': extra,
+        row = {'parent_notice': notices.get(person.pk), 'survey': surveys.get(person.pk), 'athlete': person, 'plan': plan, 'skills': skills, 'extra_skills': extra,
             'cue': content.get('cue', ''), 'routine_target': positive(content.get('routines')),
             'pressure_target': positive(content.get('pressure')),
             'routine_completed': routines.get((person.pk, False), 0),

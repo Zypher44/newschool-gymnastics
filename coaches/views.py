@@ -61,7 +61,7 @@ def add_alert(alerts, athlete, issue):
 
 
 def calculate_readiness_score(survey):
-    if not survey:
+    if not survey or survey.checkin_version >= 2:
         return None
 
     if (
@@ -242,11 +242,8 @@ def get_recent_activity(athletes, limit=12):
         activities.append({
             'icon': '📝',
             'title': f'{survey.athlete.username} submitted a wellness survey',
-            'description': (
-                f'Energy {survey.energy} · '
-                f'Soreness {survey.soreness} · '
-                f'Stress {survey.stress}'
-            ),
+            'description': (' · '.join(survey.checkin_flags) if survey.checkin_version >= 2 else
+                f'Energy {survey.energy} · Soreness {survey.soreness} · Stress {survey.stress}'),
             'timestamp': survey.created_at,
             'url': reverse(
                 'athlete_detail',
@@ -451,12 +448,12 @@ def build_dashboard_data(
 
         high_soreness_days = count_consecutive(
             recent_surveys,
-            lambda survey: survey.soreness >= 4,
+            lambda survey: (survey.soreness is not None and survey.soreness >= 4),
         )
 
         high_stress_days = count_consecutive(
             recent_surveys,
-            lambda survey: survey.stress >= 4,
+            lambda survey: (survey.stress is not None and survey.stress >= 4),
         )
 
         low_sleep_days = count_consecutive(
@@ -514,9 +511,9 @@ def build_dashboard_data(
 
         if survey:
             submitted_today += 1
-            readiness_count += 1
+            readiness_count += int(readiness_score is not None)
 
-            athlete_alerts = []
+            athlete_alerts = [flag for flag in survey.checkin_flags if flag != "Ready to start"]
 
             if survey.energy == 1:
                 athlete_alerts.append(
@@ -568,7 +565,7 @@ def build_dashboard_data(
             elif readiness_score == 100:
                 green_flags += 1
 
-            readiness_total += readiness_score
+            readiness_total += readiness_score or 0
 
         else:
             missing_today += 1
@@ -622,6 +619,7 @@ def build_dashboard_data(
         "yellow_flags": yellow_flags,
         "green_flags": green_flags,
         "team_readiness_score": team_readiness_score,
+        "numeric_readiness_count": readiness_count,
     }
 
 

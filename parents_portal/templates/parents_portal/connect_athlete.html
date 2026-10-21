@@ -44,7 +44,7 @@
             <div class="card-body p-4">
                 <div class="alert alert-info border-0 mb-4">
                     <div class="fw-bold mb-1">How it works</div>
-                    Enter your athlete’s exact name and date of birth.
+                    Select your child from your gym and confirm their date of birth.
                     Your Gym Director must approve the request before
                     athlete information becomes available.
                 </div>
@@ -58,47 +58,7 @@
                         </div>
                     {% endif %}
 
-                    <div class="row g-3">
-                        <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold" for="{{ form.first_name.id_for_label }}">
-                                {{ form.first_name.label }}
-                            </label>
-                            {{ form.first_name }}
-                            {% for error in form.first_name.errors %}
-                                <div class="text-danger small mt-1">{{ error }}</div>
-                            {% endfor %}
-                        </div>
-
-                        <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold" for="{{ form.last_name.id_for_label }}">
-                                {{ form.last_name.label }}
-                            </label>
-                            {{ form.last_name }}
-                            {% for error in form.last_name.errors %}
-                                <div class="text-danger small mt-1">{{ error }}</div>
-                            {% endfor %}
-                        </div>
-
-                        <div class="col-12">
-                            <label class="form-label fw-semibold" for="{{ form.date_of_birth.id_for_label }}">
-                                {{ form.date_of_birth.label }}
-                            </label>
-                            {{ form.date_of_birth }}
-                            {% for error in form.date_of_birth.errors %}
-                                <div class="text-danger small mt-1">{{ error }}</div>
-                            {% endfor %}
-                        </div>
-
-                        <div class="col-12">
-                            <label class="form-label fw-semibold" for="{{ form.relationship.id_for_label }}">
-                                Your Relationship
-                            </label>
-                            {{ form.relationship }}
-                            {% for error in form.relationship.errors %}
-                                <div class="text-danger small mt-1">{{ error }}</div>
-                            {% endfor %}
-                        </div>
-                    </div>
+                    {% for field in form %}<div class="mb-3"><label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endfor %}
 
                     <div class="connect-actions d-flex justify-content-between mt-4">
                         <a href="{% url 'parent_dashboard' %}" class="btn btn-light border">

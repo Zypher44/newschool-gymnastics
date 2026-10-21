@@ -88,6 +88,10 @@ def email_report_detail(request, draft_id):
         outcome = send_report(draft, mode, gym_id, athletes)
         if outcome['submitted']:
             messages.success(request, f"{outcome['submitted']} report email(s) submitted to the email provider.")
+        if outcome.get('skipped'):
+            messages.info(request, f"{outcome['skipped']} parent(s) have report email turned off.")
+        if outcome.get('queued'):
+            messages.success(request, f"{outcome['queued']} report(s) queued for parents’ weekly summaries.")
         if outcome['remaining']:
             messages.info(request, 'Some emails are still unsent or processing. Send again to continue; submitted emails are skipped.')
         if outcome['error']:

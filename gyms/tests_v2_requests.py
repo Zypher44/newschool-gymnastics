@@ -54,7 +54,7 @@ class GymRequestTests(TestCase):
         AthleteProfile.objects.create(user=athlete, date_of_birth=date(2015, 1, 2))
         self.client.force_login(parent)
         response = self.client.post(reverse('connect_athlete'), {
-            'first_name': 'Alex', 'last_name': 'Test',
+            'athlete': athlete.pk,
             'date_of_birth': '2015-01-02', 'relationship': 'Mother',
         })
         self.assertEqual(response.status_code, 302)

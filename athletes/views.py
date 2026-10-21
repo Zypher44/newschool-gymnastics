@@ -19,7 +19,7 @@ from communications.dashboard import (
 
 
 def calculate_athlete_readiness(survey):
-    if not survey:
+    if not survey or survey.checkin_version >= 2:
         return None
 
     if (

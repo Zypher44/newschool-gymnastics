@@ -59,7 +59,11 @@ def notify_parents_about_new_event(
     notifications = []
 
 
+    from accounts.models import CommunicationPreference
+    muted = set(CommunicationPreference.objects.filter(user__role='parent', in_app_updates=False).values_list('user_id', flat=True))
     for recipient in recipients:
+        if recipient.pk in muted:
+            continue
 
         notifications.append(
             Notification(

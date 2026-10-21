@@ -1,9 +1,13 @@
 from django.urls import path
 
 from . import views
+from .selection import switch_child
+from .absence import parent_absence
 
 
 urlpatterns = [
+    path('attendance-notice/', parent_absence, name='parent_absence'),
+    path('switch-child/', switch_child, name='switch_child'),
     path(
         'dashboard/',
         views.parent_dashboard,

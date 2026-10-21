@@ -1070,10 +1070,9 @@ def parent_routine_consistency_home(
     )
 
 
-    first_link = (
-        links.first()
-    )
-
+    from parents_portal.selection import selected_child
+    child = selected_child(request)
+    first_link = links.filter(athlete=child).first() if child else None
 
     if not first_link:
 

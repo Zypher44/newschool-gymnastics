@@ -615,8 +615,8 @@ def group_control_panel(request, group_id):
 
             needs_attention = (
                 today_survey.energy <= 2
-                or today_survey.soreness >= 4
-                or today_survey.stress >= 4
+                or (today_survey.soreness is not None and today_survey.soreness >= 4)
+                or (today_survey.stress is not None and today_survey.stress >= 4)
             )
 
             if needs_attention:
@@ -1815,8 +1815,8 @@ def director_athlete_profile(request, athlete_id):
 
         needs_attention = (
             latest_survey.energy <= 2
-            or latest_survey.soreness >= 4
-            or latest_survey.stress >= 4
+            or (latest_survey.soreness is not None and latest_survey.soreness >= 4)
+            or (latest_survey.stress is not None and latest_survey.stress >= 4)
         )
 
         if needs_attention:

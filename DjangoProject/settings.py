@@ -146,6 +146,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "parents_portal.selection.FamilySelectionMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -170,6 +171,8 @@ TEMPLATES = [
             "context_processors": [
                 (
                     "django.template.context_processors.request"
+                ),
+                ("parents_portal.selection.family_context"
                 ),
                 (
                     "django.contrib.auth.context_processors.auth"

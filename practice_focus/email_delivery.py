@@ -81,6 +81,8 @@ def send_report(draft, mode, gym_id, roster):
     if not recipients:
         return {'submitted': 0, 'remaining': 0, 'error': 'No eligible recipient has a valid email address. Update the linked parent or your coach account.'}
     submitted, attempts, remaining, errors = 0, 0, 0, []
+    queued = 0
+    skipped = 0
     for recipient in recipients:
         with transaction.atomic():
             # Lock one preview to coordinate double clicks, tabs, and retry requests.
@@ -92,6 +94,16 @@ def send_report(draft, mode, gym_id, roster):
             if fresh is None:
                 continue
             recipient = fresh
+            if mode == 'parents':
+                from accounts.models import CommunicationPreference, QueuedParentReport
+                preference = CommunicationPreference.objects.filter(user=recipient).first()
+                if preference and not preference.email_reports:
+                    skipped += 1
+                    continue
+                if preference and preference.report_frequency == 'weekly':
+                    QueuedParentReport.objects.get_or_create(parent=recipient, draft=current)
+                    queued += 1
+                    continue
             address = recipient.email.strip()
             delivery, _ = ReportEmailDelivery.objects.get_or_create(draft=current, email=address.lower(), defaults={'recipient': recipient})
             if delivery.status == 'submitted':
@@ -130,4 +142,4 @@ def send_report(draft, mode, gym_id, roster):
         else:
             ReportEmailDelivery.objects.filter(pk=delivery.pk).update(status='submitted', provider_id=provider_id, submitted_at=timezone.now(), last_error='')
             submitted += 1
-    return {'submitted': submitted, 'remaining': remaining, 'error': ' '.join(dict.fromkeys(errors))}
+    return {'submitted': submitted, 'remaining': remaining, 'queued': queued, 'skipped': skipped, 'error': ' '.join(dict.fromkeys(errors))}

@@ -138,3 +138,20 @@ class ParentAthleteLink(models.Model):
 
     def __str__(self):
         return f'{self.parent.username} -> {self.athlete.username}'
+
+
+class PracticeAbsenceNotice(models.Model):
+    gym = models.ForeignKey('gyms.Gym', on_delete=models.CASCADE)
+    athlete = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='parent_absence_notices')
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='submitted_absence_notices')
+    practice_date = models.DateField()
+    event = models.ForeignKey('coaches.TeamEvent', on_delete=models.SET_NULL, null=True, blank=True)
+    status = models.CharField(max_length=10, choices=[('absent', 'Absent'), ('late', 'Arriving late'), ('cancelled', 'Cancelled')])
+    expected_arrival = models.TimeField(null=True, blank=True)
+    note = models.CharField(max_length=500, blank=True)
+    version = models.PositiveIntegerField(default=1)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['athlete', 'practice_date'], name='unique_child_practice_notice')]
+        ordering = ['practice_date', 'athlete_id']

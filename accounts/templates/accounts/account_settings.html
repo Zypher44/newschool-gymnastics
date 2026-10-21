@@ -194,6 +194,7 @@
             </div>
 
             <div class="col-12 col-lg-5">
+                {% if user.role == 'parent' %}<section class="card settings-card mb-4"><div class="card-body p-4"><h2 class="h5">Communication Preferences</h2><p class="small text-muted">Choose how to receive routine updates and coach-shared reports. Direct messages and important account notices remain available. Reports stay available in the parent portal.</p><form method="post">{% csrf_token %}<input type="hidden" name="action" value="communication">{{ communication_form.non_field_errors }}{% for field in communication_form %}<div class="mb-3">{% if field.field.widget.input_type == 'checkbox' %}{{ field }} <label for="{{ field.id_for_label }}">{{ field.label }}</label>{% else %}<label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>{{ field }}{% endif %}{{ field.errors }}</div>{% endfor %}<button class="btn btn-primary" type="submit">Save communication preferences</button></form></div></section>{% endif %}
                 <section class="card settings-card">
                     <div class="card-body p-4">
                         <h2 class="h5 fw-bold mb-3">Account Details</h2>
