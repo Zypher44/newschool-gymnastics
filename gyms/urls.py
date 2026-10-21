@@ -2,6 +2,7 @@ from django.urls import path
 
 from . import views
 from . import roster_views
+from .setup_checklist import setup_checklist
 from .roster_invitations import RosterPasswordSetup
 from .usage_views import gym_usage
 from .login_help import reset_person_password, calendar_instead_of_events
@@ -9,6 +10,7 @@ from gym_scheduling.views import schedules, session_exceptions
 
 
 urlpatterns = [
+    path('people/setup-checklist/', setup_checklist, name='setup_checklist'),
     path('people/roster/', roster_views.roster_import, name='roster_import'),
     path('people/roster/download/', roster_views.roster_download, name='roster_download'),
     path('people/roster/<uuid:batch_id>/', roster_views.roster_preview, name='roster_import_preview'),
@@ -129,4 +131,5 @@ path(
     path('settings/', views.gym_settings, name='gym_settings'),
 
 ]
+
 

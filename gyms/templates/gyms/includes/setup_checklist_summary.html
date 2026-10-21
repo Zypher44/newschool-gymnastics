@@ -1,0 +1,6 @@
+<section class="card card-body mb-4" aria-labelledby="setup-checklist-title">
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2"><h2 class="h5 mb-0" id="setup-checklist-title">Setup completion checklist</h2><a class="btn btn-sm btn-outline-primary" href="{% url 'setup_checklist' %}">Open checklist</a></div>
+{% if not setup_checklist.people_count %}<p class="text-muted mb-0">Add or import your people to begin the checklist.</p>{% else %}
+<p class="text-muted">Checks update from your active roster whenever this page is opened. They cover password setup, parent connections and training groups.</p>
+<div class="row g-3">{% for check in setup_checklist.checks %}<div class="col-12 col-md-4"><a class="d-block border rounded p-3 text-decoration-none h-100" href="{% url 'setup_checklist' %}?check={{ check.key }}#setup-items"><strong class="d-block">{{ check.title }}</strong><span class="{% if check.count %}text-warning-emphasis{% else %}text-success{% endif %}">{% if check.count %}{{ check.count }} need attention{% else %}Complete{% endif %}</span></a></div>{% endfor %}</div>
+{% if setup_checklist.complete %}<p class="text-success fw-semibold mt-3 mb-0">All three setup checks are complete for your active roster.</p>{% endif %}{% endif %}</section>

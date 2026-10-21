@@ -17,6 +17,7 @@ from .models import RosterImport, RosterIdentity, GymMembership
 from .roster_files import parse_uploads, workbook_bytes
 from .roster_import import plan_import, apply_import
 from .roster_schema import SCHEMAS
+from .setup_checklist import completion_checklist
 
 
 class RosterUploadForm(forms.Form):
@@ -59,7 +60,7 @@ def roster_import(request):
             return redirect('roster_import_preview',batch_id=batch.pk)
         except ValidationError as error:form.add_error(None,error)
     batches=RosterImport.objects.filter(gym=gym,director=request.user).order_by('-created_at')[:10]
-    return render(request,'gyms/roster_import.html',{'gym':gym,'form':form,'batches':batches})
+    return render(request,'gyms/roster_import.html',{'gym':gym,'form':form,'batches':batches,'setup_checklist':completion_checklist(gym)})
 
 
 @login_required
@@ -98,6 +99,7 @@ def roster_preview(request,batch_id):
     setup_link=request.session.pop('roster_setup_link',None)
     if setup_link and setup_link.get('batch')!=str(batch.pk):setup_link=None
     return render(request,'gyms/roster_preview.html',{'gym':gym,'batch':batch,'preview':batch.preview,'setup_link':setup_link,
+        'setup_checklist':completion_checklist(gym) if batch.status=='applied' else None,
         'expired':timezone.now()-batch.created_at>timedelta(hours=2),
         'email_available':not bool(email_configuration()),
         'new_accounts':batch.created_users.order_by('role','first_name','username') if batch.status=='applied' else [],
@@ -164,3 +166,4 @@ def roster_download(request):
     response['Content-Disposition']=f'attachment; filename="{name}"'
     response['X-Content-Type-Options']='nosniff'
     return response
+

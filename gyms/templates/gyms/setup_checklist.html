@@ -1,0 +1,14 @@
+{% extends 'base.html' %}{% block title %}Setup Completion Checklist{% endblock %}{% block content %}
+<div style="max-width:1100px;margin:auto"><h1 class="h3">Setup completion checklist</h1><p>{{ gym.name }} · {{ setup_checklist.people_count }} active people checked. Inactive and privileged accounts are excluded.</p>
+{% include 'gyms/includes/setup_checklist_summary.html' %}
+<section class="card card-body mb-4" id="setup-items"><h2 class="h5">{{ selected_check.title }}</h2><p class="text-muted">{{ selected_check.description }}</p>
+{% if page.object_list %}<div class="table-responsive"><table class="table align-middle"><thead><tr><th>Person</th><th>Role</th><th>Next step</th></tr></thead><tbody>{% for person in page %}<tr><td><strong>{{ person.name }}</strong><div class="small">Username: {{ person.username }}</div></td><td>{{ person.role }}</td><td>
+{% if selected_check.key == 'passwords' %}{% if person.shared %}<p class="small mb-0">Shared with another gym. Use account recovery or coordinate with the account owner.</p>{% else %}<a class="btn btn-sm btn-outline-primary" href="{{ person.action_url }}">Set password</a>{% endif %}
+{% elif selected_check.key == 'parents' %}<a class="btn btn-sm btn-outline-primary" href="{{ person.action_url }}">Connect parent / guardian</a>
+{% elif groups %}<details><summary>Choose a training group</summary><div class="d-flex flex-wrap gap-2 mt-2">{% for group in groups %}<a class="btn btn-sm btn-outline-primary" href="{% if person.role_code == 'athlete' %}{% url 'manage_group_athletes' group.pk %}{% else %}{% url 'manage_group_coaches' group.pk %}{% endif %}">{{ group.name }}</a>{% endfor %}</div></details>
+{% else %}<a class="btn btn-sm btn-outline-primary" href="{% url 'create_training_group' %}">Create a training group</a>{% endif %}
+</td></tr>{% endfor %}</tbody></table></div>
+{% if page.has_other_pages %}<nav class="d-flex gap-3" aria-label="Checklist pages">{% if page.has_previous %}<a href="?check={{ selected_check.key }}&amp;page={{ page.previous_page_number }}#setup-items">Previous</a>{% endif %}<span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a href="?check={{ selected_check.key }}&amp;page={{ page.next_page_number }}#setup-items">Next</a>{% endif %}</nav>{% endif %}
+{% elif setup_checklist.people_count %}<p class="text-success mb-0">No outstanding items for this check.</p>{% else %}<p class="mb-0">Your roster is empty. Import or add people first.</p>{% endif %}</section>
+<p class="small text-muted">Opening this checklist does not change accounts, grant parent access, assign groups or send invitations. After completing a next step, return here to see the latest results.</p>
+<div class="d-flex flex-wrap gap-3"><a href="{% url 'roster_import' %}">Import / Export People</a><a href="{% url 'people_management' %}">Manage People</a></div></div>{% endblock %}

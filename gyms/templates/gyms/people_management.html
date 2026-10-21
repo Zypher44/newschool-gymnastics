@@ -107,6 +107,7 @@ People | {{ gym.name }}
 
         </div>
 
+        <a href="{% url 'setup_checklist' %}" class="btn btn-outline-primary">Setup checklist</a>
         <a href="{% url 'roster_import' %}" class="btn btn-outline-primary">Import / Export People</a>
         <a
             href="{% url 'create_gym_person' %}"
@@ -499,4 +500,5 @@ People | {{ gym.name }}
 </div>
 
 {% endblock %}
+
 
