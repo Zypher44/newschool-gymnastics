@@ -12,6 +12,39 @@ People | {{ gym.name }}
         margin: 0 auto;
     }
 
+    .people-header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px 24px;
+        margin-bottom: 24px;
+    }
+
+    .people-header-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .people-header-actions .btn {
+        padding: 8px 14px;
+        font-size: .875rem;
+        line-height: 1.5;
+        border-radius: 10px;
+        white-space: nowrap;
+    }
+
+    .people-header-actions .btn-link {
+        text-decoration: none;
+    }
+
+    .people-header-actions .btn-link:hover {
+        background: rgba(13, 110, 253, .06);
+        text-decoration: underline;
+    }
+
     .people-page .card {
         overflow: hidden;
         border: 0;
@@ -24,12 +57,12 @@ People | {{ gym.name }}
             padding: 0;
         }
 
-        .people-page > .d-flex:first-of-type {
-            align-items: stretch !important;
+        .people-header {
+            align-items: flex-start;
             flex-direction: column;
         }
 
-        .people-page > .d-flex:first-of-type > .btn {
+        .people-header-actions {
             width: 100%;
         }
 
@@ -86,7 +119,7 @@ People | {{ gym.name }}
 
 <div class="container-fluid people-page">
 
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div class="people-header">
 
         <div>
 
@@ -107,14 +140,11 @@ People | {{ gym.name }}
 
         </div>
 
-        <a href="{% url 'setup_checklist' %}" class="btn btn-outline-primary">Setup checklist</a>
-        <a href="{% url 'roster_import' %}" class="btn btn-outline-primary">Import / Export People</a>
-        <a
-            href="{% url 'create_gym_person' %}"
-            class="btn btn-primary"
-        >
-            + Add Person
-        </a>
+        <div class="people-header-actions" role="group" aria-label="People management actions">
+            <a href="{% url 'setup_checklist' %}" class="btn btn-link">Setup checklist</a>
+            <a href="{% url 'roster_import' %}" class="btn btn-outline-primary" aria-label="Import or export people">Import / Export</a>
+            <a href="{% url 'create_gym_person' %}" class="btn btn-primary">+ Add Person</a>
+        </div>
 
     </div>
 
