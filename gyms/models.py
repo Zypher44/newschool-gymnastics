@@ -301,3 +301,44 @@ class TrainingGroupAthlete(models.Model):
 from django.db import models
 
 # Create your models here.
+
+
+class RosterIdentity(models.Model):
+    gym = models.ForeignKey(Gym, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    roster_id = models.CharField(max_length=64)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['gym', 'roster_id'], name='unique_gym_roster_id'),
+            models.UniqueConstraint(fields=['gym', 'user'], name='unique_gym_roster_user'),
+        ]
+
+
+class RosterImport(models.Model):
+    from uuid import uuid4
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    gym = models.ForeignKey(Gym, on_delete=models.CASCADE)
+    director = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    rows = models.JSONField(default=list)
+    preview = models.JSONField(default=dict)
+    allow_updates = models.BooleanField(default=False)
+    status = models.CharField(max_length=12, default='preview')
+    created_at = models.DateTimeField(auto_now_add=True)
+    applied_at = models.DateTimeField(null=True, blank=True)
+    created_users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='roster_imports', blank=True)
+
+
+class RosterInvitation(models.Model):
+    from uuid import uuid4
+    batch = models.ForeignKey(RosterImport, on_delete=models.CASCADE, related_name='invitations')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    token = models.UUIDField(default=uuid4, unique=True)
+    payload = models.JSONField(default=dict)
+    status = models.CharField(max_length=12, default='pending')
+    first_attempt = models.DateTimeField(null=True, blank=True)
+    last_attempt = models.DateTimeField(null=True, blank=True)
+    last_error = models.CharField(max_length=300, blank=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['batch', 'user'], name='unique_roster_invitation')]

@@ -3,11 +3,10 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
-from django.http import HttpResponseBadRequest, JsonResponse
+from django.http import HttpResponseBadRequest
 from django.shortcuts import redirect, render
 from django.urls import NoReverseMatch, reverse
 from django.utils import timezone
-from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_http_methods
 from gyms.models import GymMembership, TrainingGroup, TrainingGroupAthlete, TrainingGroupCoach
@@ -57,9 +56,10 @@ def lessons(user, gym):
                  'Existing records are reused; this guide does not create another gym.'],
                 [('Open gym settings', ('gym_settings',))], gym.name),
             lesson('people', 'Bring your people together', 'Give each person the right role and access.',
-                ['Add coaches, athletes, and parents through People Management.',
+                ['Import an Excel or Google Sheets roster, or add people individually through People Management.',
+                 'Preview roles, family links and group assignments before confirming an import.',
                  'Approve membership and parent-link requests after checking them.'],
-                [('Manage people', ('people_management',)), ('Director dashboard', ('director_dashboard',))],
+                [('Import / Export People', ('roster_import',)), ('Manage people', ('people_management',))],
                 f'{members.count()} active people in this gym'),
             lesson('groups', 'Organize training groups', 'Mixed levels can train together with different individual plans.',
                 ['Create a training group, then assign its coaches and athletes.',
@@ -292,31 +292,3 @@ def getting_started(request):
         'guide_complete': bool(progress and progress.completed_at and not missing_keys),
         'guide_updated': guide_updated, 'new_lesson_count': len(missing_keys),
     })
-
-
-@login_required
-@never_cache
-@require_http_methods(['POST'])
-def dismiss_guide(request):
-    """Hide only this person's reminder, preserving their reviewed lessons."""
-    user = request.user
-    if not user.is_active or user.role not in ROLES:
-        raise PermissionDenied('This guide is for active gym accounts.')
-    gym = member_gym(user)
-    if gym is None:
-        request.session['practice_hub_dismissed_' + user.role] = True
-    else:
-        with transaction.atomic():
-            get_user_model().objects.select_for_update().get(pk=user.pk)
-            progress, _ = OnboardingProgress.objects.get_or_create(
-                user=user, gym=gym, role=user.role)
-            progress.dismissed_at = timezone.now()
-            progress.version += 1
-            progress.save(update_fields=['dismissed_at', 'version', 'updated_at'])
-    if request.headers.get('Accept') == 'application/json':
-        return JsonResponse({'dismissed': True})
-    destination = request.POST.get('next', '')
-    if not destination.startswith('/') or not url_has_allowed_host_and_scheme(
-            destination, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
-        destination = dashboard(user)
-    return redirect(destination)
