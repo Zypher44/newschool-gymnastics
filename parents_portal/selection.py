@@ -1,7 +1,7 @@
-from urllib.parse import urlencode, urlsplit, parse_qsl
+from django.contrib import messages
 from django.http import Http404
 from django.shortcuts import redirect
-from django.urls import resolve, reverse, Resolver404
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from .access import get_approved_parent_links
@@ -57,16 +57,5 @@ def switch_child(request):
     child = next((c for c in children_for(request) if str(c.pk) == request.POST.get('athlete')), None)
     if child is None: raise Http404
     request.session['selected_child'] = child.pk
-    target = urlsplit(request.POST.get('next', ''))
-    if target.scheme or target.netloc or not target.path.startswith('/') or '\\' in target.path:
-        return redirect('parent_dashboard')
-    try:
-        match = resolve(target.path)
-    except Resolver404:
-        return redirect('parent_dashboard')
-    if match.view_name == 'routine_tracker:parent_routine_consistency':
-        return redirect('routine_tracker:parent_routine_consistency', athlete_id=child.pk)
-    if match.view_name not in FAMILY_PAGES:
-        return redirect(reverse('parent_dashboard') + '?' + urlencode({'athlete': child.pk}))
-    query = dict(parse_qsl(target.query)); query['athlete'] = child.pk; query.pop('page', None)
-    return redirect(target.path + '?' + urlencode(query))
+    messages.success(request, f"You're now viewing {child.get_full_name() or child.username}.")
+    return redirect(reverse('account_settings') + '#family-view')

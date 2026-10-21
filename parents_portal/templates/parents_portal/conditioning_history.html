@@ -49,25 +49,7 @@
                     </p>
                 </div>
 
-                {% if linked_athletes|length > 1 %}
-                    <div class="dropdown athlete-selector">
-                        <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                            {{ selected_athlete.get_full_name|default:selected_athlete.username }}
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            {% for athlete in linked_athletes %}
-                                <li>
-                                    <a
-                                        class="dropdown-item {% if selected_athlete and athlete.id == selected_athlete.id %}active{% endif %}"
-                                        href="{% url 'parent_conditioning_history' %}?athlete={{ athlete.id }}"
-                                    >
-                                        {{ athlete.get_full_name|default:athlete.username }}
-                                    </a>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                {% endif %}
+                
             </div>
         </section>
 

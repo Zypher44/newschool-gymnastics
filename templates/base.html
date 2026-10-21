@@ -916,9 +916,6 @@
             {% endif %}
 
             {% load practice_hub_tags %}
-            {% if user.role == 'parent' and family_children %}
-<div class="card border-0 shadow-sm mb-3"><div class="card-body py-3"><form method="post" action="{% url 'switch_child' %}" class="d-flex flex-wrap align-items-center gap-2">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><label for="family-child" class="fw-semibold">Viewing child</label><select id="family-child" name="athlete" class="form-select w-auto" style="max-width:100%">{% for child in family_children %}<option value="{{ child.pk }}" {% if child.pk == family_selected_child.pk %}selected{% endif %}>{{ child.get_full_name|default:child.username }}</option>{% endfor %}</select><button class="btn btn-primary" type="submit">View child</button><a class="btn btn-link" href="{% url 'connect_athlete' %}">Connect another child</a></form></div></div>
-{% endif %}
 {% practice_hub_welcome %}
             {% practice_hub_tracker_context %}
             {% block content %}{% endblock %}

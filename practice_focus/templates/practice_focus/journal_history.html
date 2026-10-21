@@ -3,7 +3,7 @@
 {% if owner %}<section class="aj-card aj-start"><div><h2>A little reflection goes a long way</h2><p>Pick how practice felt, or answer a question. Small wins count.</p></div><a class="aj-button aj-primary" href="{% url 'practice_focus:journal_new' %}">Write or edit today's entry</a><p class="aj-muted">New entries start as Only me. Sharing is your choice for each entry.</p></section>{% endif %}
 <section class="aj-card"><h2>{% if owner %}Find a past entry{% else %}Find a shared entry{% endif %}</h2>
   <form method="get" class="aj-filters">
-    {% if not owner %}<label>Athlete<select name="athlete"><option value="">All shared athletes</option>{% for person in athletes %}<option value="{{ person.pk }}" {% if person.pk|stringformat:'s' == selected_athlete %}selected{% endif %}>{{ person.get_full_name|default:person.username }}</option>{% endfor %}</select></label>{% endif %}
+    {% if not owner and user.role != 'parent' %}<label>Athlete<select name="athlete"><option value="">All shared athletes</option>{% for person in athletes %}<option value="{{ person.pk }}" {% if person.pk|stringformat:'s' == selected_athlete %}selected{% endif %}>{{ person.get_full_name|default:person.username }}</option>{% endfor %}</select></label>{% endif %}
     <label for="id_start">From{{ filter_form.start }}{{ filter_form.start.errors }}</label>
     <label for="id_end">To{{ filter_form.end }}{{ filter_form.end.errors }}</label>
     <button type="submit" class="aj-button aj-primary">Find entries</button><a class="aj-button" href="{% url 'practice_focus:journal_history' %}">Clear filters</a>

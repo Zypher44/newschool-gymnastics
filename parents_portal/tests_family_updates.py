@@ -87,6 +87,34 @@ class ParentUpdatesTests(TestCase):
     def test_navigation_renders_with_icons_and_csrf_protected_switch(self):
         response=self.client.get(reverse('parent_dashboard'))
         self.assertContains(response,'My Child’s Progress')
-        self.assertContains(response,'Viewing child')
+        self.assertNotContains(response, 'id="family-child"')
         client=Client(enforce_csrf_checks=True);client.force_login(self.parent)
         self.assertEqual(client.post(reverse('switch_child'),{'athlete':self.child.pk}).status_code,403)
+
+    def test_child_switcher_only_in_settings_and_saves_across_portal(self):
+        settings = self.client.get(reverse('account_settings'))
+        self.assertContains(settings, 'id="family-child"')
+        self.assertContains(settings, 'Save child view')
+        self.assertContains(settings, f'value="{self.second.pk}"')
+        self.assertNotContains(settings, f'value="{self.foreign.pk}"')
+        response = self.client.post(reverse('switch_child'), {'athlete': self.second.pk, 'next': 'https://example.com'})
+        self.assertRedirects(response, reverse('account_settings') + '#family-view')
+        self.assertEqual(self.client.session['selected_child'], self.second.pk)
+        settings = self.client.get(reverse('account_settings'))
+        self.assertContains(settings, f'<option value="{self.second.pk}" selected>Jamie</option>', html=True)
+        for name in ['parent_dashboard', 'parent_conditioning_history', 'practice_focus:family_progress',
+                     'practice_focus:family_passport', 'practice_focus:journal_history', 'gym_calendar']:
+            page = self.client.get(reverse(name))
+            for marker in ['id="family-child"', 'id="family-athlete"', 'id="passport-athlete"',
+                           'Switch Athlete', 'name="athlete"']:
+                self.assertNotContains(page, marker)
+        self.assertEqual(self.client.get(reverse('practice_focus:family_progress')).context['athlete'], self.second)
+
+    def test_settings_hides_unapproved_children_and_handles_empty_connections(self):
+        ParentAthleteLink.objects.filter(parent=self.parent).update(approved=False)
+        settings = self.client.get(reverse('account_settings'))
+        self.assertContains(settings, 'No approved child connections yet')
+        self.assertNotContains(settings, 'id="family-child"')
+        self.assertEqual(self.client.post(reverse('switch_child'), {'athlete': self.second.pk}).status_code, 404)
+        self.client.force_login(self.coach)
+        self.assertNotContains(self.client.get(reverse('account_settings')), 'id="family-view"')

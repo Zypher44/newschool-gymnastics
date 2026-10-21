@@ -142,41 +142,7 @@ Parent Dashboard
                     </div>
 
 
-                    {% if linked_athletes|length > 1 %}
-
-                        <div class="dropdown athlete-switcher">
-
-                            <button
-                                class="btn btn-outline-primary dropdown-toggle"
-                                type="button"
-                                data-bs-toggle="dropdown"
-                            >
-                                Switch Athlete
-                            </button>
-
-
-                            <ul class="dropdown-menu dropdown-menu-end">
-
-                                {% for athlete in linked_athletes %}
-
-                                    <li>
-
-                                        <a
-                                            class="dropdown-item {% if athlete.id == selected_athlete.id %}active{% endif %}"
-                                            href="{% url 'parent_dashboard' %}?athlete={{ athlete.id }}"
-                                        >
-                                            {{ athlete.get_full_name|default:athlete.username }}
-                                        </a>
-
-                                    </li>
-
-                                {% endfor %}
-
-                            </ul>
-
-                        </div>
-
-                    {% endif %}
+                    
 
                 </div>
 
