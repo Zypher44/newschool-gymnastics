@@ -490,6 +490,12 @@
             </div>
 
             <div class="sidebar-navigation">
+                {% if user.is_superuser %}
+                    <div class="sidebar-section">Platform</div>
+                    <a href="{% url 'public_enquiry_inbox' %}" class="sidebar-link" title="Product enquiries" aria-label="Product enquiries">
+                        <span class="sidebar-icon">✉</span><span class="sidebar-label">Product enquiries</span>
+                    </a>
+                {% endif %}
                 {% if user.role == 'director' %}
                     <div class="sidebar-section">Gym Management</div>
 
