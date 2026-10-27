@@ -24,6 +24,8 @@ PAGES = {
 
 SECTIONS = {
     'features': [
+        ('Practice Passports and learning quests', 'Coach-approved stamps recognize personal progress, skill learning and teamwork. Optional quests encourage questions and reflection. Wellness answers, journal entries and safety reports do not determine Passport eligibility; breaks do not reset earned stamps.'),
+        ('Clear communication routes', 'Athletes message coaches only, with an explicitly selected approved parent or second coach included. Parents and coaches can contact directors. Participants see who is included in the new thread. Older one-to-one athlete conversations remain read-only and are not automatically shared.'),
         ('Directors: organize your gym', 'Manage training groups, coaches and athletes. Approve membership requests and parent-to-athlete connections.'),
         ('Coaches: keep training context together', 'Review daily check-ins, record attendance, follow skills and testing, add athlete notes and review videos.'),
         ('Athletes and families: follow progress', 'Athletes complete check-ins and review feedback. Parents can access information for approved linked athletes and communicate with their gym team.'),
@@ -40,6 +42,7 @@ SECTIONS = {
         ('Product support', 'Use the contact form for a product issue. Include the page, your role and what happened. Do not include passwords, reset links, athlete wellness details or private videos.'),
     ],
     'privacy': [
+        ('Athlete conversations and observer access', 'All athlete accounts use supervised messaging, without relying on an age assumption. A new athlete-coach thread includes an explicitly selected approved linked parent or second coach. Everyone in that thread can read it. The application records its participants and observer. Earlier one-to-one conversations are not automatically shared with new people. A revoked parent connection removes access to related message threads and their notification previews.'),
         ('Information used by the app', 'Depending on the features your gym uses, the application stores account and contact details, gym memberships and groups, athlete profiles, parent connections, daily wellness responses, attendance, skill and testing results, coach notes, messages, journal entries, and uploaded videos and feedback. Some information, such as wellness responses and videos, can be sensitive.'),
         ('Why information is used', 'These records support account access, gym membership management, coaching, training history and communication with families. Your gym chooses how it uses the platform and should explain its approach to athletes and guardians.'),
         ('Who can access information', 'Access depends on gym membership, role, assignments, approved parent connections and feature-specific sharing settings. Parents need an approved athlete connection. A private note or journal entry is not automatically shared with families. Authorized platform administrators can administer the service; access controls are not a guarantee that no incident can occur.'),

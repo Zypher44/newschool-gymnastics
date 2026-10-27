@@ -5,15 +5,15 @@
 <div class="card border-0 shadow-sm mx-auto" style="max-width:760px">
     <div class="card-body p-4">
         <h1 class="h3 mb-2">Message gym members</h1>
-        <p class="text-muted">Each recipient receives a private conversation and can reply to you.</p>
+        <p class="text-muted">Each permitted recipient receives a separate thread. Athlete threads include the selected observer. Directors message parents and staff; supervised athlete updates come from coaches.</p>
         {% if error %}<div class="alert alert-danger" role="alert">{{ error }}</div>{% endif %}
-        <form method="post">
+        <form method="post"><div class="mb-3"><label for="announcement-observer" class="form-label">Second coach observer for athlete messages</label><select id="announcement-observer" name="observer" class="form-select"><option value="">Choose when athletes are included</option>{% for person in observer_options %}<option value="{{ person.pk }}" {% if request.POST.observer == person.pk|stringformat:'s' %}selected{% endif %}>{{ person.get_full_name|default:person.username }} ({{ person.get_role_display }})</option>{% endfor %}</select><p class="small text-muted">Required if any athlete receives a message. The selected staff member is included in each new athlete thread. Use only for routine program updates, not sensitive concerns.</p></div>
             {% csrf_token %}
             <div class="mb-3">
                 <label class="form-label" for="audience">Send to</label>
                 <select name="audience" id="audience" class="form-select" required>
                     <option value="">Choose recipients</option>
-                    <option value="all" {% if request.POST.audience == 'all' %}selected{% endif %}>Everyone in my gym</option>
+                    <option value="all" {% if request.POST.audience == 'all' %}selected{% endif %}>{% if user.role == 'director' %}Parents and staff in my gym{% else %}Everyone in my gym{% endif %}</option>
                     <option value="coaches" {% if request.POST.audience == 'coaches' %}selected{% endif %}>Coaches</option>
                     <option value="parents" {% if request.POST.audience == 'parents' %}selected{% endif %}>Parents</option>
                     <option value="group" {% if request.POST.audience == 'group' %}selected{% endif %}>Training group</option>

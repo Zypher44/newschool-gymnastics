@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import include, path
 from accounts import public_views
 from accounts import enquiry_views
+from communications.safety_views import safety_support
 from accounts.info_views import public_info
 from accounts import signup_v2
 from coaches.calendar_views import gym_calendar
@@ -10,6 +11,7 @@ from django.conf.urls.static import static
 
 
 urlpatterns = [
+    path('safety/', safety_support, name='safety_support'),
     path('demo/', enquiry_views.enquiry, name='public_demo'),
     path('enquiry/received/', enquiry_views.received, name='public_enquiry_received'),
     path('product/enquiries/', enquiry_views.inbox, name='public_enquiry_inbox'),

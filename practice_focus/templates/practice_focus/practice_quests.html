@@ -1,0 +1,12 @@
+{% if user.role == 'athlete' %}
+<section class="practice-quests card border-0 shadow-sm p-4 mb-4" aria-labelledby="practice-quests-title">
+  <div class="d-flex justify-content-between flex-wrap gap-2"><div><p class="text-primary fw-bold small mb-1">MY NEXT PRACTICE ADVENTURE</p><h2 class="h4" id="practice-quests-title">Small quests. Your own progress.</h2></div><a href="{% url 'practice_focus:family_passport' %}" class="btn btn-outline-primary align-self-start">🏅 My stamps</a></div>
+  <p class="text-muted">Try an optional learning quest with your coach. Your coach approves Passport stamps; you do not need to do extra repetitions to finish a game.</p>
+  <div class="row g-3">
+    <div class="col-12 col-md-4"><div class="border rounded-3 p-3 h-100"><h3 class="h6">🙋 Ask &amp; Learn</h3><p class="small">Choose a skill question or ask your coach to explain your next goal.</p><a href="{% url 'conversation_create' %}?topic=question" class="btn btn-sm btn-outline-primary">Ask a coach</a></div></div>
+    <div class="col-12 col-md-4"><div class="border rounded-3 p-3 h-100"><h3 class="h6">🤝 Great Teammate</h3><p class="small">Encourage a teammate during practice. Your coach can recognize helpful teamwork.</p><a href="{% url 'practice_focus:family_passport' %}#passport-collection-title" class="btn btn-sm btn-outline-primary">Explore my stamps</a></div></div>
+    <div class="col-12 col-md-4"><div class="border rounded-3 p-3 h-100"><h3 class="h6">📖 Reflect &amp; reset</h3><p class="small">Notice a learning win and choose something to ask about next time. Your journal is private unless you choose to share.</p><a href="{% url 'practice_focus:journal_new' %}" class="btn btn-sm btn-outline-primary">Write a reflection</a></div></div>
+  </div>
+  <p class="small text-muted mt-3 mb-0">Breaks do not reset your stamps. Wellness answers, journal entries and safety reports do not count toward Passport eligibility. <a href="{% url 'safety_support' %}">You can ask for support at any time</a>.</p>
+</section>
+{% endif %}

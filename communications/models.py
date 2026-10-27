@@ -122,6 +122,11 @@ class Notification(models.Model):
 
 
 class Conversation(models.Model):
+    requires_supervision = models.BooleanField(default=False)
+    supervision_observer = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='observed_conversations',
+    )
     gym = models.ForeignKey('gyms.Gym', on_delete=models.SET_NULL,
                             related_name='conversations', null=True, blank=True)
     subject = models.CharField(

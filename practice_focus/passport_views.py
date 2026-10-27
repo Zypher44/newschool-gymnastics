@@ -129,7 +129,7 @@ def family_passport(request):
     earned_count = sum(c['earned'] for c in cards)
     total_stamps = len(cards)
     badge_families = len({c['code'] for c in cards})
-    adventures = sorted([c for c in cards if not c['earned'] and not c['manual']],
+    adventures = sorted([c for c in cards if not c['earned'] and not c['manual'] and c['metric'] != 'attendance'],
                         key=lambda c: (not c['ready'], -c['percent'], c['target']))[:2]
     celebrations = [{'id': f"{c['award']['id']}:{c['award']['version']}", 'title': c['title'], 'slot': c['slot']}
                     for c in cards if c['earned']]

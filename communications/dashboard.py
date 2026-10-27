@@ -12,7 +12,10 @@ from .services import (
     create_or_get_conversation,
     get_allowed_message_recipients,
     send_message,
+    get_coaches_for_athlete,
 )
+from .safeguarding import visible_conversation_ids
+from django.db import transaction
 
 
 def get_user_display_name(user):
@@ -36,6 +39,7 @@ def get_recent_conversations(user, limit=3):
         ConversationParticipant.objects
         .filter(
             user=user,
+            conversation_id__in=visible_conversation_ids(user),
             conversation__gym_id=single_active_gym_id(user, [user.role]),
             conversation__gym__isnull=False,
             is_archived=False,
@@ -163,7 +167,7 @@ def get_athlete_quick_message_options(athlete):
 
     return (
         get_allowed_message_recipients(athlete)
-        .filter(id__in=coach_ids, role__in=['coach', 'head_coach'])
+        .filter(role__in=['coach', 'head_coach'])
         .order_by(
             'first_name',
             'last_name',
@@ -200,14 +204,7 @@ def get_parent_quick_message_options(parent):
     for link in links:
         athlete = link.athlete
 
-        coach_ids = (
-            CoachAthleteAssignment.objects
-            .filter(athlete=athlete)
-            .values_list(
-                'coach_id',
-                flat=True
-            )
-        )
+        coach_ids = get_coaches_for_athlete(athlete).values_list('pk', flat=True)
 
         coaches = (
             allowed_recipients
@@ -285,13 +282,15 @@ def get_dashboard_communication_data(user):
     return data
 
 
+@transaction.atomic
 def send_dashboard_message(
     *,
     sender,
     recipient,
     message_body,
     related_athlete=None,
-    subject=''
+    subject='',
+    observer=None,
 ):
     """
     Create or reuse a conversation and send one message.
@@ -301,7 +300,8 @@ def send_dashboard_message(
         creator=sender,
         recipient=recipient,
         subject=subject,
-        related_athlete=related_athlete
+        related_athlete=related_athlete,
+        observer=observer,
     )
 
     send_message(
