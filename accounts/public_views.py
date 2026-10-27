@@ -12,6 +12,16 @@ def home(request):
     return render(
         request,
         'home.html',
+        {
+            'sample_coaching_priorities': [
+                {'icon': '🔴', 'athlete': {'username': 'Sample Alex'},
+                 'message': 'Talk before practice'},
+                {'icon': '🔴', 'athlete': {'username': 'Sample Alex'},
+                 'message': 'Sore muscles'},
+                {'icon': '❌', 'athlete': {'username': 'Sample Casey'},
+                 'message': 'missing wellness survey today'},
+            ],
+        },
     )
 
 

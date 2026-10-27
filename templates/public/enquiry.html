@@ -1,0 +1,29 @@
+{% extends "public_base.html" %}
+{% block title %}{% if is_demo %}Request a gym demo{% else %}Contact NewSchool{% endif %} | NewSchool Gymnastics{% endblock %}
+{% block content %}
+<section class="container home-section enquiry-layout">
+  <div>
+    <p class="eyebrow">{% if is_demo %}EXPLORE IT FOR YOUR GYM{% else %}CONTACT THE PRODUCT TEAM{% endif %}</p>
+    <h1>{% if is_demo %}See how NewSchool fits your program.{% else %}How can we help?{% endif %}</h1>
+    <p class="section-intro">{% if is_demo %}Tell us a little about your gym and what you want to explore. We'll use your email to follow up and arrange a conversation.{% else %}Ask about the product, pricing, a pilot or your information. You do not need an account to get in touch.{% endif %}</p>
+    <div class="enquiry-expectations"><h2 class="h5">What happens next</h2><ol><li>Your request is saved for the NewSchool team.</li><li>The team reviews your enquiry and follows up by email.</li><li>Any demo time, pricing and pilot terms are agreed separately.</li></ol><p class="small mb-0">Sending this form does not create a gym account, book a confirmed time or start a paid subscription.</p></div>
+    <p class="small mt-4">Already using NewSchool? For schedules, athlete questions and membership approvals, contact your gym through its usual channels or <a href="{% url 'login' %}">sign in to Messages</a>.</p>
+  </div>
+  <div class="enquiry-card">
+    <h2 class="h4">{% if is_demo %}Request a gym demo{% else %}Send an enquiry{% endif %}</h2>
+    <p class="small text-muted">Please do not include athlete names, wellness details, videos or passwords.</p>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {{ form.submission_token }}
+      <div class="enquiry-trap" aria-hidden="true"><label for="{{ form.website.id_for_label }}">Leave this field empty</label>{{ form.website }}</div>
+      {% if form.errors %}<div class="alert alert-danger" role="alert"><p class="mb-1 fw-bold">Please check the form.</p>{{ form.non_field_errors }}{% for error in form.submission_token.errors %}<p class="mb-0">{{ error }}</p>{% endfor %}{% for error in form.website.errors %}<p class="mb-0">{{ error }}</p>{% endfor %}</div>{% endif %}
+      {% for field in form.visible_fields %}{% if field.name != 'website' %}
+        {% if field.name == 'consent_to_reply' %}<div class="form-check mb-3">{{ field }}<label class="form-check-label small" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field.errors }}</div>
+        {% else %}<div class="mb-3"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endif %}
+      {% endif %}{% endfor %}
+      <p class="small text-muted">Your enquiry is stored for the product team to respond. This does not subscribe you to marketing emails. <a href="{% url 'public_privacy' %}#enquiries">How enquiry information is used</a>.</p>
+      <button class="btn btn-primary w-100" type="submit">Send enquiry</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

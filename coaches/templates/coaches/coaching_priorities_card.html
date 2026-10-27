@@ -1,0 +1,53 @@
+        <div class="card dashboard-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>🎯 Today’s Coaching Priorities</span>
+
+                <span class="badge bg-primary rounded-pill">
+                    {{ coaching_priorities|length }}
+                </span>
+            </div>
+
+            <div class="card-body">
+                {% if coaching_priorities %}
+                    <div class="d-flex flex-column gap-3">
+                        {% for priority in coaching_priorities %}
+                            <div class="priority-item">
+                                <div>
+                                    <div class="fw-bold">
+                                        {{ priority.icon }}
+                                        {{ priority.athlete.username }}
+                                    </div>
+
+                                    <div class="small text-muted mt-1">
+                                        {{ priority.message }}
+                                    </div>
+                                </div>
+
+                                {% if preview_mode %}
+                                    <button type="button" class="btn btn-sm btn-outline-primary" disabled>View Athlete</button>
+                                {% else %}
+                                <a
+                                    href="{% url priority.url_name priority.url_id %}"
+                                    class="btn btn-sm btn-outline-primary"
+                                >
+                                    View Athlete
+                                </a>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="fs-3 mb-2">✅</div>
+
+                        <div class="fw-bold">
+                            No major priorities today
+                        </div>
+
+                        <div class="small">
+                            Your team is currently in a good position.
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>

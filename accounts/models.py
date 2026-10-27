@@ -57,3 +57,34 @@ class ParentReportDigest(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     submitted_at = models.DateTimeField(null=True, blank=True)
     last_error = models.CharField(max_length=300, blank=True)
+
+
+class PublicEnquiry(models.Model):
+    """Product enquiries, kept separate from gym and athlete information."""
+
+    class Kind(models.TextChoices):
+        DEMO = 'demo', 'A gym demo'
+        PRICING = 'pricing', 'Pricing or a pilot'
+        SUPPORT = 'support', 'Product support'
+        PRIVACY = 'privacy', 'A privacy or data request'
+
+    class Status(models.TextChoices):
+        NEW = 'new', 'New'
+        CONTACTED = 'contacted', 'Contacted'
+        CLOSED = 'closed', 'Closed'
+
+    submission_id = models.UUIDField(default=uuid4, unique=True, editable=False)
+    name = models.CharField(max_length=120)
+    email = models.EmailField()
+    gym_name = models.CharField(max_length=160, blank=True)
+    kind = models.CharField(max_length=12, choices=Kind.choices)
+    message = models.TextField(max_length=2000, blank=True)
+    consent_to_reply = models.BooleanField(default=False)
+    status = models.CharField(max_length=12, choices=Status.choices, default=Status.NEW)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.get_kind_display()} — {self.gym_name or self.name}'

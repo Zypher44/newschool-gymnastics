@@ -1,713 +1,90 @@
 {% extends "public_base.html" %}
-
-{% block title %}
-    NewSchool Gymnastics
-{% endblock %}
-
-{% block extra_css %}
-<style>
-    .home-hero {
-        position: relative;
-        overflow: hidden;
-        padding: 105px 0 95px;
-        color: white;
-        background:
-            linear-gradient(
-                135deg,
-                rgba(13, 110, 253, 0.98),
-                rgba(102, 16, 242, 0.94)
-            );
-    }
-
-    .home-hero::before {
-        content: "";
-        position: absolute;
-        width: 520px;
-        height: 520px;
-        right: -170px;
-        top: -220px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.09);
-    }
-
-    .home-hero::after {
-        content: "";
-        position: absolute;
-        width: 280px;
-        height: 280px;
-        left: -130px;
-        bottom: -170px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.07);
-    }
-
-    .home-hero-content {
-        position: relative;
-        z-index: 2;
-    }
-
-    .hero-label {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 14px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.15);
-        font-size: 0.84rem;
-        font-weight: 750;
-    }
-
-    .hero-title {
-        max-width: 760px;
-        margin-top: 22px;
-        font-size: clamp(2.5rem, 6vw, 5rem);
-        font-weight: 900;
-        line-height: 1.03;
-        letter-spacing: -0.045em;
-    }
-
-    .hero-description {
-        max-width: 670px;
-        margin-top: 24px;
-        color: rgba(255, 255, 255, 0.82);
-        font-size: 1.12rem;
-        line-height: 1.7;
-    }
-
-    .hero-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 13px;
-        margin-top: 32px;
-    }
-
-    .hero-stat-card {
-        height: 100%;
-        padding: 22px;
-        border: 1px solid rgba(255, 255, 255, 0.16);
-        border-radius: 20px;
-        background: rgba(255, 255, 255, 0.11);
-        backdrop-filter: blur(12px);
-    }
-
-    .hero-stat-icon {
-        font-size: 1.7rem;
-    }
-
-    .hero-stat-title {
-        margin-top: 12px;
-        font-weight: 800;
-    }
-
-    .hero-stat-text {
-        margin-top: 6px;
-        color: rgba(255, 255, 255, 0.72);
-        font-size: 0.83rem;
-        line-height: 1.5;
-    }
-
-    .home-section {
-        padding: 88px 0;
-    }
-
-    .section-label {
-        color: #0d6efd;
-        font-size: 0.78rem;
-        font-weight: 850;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-    }
-
-    .section-title {
-        max-width: 720px;
-        margin-top: 12px;
-        color: #172033;
-        font-size: clamp(2rem, 4vw, 3.1rem);
-        font-weight: 850;
-        letter-spacing: -0.035em;
-    }
-
-    .section-description {
-        max-width: 720px;
-        margin-top: 18px;
-        color: #667085;
-        font-size: 1rem;
-        line-height: 1.7;
-    }
-
-    .feature-card {
-        height: 100%;
-        padding: 27px;
-        border: 0;
-        border-radius: 22px;
-        background: white;
-        box-shadow: 0 10px 34px rgba(33, 37, 41, 0.07);
-    }
-
-    .feature-icon {
-        width: 55px;
-        height: 55px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 17px;
-        background: #eef4ff;
-        font-size: 1.45rem;
-    }
-
-    .feature-card h4 {
-        margin-top: 20px;
-        font-weight: 800;
-    }
-
-    .feature-card p {
-        margin-bottom: 0;
-        color: #667085;
-        line-height: 1.65;
-    }
-
-    .ai-section {
-        background: #f3f6ff;
-    }
-
-    .ai-section .section-title {
-        max-width: 800px;
-    }
-
-    .ai-card {
-        height: 100%;
-        padding: 30px;
-        border: 1px solid #e1e8fa;
-        border-radius: 22px;
-        background: #fff;
-        box-shadow: 0 12px 30px rgba(37, 55, 100, 0.05);
-    }
-
-    .ai-card-icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 54px;
-        height: 54px;
-        border-radius: 16px;
-        background: #eaf0ff;
-        font-size: 1.5rem;
-    }
-
-    .ai-card h3 {
-        margin-top: 22px;
-        color: #172033;
-        font-size: 1.25rem;
-        font-weight: 800;
-    }
-
-    .ai-card p {
-        margin-bottom: 0;
-        color: #667085;
-        line-height: 1.7;
-    }
-
-    .ai-workflow {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 12px;
-        margin-top: 32px;
-        color: #475467;
-        font-size: 0.9rem;
-        font-weight: 700;
-    }
-
-    .ai-workflow-step {
-        padding: 10px 17px;
-        border: 1px solid #dce5f9;
-        border-radius: 999px;
-        background: #fff;
-    }
-
-    .ai-workflow-arrow {
-        color: #6078ae;
-    }
-
-    .ai-note {
-        margin-top: 23px;
-        margin-bottom: 0;
-        color: #667085;
-        font-size: 0.88rem;
-        line-height: 1.6;
-    }
-
-    .role-section {
-        background: white;
-    }
-
-    .role-card {
-        height: 100%;
-        padding: 30px;
-        border: 1px solid #e8ecf2;
-        border-radius: 23px;
-        background: #ffffff;
-    }
-
-    .role-card-highlight {
-        border-color: rgba(13, 110, 253, 0.24);
-        background:
-            linear-gradient(
-                145deg,
-                rgba(13, 110, 253, 0.055),
-                rgba(102, 16, 242, 0.035)
-            );
-    }
-
-    .role-icon {
-        font-size: 2.2rem;
-    }
-
-    .role-card h3 {
-        margin-top: 18px;
-        font-weight: 850;
-    }
-
-    .role-card p {
-        color: #667085;
-        line-height: 1.65;
-    }
-
-    .role-list {
-        padding-left: 0;
-        margin-bottom: 0;
-        list-style: none;
-    }
-
-    .role-list li {
-        display: flex;
-        gap: 9px;
-        margin-top: 11px;
-        color: #475467;
-        font-size: 0.9rem;
-    }
-
-    .home-cta {
-        margin-bottom: 88px;
-        padding: 52px;
-        overflow: hidden;
-        border-radius: 28px;
-        color: white;
-        background:
-            linear-gradient(
-                135deg,
-                #172033,
-                #263b63
-            );
-    }
-
-    @media (max-width: 767.98px) {
-        .home-hero {
-            padding: 72px 0;
-        }
-
-        .home-section {
-            padding: 65px 0;
-        }
-
-        .home-cta {
-            padding: 32px 24px;
-            border-radius: 21px;
-        }
-    }
-</style>
-{% endblock %}
-
+{% block title %}Athlete check-ins & coaching tools | NewSchool Gymnastics{% endblock %}
+{% block meta_description %}Daily athlete check-ins, skill tracking, video feedback and family communication for gymnastics directors and coaches. Request a gym demo.{% endblock %}
 {% block content %}
-
-<section class="home-hero">
-    <div class="container home-hero-content">
-        <div class="row align-items-center g-5">
-            <div class="col-xl-8">
-                <div class="hero-label">
-                    🤸 Built for modern gymnastics programs
-                </div>
-
-                <h1 class="hero-title">
-                    Stronger communication. Smarter coaching. Better progress.
-                </h1>
-
-                <p class="hero-description">
-                    NewSchool Gymnastics brings athletes, parents, and
-                    coaches together through wellness tracking, attendance,
-                    skill development, testing, video feedback, reporting,
-                    and secure communication.
-                </p>
-
-                <div class="hero-actions">
-                    <a
-                        href="{% url 'signup' %}"
-                        class="btn btn-light btn-lg rounded-pill px-4 fw-semibold"
-                    >
-                        Create Your Account
-                    </a>
-
-                    <a
-                        href="{% url 'login' %}"
-                        class="btn btn-outline-light btn-lg rounded-pill px-4"
-                    >
-                        Log In
-                    </a>
-                </div>
-            </div>
-
-            <div class="col-xl-4">
-                <div class="row g-3">
-                    <div class="col-sm-4 col-xl-12">
-                        <div class="hero-stat-card">
-                            <div class="hero-stat-icon">
-                                ⚡
-                            </div>
-
-                            <div class="hero-stat-title">
-                                Daily Readiness
-                            </div>
-
-                            <div class="hero-stat-text">
-                                Help coaches understand how athletes feel
-                                before training begins.
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-sm-4 col-xl-12">
-                        <div class="hero-stat-card">
-                            📈
-
-                            <div class="hero-stat-title">
-                                Progress Tracking
-                            </div>
-
-                            <div class="hero-stat-text">
-                                Follow testing, skills, attendance, and
-                                personal bests in one place.
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-sm-4 col-xl-12">
-                        <div class="hero-stat-card">
-                            💬
-
-                            <div class="hero-stat-title">
-                                Secure Communication
-                            </div>
-
-                            <div class="hero-stat-text">
-                                Keep coaches, athletes, and families
-                                informed and connected.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+<section class="home-hero" aria-labelledby="hero-heading">
+  <div class="container hero-layout">
+    <div>
+      <p class="eyebrow light">FOR GYMNASTICS DIRECTORS &amp; COACHES</p>
+      <h1 id="hero-heading">Know how athletes feel before practice.<br><span>Keep their progress in view.</span></h1>
+      <p class="hero-description">Bring daily wellness check-ins, skill tracking, video feedback and family communication into one coaching workspace.</p>
+      <div class="hero-actions">
+        <a href="{% url 'public_demo' %}" class="btn btn-light btn-lg">Request a gym demo <span aria-hidden="true">↗</span></a>
+        <a href="#workflow" class="hero-text-link">See the coaching workflow <span aria-hidden="true">↓</span></a>
+      </div>
+      <p class="hero-footnote">No account needed to enquire. Already part of a gym? <a href="{% url 'signup' %}">Join your gym</a>.</p>
     </div>
+    <figure class="product-preview">
+      <div class="preview-top"><span class="preview-dots" aria-hidden="true">● ● ●</span><span>Inside NewSchool</span><span class="sample-label">SAMPLE DATA</span></div>
+      <div class="live-dashboard-preview" aria-label="Read-only sample of the actual coaching priorities component">
+        {% include "coaches/coaching_priorities_card.html" with coaching_priorities=sample_coaching_priorities preview_mode=True only %}
+      </div>
+      <figcaption>A read-only preview of the actual coaching-priorities card. All athlete names and check-ins shown here are fictional; preview buttons are disabled.</figcaption>
+    </figure>
+  </div>
 </section>
-
-<section class="home-section">
-    <div class="container">
-        <div class="section-label">
-            One connected platform
-        </div>
-
-        <h2 class="section-title">
-            Everything your gymnastics program needs to stay aligned.
-        </h2>
-
-        <p class="section-description">
-            Replace disconnected spreadsheets, messages, and paper records
-            with one central system designed around athlete development.
-        </p>
-
-        <div class="row g-4 mt-4">
-            <div class="col-md-6 col-xl-4">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        📝
-                    </div>
-
-                    <h4>
-                        Athlete Wellness
-                    </h4>
-
-                    <p>
-                        Track energy, soreness, stress, sleep, nutrition,
-                        hydration, and readiness before practice.
-                    </p>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-xl-4">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        🏆
-                    </div>
-
-                    <h4>
-                        Skill Development
-                    </h4>
-
-                    <p>
-                        Monitor skills from not started through competition
-                        ready and celebrate athlete progress.
-                    </p>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-xl-4">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        📊
-                    </div>
-
-                    <h4>
-                        Performance Testing
-                    </h4>
-
-                    <p>
-                        Publish testing results, monitor score trends, and
-                        identify personal bests.
-                    </p>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-xl-4">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        ✅
-                    </div>
-
-                    <h4>
-                        Attendance
-                    </h4>
-
-                    <p>
-                        Record attendance quickly and give families a clear
-                        view of participation.
-                    </p>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-xl-4">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        🎥
-                    </div>
-
-                    <h4>
-                        Video Feedback
-                    </h4>
-
-                    <p>
-                        Review athlete videos, provide feedback, and connect
-                        technical progress to individual skills.
-                    </p>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-xl-4">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        💬
-                    </div>
-
-                    <h4>
-                        Communication
-                    </h4>
-
-                    <p>
-                        Keep messages, notifications, athlete context, and
-                        important updates together.
-                    </p>
-                </div>
-            </div>
-        </div>
+<div class="fit-strip"><div class="container"><strong>Your coaching workspace.</strong> Use it alongside your registration and billing tools. NewSchool focuses on athlete development and communication.</div></div>
+<section id="workflow" class="home-section" aria-labelledby="workflow-heading">
+  <div class="container">
+    <p class="eyebrow">FROM CHECK-IN TO FOLLOW-UP</p>
+    <h2 id="workflow-heading">Give the next conversation some context.</h2>
+    <p class="section-intro">A check-in can start a useful conversation. Coaches can review what an athlete shares and keep notes alongside their training history.</p>
+    <ol class="workflow-grid">
+      <li><span class="step-number">01</span><h3>The athlete checks in</h3><p>Athletes report how they feel, including energy, sleep, soreness and whether they want to talk to their coach.</p></li>
+      <li><span class="step-number">02</span><h3>The coach reviews</h3><p>Coaching priorities bring check-in concerns into view, so the coach can decide what needs a conversation before training.</p></li>
+      <li><span class="step-number">03</span><h3>The coach records context</h3><p>Add a coach note on the athlete profile. Return to their check-ins, skills, testing and feedback as training continues.</p></li>
+    </ol>
+    <p class="context-note">Check-ins support communication and record keeping. They do not diagnose conditions, predict injuries or replace a coach's judgment or medical care.</p>
+  </div>
+</section>
+<section class="home-section section-tint" aria-labelledby="roles-heading">
+  <div class="container">
+    <p class="eyebrow">ONE PROGRAM. CLEAR ROLES.</p>
+    <h2 id="roles-heading">Built for the people running the gym, too.</h2>
+    <div class="role-grid">
+      <article class="role-card director-card"><span class="role-icon" aria-hidden="true">↗</span><h3>Directors</h3><p>Set up training groups, manage coaches and athletes, and approve member access and parent connections.</p><a href="{% url 'public_demo' %}">Explore it for your gym <span aria-hidden="true">→</span></a></article>
+      <article class="role-card"><span class="role-icon" aria-hidden="true">✓</span><h3>Coaches</h3><p>Review athlete readiness, record attendance, track skills and testing, and give video feedback.</p></article>
+      <article class="role-card"><span class="role-icon" aria-hidden="true">↗</span><h3>Athletes</h3><p>Share how practice feels, record skill attempts and review personal progress and coach feedback.</p></article>
+      <article class="role-card"><span class="role-icon" aria-hidden="true">◎</span><h3>Parents</h3><p>View information for approved linked athletes, follow progress and communicate with the coaching team.</p></article>
     </div>
+  </div>
 </section>
-
+<section class="home-section" aria-labelledby="tools-heading">
+  <div class="container">
+    <p class="eyebrow">KEEP THE TRAINING CONTEXT TOGETHER</p><h2 id="tools-heading">Follow the work between milestones.</h2>
+    <div class="tools-grid">
+      <article><h3>Skills &amp; pathways</h3><p>Assign skills, record attempts and follow progression through your program's pathways.</p></article>
+      <article><h3>Testing &amp; attendance</h3><p>Keep testing results and participation records with the athlete's training information.</p></article>
+      <article><h3>Video &amp; family updates</h3><p>Review training videos, add feedback and share relevant updates with families through the app.</p></article>
+    </div>
+  </div>
+</section>
 <section class="home-section ai-section" aria-labelledby="ai-heading">
-    <div class="container">
-        <div class="section-label">AI-assisted video review</div>
-
-        <h2 class="section-title" id="ai-heading">
-            See the moments that matter. Keep coaches in control.
-        </h2>
-
-        <p class="section-description">
-            Video analysis tools help coaches inspect movement and give
-            athletes more focused feedback, alongside their own judgment.
-        </p>
-
-        <div class="row g-4 mt-4">
-            <div class="col-md-6 col-lg-4">
-                <div class="ai-card">
-                    <div class="ai-card-icon" aria-hidden="true">🎞️</div>
-                    <h3>Find key frames</h3>
-                    <p>
-                        Pull still frames from a training video and surface
-                        useful points in the movement for a closer look.
-                    </p>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-lg-4">
-                <div class="ai-card">
-                    <div class="ai-card-icon" aria-hidden="true">📐</div>
-                    <h3>Explore body positions</h3>
-                    <p>
-                        Review detected pose landmarks, joint angles, and
-                        visual overlays where the video supports them.
-                    </p>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-lg-4">
-                <div class="ai-card">
-                    <div class="ai-card-icon" aria-hidden="true">🗣️</div>
-                    <h3>Review with a coach</h3>
-                    <p>
-                        Coaches can check analysis results, add their own
-                        feedback, and decide what to share with athletes.
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <div class="ai-workflow" aria-label="Video review workflow">
-            <span class="ai-workflow-step">Upload a video</span>
-            <span class="ai-workflow-arrow" aria-hidden="true">→</span>
-            <span class="ai-workflow-step">Inspect key moments</span>
-            <span class="ai-workflow-arrow" aria-hidden="true">→</span>
-            <span class="ai-workflow-step">Coach reviews feedback</span>
-        </div>
-
-        <p class="ai-note">
-            Automated written coaching observations are still being refined;
-            coaches should review analysis before using it for instruction.
-        </p>
+  <div class="container ai-layout">
+    <div><p class="eyebrow">VIDEO REVIEW, WITH COACH OVERSIGHT</p><h2 id="ai-heading">Look closer. Let the coach decide.</h2><p class="section-intro">Use training videos to review key moments and add coaching feedback. Ask to see the video tools in your demo.</p></div>
+    <div class="ai-details">
+      <div><span class="feature-status">COACHING TOOLS</span><h3>Video playback &amp; feedback</h3><p>Review uploaded videos and add coach feedback to the athlete's training record.</p></div>
+      <div><span class="feature-status experimental">EXPERIMENTAL · SETUP DEPENDENT</span><h3>AI-assisted movement analysis</h3><p>Frame extraction, pose landmarks and visual overlays depend on processing availability and usable footage. Written observations are still being refined and require coach review.</p><p class="small mb-0">Camera angle, lighting, occlusion and fast movement can affect results. AI output is not validated competition scoring, an injury assessment or a replacement for a qualified coach.</p></div>
     </div>
+  </div>
 </section>
-
-<section class="home-section role-section">
-    <div class="container">
-        <div class="section-label">
-            Designed for every role
-        </div>
-
-        <h2 class="section-title">
-            Gymnastics software built around everyone's needs.
-        </h2>
-
-        <div class="row g-4 mt-4">
-            <div class="col-lg-4">
-                <div class="role-card role-card-highlight">
-                    <div class="role-icon">
-                        👨‍🏫
-                    </div>
-
-                    <h3>
-                        Coaches
-                    </h3>
-
-                    <p>
-                        Manage teams, athlete readiness, attendance,
-                        skills, testing, feedback, and communication.
-                    </p>
-
-                    <ul class="role-list">
-                        <li>✓ Team command center</li>
-                        <li>✓ Athlete alerts and priorities</li>
-                        <li>✓ Reports and testing</li>
-                        <li>✓ Secure family communication</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="col-lg-4">
-                <div class="role-card">
-                    <div class="role-icon">
-                        🤸
-                    </div>
-
-                    <h3>
-                        Athletes
-                    </h3>
-
-                    <p>
-                        Complete wellness surveys, review feedback, and
-                        follow personal progress.
-                    </p>
-
-                    <ul class="role-list">
-                        <li>✓ Daily wellness</li>
-                        <li>✓ Testing history</li>
-                        <li>✓ Coach feedback</li>
-                        <li>✓ Upcoming events</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="col-lg-4">
-                <div class="role-card">
-                    <div class="role-icon">
-                        👨‍👩‍👧
-                    </div>
-
-                    <h3>
-                        Parents
-                    </h3>
-
-                    <p>
-                        Stay informed with family-friendly progress,
-                        attendance, schedules, and coach communication.
-                    </p>
-
-                    <ul class="role-list">
-                        <li>✓ Athlete progress</li>
-                        <li>✓ Attendance summaries</li>
-                        <li>✓ Upcoming schedule</li>
-                        <li>✓ Message the coaching team</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
+<section class="home-section" aria-labelledby="trust-heading">
+  <div class="container trust-panel">
+    <div><p class="eyebrow">ATHLETE INFORMATION DESERVES CARE</p><h2 id="trust-heading">Understand access before you onboard.</h2><p>Directors approve gym membership requests. Parents need an approved athlete connection to access linked athlete information. Access also depends on the page, role and sharing settings.</p><a href="{% url 'public_privacy' %}">Read about data and privacy <span aria-hidden="true">→</span></a></div>
+    <div><h3>Questions about your gym's information?</h3><p>Ask about access, providers, retention and deletion before introducing the platform to families.</p><a href="{% url 'public_contact' %}?topic=privacy">Send a privacy enquiry <span aria-hidden="true">→</span></a></div>
+  </div>
+</section>
+<section class="home-section section-tint" aria-labelledby="questions-heading">
+  <div class="container faq-layout">
+    <div><p class="eyebrow">BEFORE YOU GET STARTED</p><h2 id="questions-heading">A clear next step for your gym.</h2><p class="section-intro">Explore the workflow, discuss your program and clarify the practical details before deciding.</p><a href="{% url 'public_demo' %}" class="btn btn-primary mt-2">Request a gym demo</a></div>
+    <div class="faq-list">
+      <details open><summary>Who is NewSchool for?</summary><p>Gymnastics directors and coaches who want to bring athlete check-ins, skill development and family communication into a shared workspace.</p></details>
+      <details><summary>Does it replace registration and billing?</summary><p>NewSchool focuses on coaching and athlete development. Keep your existing registration and payment tools; automated integrations are not promised.</p></details>
+      <details><summary>What happens after I request a demo?</summary><p>Your enquiry is saved for the NewSchool team to review and follow up using the email you provide. No account or payment is needed to send the request. A demo time is arranged separately.</p></details>
+      <details><summary>What does it cost? Can we discuss a pilot?</summary><p>Pricing and pilot terms are discussed directly and are not published as fixed plans yet. <a href="{% url 'public_contact' %}?topic=pricing">Ask about pricing or a pilot</a> for your gym. Sending an enquiry does not start a paid subscription.</p></details>
+      <details><summary>What does setup involve?</summary><p>A director creates the gym, adds training groups and manages the roster. Coaches, athletes and parents request membership; the director approves access. Parent-to-athlete links also need approval. Discuss setup assistance, data entry and any import needs before starting; automatic migration is not promised.</p></details>
     </div>
+  </div>
 </section>
-
-<section class="container">
-    <div class="home-cta">
-        <div class="row align-items-center g-4">
-            <div class="col-lg-8">
-                <div class="small text-uppercase opacity-75 fw-bold">
-                    Start your journey
-                </div>
-
-                <h2 class="fw-bold mt-2 mb-2">
-                    Join NewSchool Gymnastics.
-                </h2>
-
-                <p class="mb-0 opacity-75">
-                    Create an athlete or parent account and connect with
-                    your gymnastics program.
-                </p>
-            </div>
-
-            <div class="col-lg-4 text-lg-end">
-                <a
-                    href="{% url 'signup' %}"
-                    class="btn btn-light btn-lg rounded-pill px-4 fw-semibold"
-                >
-                    Create Account
-                </a>
-            </div>
-        </div>
-    </div>
-</section>
-
+<section class="closing-cta" aria-labelledby="closing-heading"><div class="container"><p class="eyebrow light">SEE IT WITH YOUR GYM IN MIND</p><h2 id="closing-heading">Start with a conversation about your program.</h2><p>Explore athlete check-ins, coaching tools and family communication before creating accounts.</p><a class="btn btn-light btn-lg" href="{% url 'public_demo' %}">Request a gym demo <span aria-hidden="true">↗</span></a><p class="closing-member">Already at a participating gym? <a href="{% url 'signup' %}">Join your gym</a> or <a href="{% url 'login' %}">log in</a>.</p></div></section>
 {% endblock %}

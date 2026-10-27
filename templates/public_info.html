@@ -1,8 +1,18 @@
 {% extends "public_base.html" %}
-{% block title %}{{ title }} · NewSchool Gymnastics{% endblock %}
+{% block title %}{{ title }} | NewSchool Gymnastics{% endblock %}
 {% block content %}
-<main class="container py-5" style="min-height:50vh;max-width:900px"><div class="bg-white rounded-4 shadow-sm p-4 p-md-5">
-<p class="text-primary fw-bold">{{ title }}</p><h1 class="h2">{{ heading }}</h1><p class="lead text-muted mt-3">{{ body }}</p>
-<div class="d-flex flex-wrap gap-2 mt-4"><a href="{% url 'home' %}" class="btn btn-outline-primary">Home</a><a href="{% url 'login' %}" class="btn btn-primary">Sign in</a><a href="{% url 'public_help' %}" class="btn btn-outline-secondary">Help Center</a></div>
-</div></main>
+<section class="container home-section" style="max-width:940px"><div class="enquiry-card">
+  <p class="eyebrow">{{ title }}</p><h1 class="h2 fw-bold">{{ heading }}</h1><p class="section-intro">{{ body }}</p>
+  {% if slug == 'privacy' %}<div class="info-notice">This is a description of current application behaviour. Operator details and a complete retention and deletion schedule remain to be finalized; it is not a completed privacy policy. Ask for these details before onboarding your gym.</div>{% endif %}
+  {% for section_heading, text in sections %}<section class="info-section"><h2>{{ section_heading }}</h2><p>{{ text }}</p></section>{% endfor %}
+  {% if slug == 'privacy' %}<section class="info-section" id="enquiries"><h2>Public enquiries</h2><p>The enquiry form collects your name, email address, optional gym name, topic, message and permission to reply. These are stored in the application database for the product team to review and respond. Only active platform superusers can open the product enquiry inbox. The form does not create a gym membership, send automatic emails or subscribe you to a newsletter.</p><p>Please leave out athlete names, wellness details, passwords and videos. To ask about an enquiry you submitted or request its deletion, <a href="{% url 'public_contact' %}?topic=privacy">send a privacy request</a>. The operator still needs to finalize enquiry retention periods.</p></section>{% endif %}
+  <div class="d-flex flex-wrap gap-3 mt-4">
+    {% if slug == 'privacy' or slug == 'cookies' %}<a href="{% url 'public_contact' %}?topic=privacy" class="btn btn-primary">Send a privacy enquiry</a>
+    {% elif slug == 'support' %}<a href="{% url 'public_contact' %}" class="btn btn-primary">Contact the product team</a>
+    {% else %}<a href="{% url 'public_demo' %}" class="btn btn-primary">Request a gym demo</a>{% endif %}
+    {% if slug == 'pricing' %}<a href="{% url 'public_contact' %}?topic=pricing" class="btn btn-outline-primary">Ask about pricing or a pilot</a>{% endif %}
+    <a href="{% url 'home' %}" class="btn btn-outline-secondary">Back to NewSchool</a>
+  </div>
+  {% if slug == 'help' %}<p class="mt-4 mb-0"><a href="{% url 'director_signup' %}">I run a gym: create a director account</a> · <a href="{% url 'signup' %}">Join an existing gym</a></p>{% endif %}
+</div></section>
 {% endblock %}
