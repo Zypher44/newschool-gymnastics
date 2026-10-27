@@ -4,6 +4,7 @@
 <style>.checkin{max-width:800px;margin:auto}.checkin fieldset{border:1px solid #dce3ed;border-radius:16px;background:white;padding:20px;margin:18px 0}.checkin legend{float:none;width:auto;font-size:1.15rem;font-weight:700}.checkin fieldset label{display:inline-flex;align-items:center;gap:9px;padding:12px;margin:4px;border:1px solid #dce3ed;border-radius:10px;cursor:pointer;min-height:48px}.checkin input[type=radio]{width:20px;height:20px}.checkin select{max-width:100%;padding:12px;border:1px solid #9ca3af;border-radius:8px}.checkin .errorlist{color:#a52020}.checkin [hidden]{display:none!important}.checkin-followup{margin-top:16px;padding-top:12px;border-top:1px solid #eee}</style>
 <div class="checkin"><h1>How are you feeling today?</h1><p>{{ today|date:'l, F j' }} · A quick check-in before practice.</p>
 <p class="alert alert-info">Your coaching team can read these answers. Private check-in details are not shown in parent reports. If something hurts or you feel sick, tell your coach before starting. This form is not monitored continuously.</p>
+<p class="small">A conversation away from teammates should still follow your gym's policy for responsible adult supervision. If it feels unsafe to speak to your coach, <a href="{% url 'safety_support' %}#concerns">find independent support here</a>. Check-ins do not earn game points.</p>
 {% if existing %}<div class="alert alert-success">Your check-in is saved for today. Thank you for telling your coach how you feel.</div>{% else %}
 <form method="post" id="daily-checkin">{% csrf_token %}{{ form.non_field_errors }}
 <fieldset><legend>1. How much energy do you have today?</legend>{{ form.energy.errors }}{{ form.energy }}</fieldset>
@@ -15,7 +16,7 @@
 <div class="checkin-followup" data-followup="worry"><p>What are you nervous about? (Optional)</p>{{ form.worry_about.errors }}{{ form.worry_about }}</div></fieldset>
 <fieldset><legend>5. Is there a skill or event you want help with today?</legend>{{ form.help_event.errors }}{{ form.help_event }}<p><label for="{{ form.help_skill.id_for_label }}">{{ form.help_skill.label }}</label>{{ form.help_skill.errors }}{{ form.help_skill }}</p>
 <div class="checkin-followup" data-followup="help"><p>What would help? (Optional)</p>{{ form.help_kind.errors }}{{ form.help_kind }}</div></fieldset>
-<fieldset><legend>6. Would you like to talk to your coach privately?</legend>{{ form.coach_talk.errors }}{{ form.coach_talk }}</fieldset>
+<fieldset><legend>6. Would you like to talk to your coach away from teammates?</legend>{{ form.coach_talk.errors }}{{ form.coach_talk }}</fieldset>
 <button class="btn btn-primary btn-lg" type="submit">Send my check-in</button></form>
 <script src="{% static 'surveys/checkin.js' %}" defer></script>{% endif %}</div>
 {% endblock %}

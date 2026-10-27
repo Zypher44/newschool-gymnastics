@@ -85,10 +85,11 @@ class GymAudienceTests(TestCase):
         self.client.force_login(self.people['coach_test'])
         response = self.client.post(reverse('gym_announcement'), {
             'audience': 'group', 'training_group': self.group.pk, 'message': 'Practice tomorrow',
+            'observer': self.people['coach_other_group'].pk,
         })
         self.assertRedirects(response, reverse('communication_inbox'))
         recipients = set(Conversation.objects.values_list('participants__username', flat=True))
-        self.assertEqual(recipients, {'coach_test', 'athlete_test', 'parent_test'})
+        self.assertEqual(recipients, {'coach_test', 'athlete_test', 'parent_test', 'coach_other_group'})
         count = Message.objects.count()
         response = self.client.post(reverse('gym_announcement'), {
             'audience': 'group', 'training_group': self.other_group.pk, 'message': 'Bad group',

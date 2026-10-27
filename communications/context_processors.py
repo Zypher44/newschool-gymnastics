@@ -1,3 +1,4 @@
+from .safeguarding import visible_conversation_ids, visible_notifications
 from .models import (
     ConversationParticipant,
     Notification,
@@ -34,6 +35,8 @@ def communication_context(
     )
 
 
+    notifications = visible_notifications(request.user, notifications)
+
     global_unread_notification_count = (
         notifications
         .filter(
@@ -56,6 +59,7 @@ def communication_context(
         ConversationParticipant.objects
         .filter(
             user=request.user,
+            conversation_id__in=visible_conversation_ids(request.user),
             is_archived=False,
             conversation__is_archived=False,
         )

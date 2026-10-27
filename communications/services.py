@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.db.models import Q, F
 from django.urls import reverse
 
 from accounts.models import User
@@ -12,7 +13,7 @@ from .models import (
     Notification,
 )
 
-from gyms.models import GymMembership
+from gyms.models import GymMembership, TrainingGroupAthlete, TrainingGroupCoach
 from gyms.tenant import single_active_gym_id
 
 
@@ -86,24 +87,18 @@ def get_display_name(user):
 
 
 def get_coaches_for_athlete(athlete):
-    coach_ids = CoachAthleteAssignment.objects.filter(
-        athlete=athlete
-    ).values_list(
-        'coach_id',
-        flat=True
-    )
-
-    return User.objects.filter(
-        id__in=coach_ids,
-        role__in=[
-            'coach',
-            'head_coach',
-        ]
-    ).distinct()
+    gym_id = single_active_gym_id(athlete, ['athlete'])
+    direct = CoachAthleteAssignment.objects.filter(athlete=athlete).values('coach_id')
+    groups = TrainingGroupAthlete.objects.filter(athlete=athlete, is_active=True,
+        group__gym_id=gym_id, group__is_active=True).values('group_id')
+    group_coaches = TrainingGroupCoach.objects.filter(group_id__in=groups).values('coach_id')
+    return User.objects.filter(Q(pk__in=direct) | Q(pk__in=group_coaches),
+        is_active=True, role__in=['coach', 'head_coach'], gym_memberships__gym_id=gym_id,
+        gym_memberships__role__in=['coach', 'head_coach'], gym_memberships__is_active=True).distinct()
 
 def get_parents_for_athlete(athlete):
     parent_ids = ParentAthleteLink.objects.filter(
-        athlete=athlete
+        athlete=athlete, approved=True
     ).values_list(
         'parent_id',
         flat=True
@@ -143,7 +138,7 @@ def get_athletes_for_coach(coach):
         'username'
     )
 
-def get_allowed_message_recipients(user):
+def _get_allowed_message_recipients(user):
     """
     Return users that the current user may message.
 
@@ -151,7 +146,7 @@ def get_allowed_message_recipients(user):
     """
 
     gym_id = single_active_gym_id(user, [user.role])
-    if gym_id is None:
+    if gym_id is None or not user.is_active:
         return User.objects.none()
 
     if user.role == 'director':
@@ -160,7 +155,7 @@ def get_allowed_message_recipients(user):
             .filter(
                 user=user,
                 role='director',
-                is_active=True
+                is_active=True, gym_id=gym_id, gym__is_active=True,
             )
             .select_related('gym')
             .first()
@@ -177,7 +172,6 @@ def get_allowed_message_recipients(user):
                 role__in=[
                     'head_coach',
                     'coach',
-                    'athlete',
                     'parent',
                 ]
             )
@@ -190,7 +184,7 @@ def get_allowed_message_recipients(user):
 
         return (
             User.objects
-            .filter(id__in=recipient_ids)
+            .filter(id__in=recipient_ids, is_active=True)
             .exclude(id=user.id)
             .distinct()
             .order_by(
@@ -205,7 +199,7 @@ def get_allowed_message_recipients(user):
         return (
             User.objects
             .exclude(id=user.id)
-            .filter(
+            .filter(is_active=True,
                 gym_memberships__gym_id=gym_id,
                 gym_memberships__role__in=['director', 'coach', 'head_coach', 'athlete', 'parent'],
                 gym_memberships__is_active=True,
@@ -226,18 +220,20 @@ def get_allowed_message_recipients(user):
         )
 
     if user.role == 'athlete':
-        return (
-            get_coaches_for_athlete(user)
-            .filter(gym_memberships__gym_id=gym_id, gym_memberships__is_active=True)
-            .exclude(id=user.id)
-        )
+        coach_ids = get_coaches_for_athlete(user).values('pk')
+        return User.objects.filter(pk__in=coach_ids,
+            is_active=True, gym_memberships__gym_id=gym_id,
+            gym_memberships__is_active=True).exclude(pk=user.pk).distinct()
 
     if user.role == 'parent':
         linked_athlete_ids = (
             ParentAthleteLink.objects
             .filter(
                 parent=user,
-                approved=True
+                approved=True, athlete__is_active=True,
+                athlete__gym_memberships__gym_id=gym_id,
+                athlete__gym_memberships__role='athlete',
+                athlete__gym_memberships__is_active=True,
             )
             .values_list(
                 'athlete_id',
@@ -245,16 +241,9 @@ def get_allowed_message_recipients(user):
             )
         )
 
-        coach_ids = (
-            CoachAthleteAssignment.objects
-            .filter(
-                athlete_id__in=linked_athlete_ids
-            )
-            .values_list(
-                'coach_id',
-                flat=True
-            )
-        )
+        coach_ids = set()
+        for athlete in User.objects.filter(pk__in=linked_athlete_ids, role='athlete', is_active=True):
+            coach_ids.update(get_coaches_for_athlete(athlete).values_list('pk', flat=True))
 
         director_ids = GymMembership.objects.filter(
             gym_id=gym_id, role='director', is_active=True,
@@ -262,7 +251,7 @@ def get_allowed_message_recipients(user):
         return (
             User.objects
             .filter(
-                id__in=list(coach_ids) + list(director_ids),
+                id__in=list(coach_ids) + list(director_ids), is_active=True,
                 gym_memberships__gym_id=gym_id,
                 gym_memberships__is_active=True,
                 role__in=[
@@ -279,6 +268,13 @@ def get_allowed_message_recipients(user):
         )
 
     return User.objects.none()
+
+
+def get_allowed_message_recipients(user):
+    gym_id = single_active_gym_id(user, [user.role])
+    return _get_allowed_message_recipients(user).filter(is_active=True,
+        gym_memberships__gym_id=gym_id, gym_memberships__is_active=True,
+        role=F('gym_memberships__role')).distinct()
 
 
 def users_may_message(sender, recipient):
@@ -336,7 +332,8 @@ def create_or_get_conversation(
     creator,
     recipient,
     subject='',
-    related_athlete=None
+    related_athlete=None,
+    observer=None
 ):
     if not users_may_message(
         creator,
@@ -346,18 +343,29 @@ def create_or_get_conversation(
             'You are not allowed to message this user.'
         )
 
+    from .safeguarding import supervised_pair
+    athlete = supervised_pair(creator, recipient, observer)
+    if athlete is not None:
+        if related_athlete is not None and related_athlete.pk != athlete.pk:
+            raise PermissionError('Choose the athlete participating in this conversation.')
+        related_athlete = athlete
     if related_athlete is not None:
         gym_id = single_active_gym_id(creator, [creator.role])
-        if not GymMembership.objects.filter(
-            user=related_athlete, role='athlete', gym_id=gym_id, is_active=True,
-        ).exists():
+        if not GymMembership.objects.filter(user=related_athlete, role='athlete', gym_id=gym_id, is_active=True).exists():
             raise PermissionError('You cannot attach an athlete from another gym.')
-
-    conversation = find_existing_direct_conversation(
-        creator,
-        recipient,
-        related_athlete=related_athlete
-    )
+        for person in (creator, recipient):
+            if person.role == 'parent' and not ParentAthleteLink.objects.filter(parent=person, athlete=related_athlete, approved=True).exists():
+                raise PermissionError('This parent does not have an approved connection to that athlete.')
+    conversation = None
+    if athlete is not None:
+        for candidate in Conversation.objects.filter(gym_id=single_active_gym_id(creator, [creator.role]),
+                related_athlete=athlete, requires_supervision=True, supervision_observer=observer,
+                participants=creator).filter(participants=recipient).distinct():
+            if set(candidate.participants.values_list('pk', flat=True)) == {creator.pk, recipient.pk, observer.pk}:
+                conversation = candidate
+                break
+    else:
+        conversation = find_existing_direct_conversation(creator, recipient, related_athlete=related_athlete)
 
     if conversation:
         if subject and not conversation.subject:
@@ -374,7 +382,8 @@ def create_or_get_conversation(
         gym_id=single_active_gym_id(creator, [creator.role]),
         created_by=creator,
         subject=subject,
-        related_athlete=related_athlete
+        related_athlete=related_athlete, requires_supervision=athlete is not None,
+        supervision_observer=observer,
     )
 
     ConversationParticipant.objects.bulk_create([
@@ -387,6 +396,9 @@ def create_or_get_conversation(
             user=recipient
         ),
     ])
+
+    if observer is not None:
+        ConversationParticipant.objects.create(conversation=conversation, user=observer)
 
     return conversation
 
@@ -407,7 +419,20 @@ def send_message(
             'You are not a participant in this conversation.'
         )
 
+    from .safeguarding import can_view_conversation, supervision_error
+    if not can_view_conversation(sender, conversation):
+        raise PermissionError('This conversation is no longer available to your account.')
+    error = supervision_error(conversation)
+    if error:
+        raise PermissionError(error)
+    for participant_user in conversation.participants.all():
+        if not can_view_conversation(participant_user, conversation):
+            raise PermissionError('A participant no longer has access. Start a new conversation with the current participants.')
+
     cleaned_body = body.strip()
+
+    if len(cleaned_body) > 10000:
+        raise ValueError("Keep messages to 10,000 characters or fewer.")
 
     if not cleaned_body:
         raise ValueError(

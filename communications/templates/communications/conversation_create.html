@@ -21,10 +21,11 @@
             </h2>
 
             <p class="text-muted mb-0">
-                Choose an active member of your gym, including your gym director.
+                {% if user.role == 'athlete' %}Choose a coach and an observer. Athletes message coaches only.{% else %}Parents can message their coaches and gym director. Staff can message permitted gym members.{% endif %}
             </p>
         </div>
 
+        <div class="alert alert-info small">Athlete conversations include the selected observer. Everyone in the new thread can read it. Earlier conversations are not shared. <a href="{% url 'safety_support' %}#concerns">For a concern about someone's behaviour, see independent support routes</a>.</div>
         <form method="post">
             {% csrf_token %}
 
@@ -35,7 +36,7 @@
             {% endif %}
 
             <div class="mb-3">
-                <label class="form-label fw-semibold">
+                <label class="form-label fw-semibold" for="{{ form.recipient.id_for_label }}">
                     Recipient
                 </label>
 
@@ -48,8 +49,9 @@
                 {% endfor %}
             </div>
 
+            <div class="mb-3"><label for="{{ form.observer.id_for_label }}" class="form-label fw-semibold">{{ form.observer.label }}</label>{{ form.observer }}<p class="small text-muted mt-1">{{ form.observer.help_text }} Required whenever an athlete takes part; leave blank for an adult-only conversation. Your gym must verify adults and their screening.</p>{{ form.observer.errors }}</div>
             <div class="mb-3">
-                <label class="form-label fw-semibold">
+                <label class="form-label fw-semibold" for="{{ form.subject.id_for_label }}">
                     Subject
                 </label>
 
@@ -63,7 +65,7 @@
             </div>
 
             <div class="mb-4">
-                <label class="form-label fw-semibold">
+                <label class="form-label fw-semibold" for="{{ form.message.id_for_label }}">
                     Message
                 </label>
 

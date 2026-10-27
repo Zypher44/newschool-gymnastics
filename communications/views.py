@@ -14,7 +14,10 @@ from django.shortcuts import (
     redirect,
     render,
 )
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
+from django.views.decorators.cache import never_cache
+from django.utils.http import url_has_allowed_host_and_scheme
+from .safeguarding import can_view_conversation, supervision_error, visible_conversation_ids, visible_notifications, active_members, OBSERVER_ROLES
 
 from .forms import (
     MessageForm,
@@ -38,6 +41,7 @@ def gym_announcement(request):
         raise Http404
 
     groups = selectable_groups(request.user)
+    observer_options = active_members(single_active_gym_id(request.user, [request.user.role])).filter(role__in=OBSERVER_ROLES).exclude(pk=request.user.pk)
     error = None
     if request.method == 'POST':
         audience = request.POST.get('audience', '')
@@ -57,17 +61,29 @@ def gym_announcement(request):
             if not recipients:
                 error = 'No active gym members match that audience.'
             else:
-                with transaction.atomic():
-                    for recipient in recipients:
-                        conversation = create_or_get_conversation(
-                            creator=request.user, recipient=recipient, subject=subject,
-                        )
-                        send_message(conversation=conversation, sender=request.user, body=body)
+                observer_id = request.POST.get('observer', '')
+                observer = observer_options.filter(pk=observer_id).first() if observer_id.isdigit() else None
+                if any(person.role == 'athlete' for person in recipients) and observer is None:
+                    error = 'Choose a second gym staff member to observe athlete conversations before sending.'
+                else:
+                    try:
+                        with transaction.atomic():
+                            for recipient in recipients:
+                                conversation = create_or_get_conversation(creator=request.user,
+                                    recipient=recipient, subject=subject,
+                                    observer=observer if recipient.role == 'athlete' else None)
+                                send_message(conversation=conversation, sender=request.user, body=body)
+                    except (PermissionError, ValueError) as exc:
+                        error = str(exc)
+                if error:
+                    return render(request, 'communications/gym_announcement.html', {
+                        'groups': groups, 'error': error, 'observer_options': observer_options,
+                    })
                 messages.success(request, f'Message sent to {len(recipients)} gym members.')
                 return redirect('communication_inbox')
 
     return render(request, 'communications/gym_announcement.html', {
-        'groups': groups, 'error': error,
+        'groups': groups, 'error': error, 'observer_options': observer_options,
     })
 
 @login_required
@@ -90,6 +106,9 @@ def dashboard_message_send(request):
         'next'
     )
 
+    if next_url and not url_has_allowed_host_and_scheme(next_url, {request.get_host()}, require_https=request.is_secure()):
+        next_url = None
+
     if not recipient_id:
         messages.error(
             request,
@@ -109,6 +128,9 @@ def dashboard_message_send(request):
         return redirect(
             next_url or 'communication_inbox'
         )
+
+    if not recipient_id.isdigit():
+        raise Http404('Choose a valid recipient.')
 
     allowed_recipients = (
         get_allowed_message_recipients(
@@ -130,8 +152,14 @@ def dashboard_message_send(request):
             next_url or 'communication_inbox'
         )
 
+    draft_form = NewConversationForm(request.POST, user=request.user)
+    if not draft_form.is_valid():
+        return render(request, 'communications/conversation_create.html', {'form': draft_form})
+
     related_athlete = None
 
+    if related_athlete_id and not related_athlete_id.isdigit():
+        raise Http404('Choose a valid athlete.')
     if related_athlete_id:
         related_athlete = User.objects.filter(
             id=related_athlete_id,
@@ -143,7 +171,8 @@ def dashboard_message_send(request):
             sender=request.user,
             recipient=recipient,
             message_body=message_body,
-            related_athlete=related_athlete
+            related_athlete=related_athlete,
+            observer=draft_form.cleaned_data.get('observer'),
         )
 
     except (
@@ -172,11 +201,13 @@ def dashboard_message_send(request):
     )
 
 @login_required
+@never_cache
 def communication_inbox(request):
     participations = (
         ConversationParticipant.objects
         .filter(
             user=request.user,
+            conversation_id__in=visible_conversation_ids(request.user),
             conversation__gym_id=single_active_gym_id(request.user, [request.user.role]),
             conversation__gym__isnull=False,
             is_archived=False,
@@ -233,6 +264,9 @@ def communication_inbox(request):
 
 
 @login_required
+@never_cache
+@require_http_methods(['GET', 'POST'])
+@transaction.atomic
 def conversation_create(request):
     if request.method == 'POST':
         form = NewConversationForm(
@@ -254,19 +288,20 @@ def conversation_create(request):
             ]
 
             try:
-                conversation = (
-                    create_or_get_conversation(
-                        creator=request.user,
-                        recipient=recipient,
-                        subject=subject
+                with transaction.atomic():
+                    conversation = (
+                        create_or_get_conversation(
+                            creator=request.user,
+                            recipient=recipient,
+                            subject=subject, observer=form.cleaned_data.get('observer'),
+                        )
                     )
-                )
 
-                send_message(
-                    conversation=conversation,
-                    sender=request.user,
-                    body=message_body
-                )
+                    send_message(
+                        conversation=conversation,
+                        sender=request.user,
+                        body=message_body
+                    )
 
                 messages.success(
                     request,
@@ -291,9 +326,8 @@ def conversation_create(request):
                 )
 
     else:
-        form = NewConversationForm(
-            user=request.user
-        )
+        initial = {'recipient': request.GET.get('recipient', ''), 'subject': {'question': 'Question about my practice goal', 'win': 'A learning win to share', 'goal': 'My next practice goal'}.get(request.GET.get('topic'), '')}
+        form = NewConversationForm(user=request.user, initial=initial)
 
     return render(
         request,
@@ -305,6 +339,8 @@ def conversation_create(request):
 
 
 @login_required
+@never_cache
+@require_http_methods(['GET', 'POST'])
 def conversation_detail(
     request,
     conversation_id
@@ -327,11 +363,12 @@ def conversation_detail(
         .first()
     )
 
-    if not participation:
+    if not participation or not can_view_conversation(request.user, conversation):
         raise Http404(
             'Conversation not found.'
         )
 
+    conversation_guard = supervision_error(conversation)
     participation.mark_read()
 
     Notification.objects.filter(
@@ -392,7 +429,7 @@ def conversation_detail(
                     'sender'
                 )
             ),
-            'form': form,
+            'form': form, 'conversation_guard': conversation_guard,
         }
     )
 
@@ -428,6 +465,7 @@ def conversation_archive(
     )
 
 @login_required
+@never_cache
 def notification_list(
     request,
 ):
@@ -476,6 +514,8 @@ def notification_list(
         )
     )
 
+
+    all_notifications = visible_notifications(request.user, all_notifications)
 
     total_count = (
         all_notifications.count()
@@ -591,9 +631,8 @@ def notification_open(
     notification_id
 ):
     notification = get_object_or_404(
-        Notification,
+        visible_notifications(request.user, Notification.objects.filter(recipient=request.user)),
         id=notification_id,
-        recipient=request.user
     )
 
     notification.mark_as_read()

@@ -490,6 +490,7 @@
             </div>
 
             <div class="sidebar-navigation">
+                <a href="{% url 'safety_support' %}" class="sidebar-link" title="Support & Safe Sport" aria-label="Support & Safe Sport"><span class="sidebar-icon">🛡</span><span class="sidebar-label">Support &amp; Safe Sport</span></a>
                 {% if user.is_superuser %}
                     <div class="sidebar-section">Platform</div>
                     <a href="{% url 'public_enquiry_inbox' %}" class="sidebar-link" title="Product enquiries" aria-label="Product enquiries">

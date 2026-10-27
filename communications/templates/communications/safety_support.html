@@ -1,0 +1,32 @@
+{% extends layout %}
+{% block title %}Support & Safe Sport | NewSchool Gymnastics{% endblock %}
+{% block page_header %}Support & Safe Sport{% endblock %}
+{% block content %}
+<section class="container py-4" style="max-width:950px">
+  <div class="card border-0 shadow-sm p-4 p-md-5 mb-4">
+    <p class="text-primary fw-bold">YOUR VOICE MATTERS</p><h1>Ask questions. Share a win. Get support.</h1>
+    <p>It is okay to ask for help, say something feels wrong or ask for a practice adjustment. You do not need to earn a badge or complete a challenge to speak up.</p>
+    <div class="alert alert-warning">If someone is in immediate danger, contact local emergency services or a trusted adult now. App messages and these links are not an emergency service.</div>
+    <h2 class="h4 mt-3">Everyday practice conversations</h2>
+    <p>Athletes can ask their coaches about a skill or learning goal. Parents can contact their coaches or gym director about the program. Athlete messages need a selected observer: an approved linked parent or a second coach. All three people see the new thread. If no suitable observer is available, arrange an open, observable conversation with responsible adults through your gym.</p>
+    <p>Gym membership and a staff role do not verify a person's age, screening or training. Your gym is responsible for checking these and applying its communication policy.</p>
+    <div class="d-flex flex-wrap gap-2"><a href="{% url 'conversation_create' %}?topic=question" class="btn btn-primary">Ask a practice question</a><a href="{% url 'conversation_create' %}?topic=goal" class="btn btn-outline-primary">Share a practice goal</a><a href="{% url 'conversation_create' %}" class="btn btn-outline-secondary">{% if user.role == 'athlete' %}Message a coach{% else %}Parents: message a coach or director{% endif %}</a></div>
+  </div>
+  <div class="card border-0 shadow-sm p-4 p-md-5 mb-4" id="concerns">
+    <h2 class="h3">Worried about someone's behaviour?</h2>
+    <p>If a concern involves a coach, director, parent or another adult, you can seek help outside that person's reporting line. You do not have to use an app conversation or get their permission to open the resources below.</p>
+    <p>Ordinary app messages are visible to their selected participants. They are not an independent or anonymous reporting service. Do not send an allegation into a shared thread if a participant may be involved.</p>
+    <ul class="lh-lg">
+      <li><a href="https://www.gymnasticsontario.ca/safe-sport/" target="_blank" rel="noopener noreferrer">Gymnastics Ontario — Safe Sport resources and reporting guidance</a></li>
+      <li><a href="https://sportintegrity.ca/report-safe-sport" target="_blank" rel="noopener noreferrer">Sport Integrity Canada — reporting and questions about the Canadian Safe Sport Program</a></li>
+    </ul>
+    <p class="small text-muted">The Canadian Safe Sport Program has a defined scope; it does not automatically cover every local-club matter. Its reporting page explains who is covered and how to ask for direction if unsure. A provincial or club process may apply. A club director is not an independent reporting body.</p>
+    <p class="mb-0"><strong>This page does not submit a report or alert anyone.</strong> Follow the appropriate external process. Speak to a trusted adult who is not involved if that helps you access support.</p>
+  </div>
+  <div class="card border-0 shadow-sm p-4 p-md-5">
+    <h2 class="h4">Practices can be fun without pressure</h2><p>Practice Passport stamps celebrate coach-approved learning, teamwork and personal progress. Breaks do not reset stamps. Check-in answers, journal entries and safety reports are not used to calculate passport eligibility.</p>
+    <p>Choose goals with your coach. Stop and ask for support if something hurts or feels unsafe. Never add repetitions just to finish a game target.</p>
+    <p class="small mb-0">Guidance: <a href="https://coach.ca/sport-safety/responsible-coaching-movement/rule-two" target="_blank" rel="noopener noreferrer">Coaching Association of Canada — Rule of Two</a>. These application guardrails support transparent communication; they are not a Safe Sport certification or a substitute for gym policies, trained adults and appropriate reporting procedures.</p>
+  </div>
+</section>
+{% endblock %}
